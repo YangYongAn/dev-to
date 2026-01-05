@@ -15,8 +15,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json -w",
+    "build": "rslib build",
+    "dev": "rslib build --watch",
     "lint": "pnpm -w lint",
     "test": "echo 'test @dev-to/react-loader'"
   },
