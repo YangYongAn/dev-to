@@ -23,7 +23,7 @@ import {
   resolveBuildTargets,
 } from './libBuildUtils.js'
 import { resolveEntryAbsPath } from './pathUtils.js'
-import { injectReactImport, transformAssetUrl } from './transformUtils.js'
+import { injectReactImport, transformAssetUrl, transformViteDevCssAssetUrls } from './transformUtils.js'
 import {
   createContractVirtualModuleCode,
   createInitVirtualModuleCode,
@@ -551,6 +551,14 @@ export const devToReactPlugin = (
     },
   }
 
+  const devCssAssetPlugin: Plugin = {
+    name: '@dev-to/react-plugin:dev-css-asset-url',
+    enforce: 'post',
+    transform(code, id) {
+      return transformViteDevCssAssetUrls(code, id)
+    },
+  }
+
   const libPostPlugin: Plugin = {
     name: '@dev-to/react-plugin:lib-post',
     enforce: 'post',
@@ -566,7 +574,7 @@ export const devToReactPlugin = (
     },
   }
 
-  return [corePlugin, libPostPlugin]
+  return [corePlugin, devCssAssetPlugin, libPostPlugin]
 }
 
 /** @deprecated Use `devToReactPlugin` instead. */

@@ -57,3 +57,58 @@ export function transformAssetUrl(code: string, id: string) {
   }
   return null
 }
+
+/**
+ * Fix Vite dev CSS asset URLs for cross-origin hosts.
+ *
+ * In Vite dev mode, CSS is served as a JS module that injects a <style> tag,
+ * and asset urls are commonly rewritten to root-relative paths (e.g. "/src/..").
+ * When this module is imported cross-origin (e.g. host is http://localhost:8080),
+ * those urls will wrongly resolve against the host origin.
+ *
+ * We patch the injected CSS string at runtime to prefix the dev server origin.
+ */
+export function transformViteDevCssAssetUrls(code: string, id: string) {
+  const cleanId = id.split('?')[0]
+  if (!/\.(css|less|sass|scss|styl|stylus)$/.test(cleanId)) return null
+  if (!code.includes('__vite__updateStyle') || !code.includes('const __vite__css')) return null
+  if (!/url\(\s*['"]?\//.test(code)) return null
+  if (code.includes('__dev_to_react_css')) return null
+
+  const updateCallRE = /__vite__updateStyle\(\s*__vite__id\s*,\s*__vite__css\s*\)/
+  if (!updateCallRE.test(code)) return null
+
+  const injected = `
+const __dev_to_react_resolveAsset = (path) => {
+  if (!path) return path;
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:') || path.startsWith('blob:')) {
+    return path;
+  }
+  try {
+    const g = typeof globalThis !== 'undefined' ? globalThis : window;
+    const fn = g && g[${JSON.stringify(DEV_TO_REACT_RESOLVE_ASSET_KEY)}];
+    if (typeof fn === 'function') return fn(path);
+  } catch {
+    // ignore
+  }
+  try {
+    const origin = new URL(import.meta.url).origin;
+    return path.startsWith('/') ? origin + path : origin + '/' + path;
+  } catch (e) {
+    console.warn('${PLUGIN_LOG_PREFIX} Failed to resolve CSS asset URL:', path, e);
+    return path;
+  }
+};
+const __dev_to_react_css = __vite__css.replace(/url\\(\\s*(['"]?)(\\/(?!\\/)[^'")]+)\\1\\s*\\)/g, (_m, q, p) => {
+  const next = __dev_to_react_resolveAsset(p);
+  return 'url(' + q + next + q + ')';
+});
+`
+
+  const nextCode = code.replace(
+    updateCallRE,
+    `${injected}__vite__updateStyle(__vite__id, __dev_to_react_css)`,
+  )
+
+  return { code: nextCode, map: null }
+}
