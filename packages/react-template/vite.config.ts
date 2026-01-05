@@ -6,11 +6,12 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    cors: true,
   },
   plugins: [
     react(),
     devToReactPlugin({
-      RemoteCard: 'src/RemoteCard.tsx',
+      RemoteCard: 'src/RemoteCard/index.tsx',
     }),
   ],
 })

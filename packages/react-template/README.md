@@ -14,11 +14,10 @@ pnpm -C packages/react-template dev
 
 示例远程组件：
 
-- `RemoteCard` -> `src/RemoteCard.tsx`
+- `RemoteCard` -> `src/RemoteCard/index.tsx`
 
 可以在宿主侧（例如 `react-playground`）里用：
 
 ```tsx
 <ReactLoader origin="http://localhost:5173" name="RemoteCard" componentProps={{ title: 'Hello' }} />
 ```
-

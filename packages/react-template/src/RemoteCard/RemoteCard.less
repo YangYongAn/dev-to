@@ -1,0 +1,50 @@
+@accent: #7c3aed;
+
+.devToRemoteLess {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px dashed fade(@accent, 35%);
+  background: fade(@accent, 8%);
+
+  &__title {
+    margin: 0 0 6px;
+    font-size: 12px;
+    color: #0f172a;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: fade(@accent, 14%);
+    color: @accent;
+    border: 1px solid fade(@accent, 28%);
+  }
+
+  &__note {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: #334155;
+    line-height: 1.4;
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+    }
+  }
+
+  &__texture {
+    margin-top: 10px;
+    height: 42px;
+    border-radius: 10px;
+    border: 1px solid fade(@accent, 24%);
+    background-image: url('./assets/pixel.png');
+    background-size: 10px 10px;
+    image-rendering: pixelated;
+  }
+}
+
