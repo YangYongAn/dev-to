@@ -1,3 +1,3 @@
 export const loaderReact = () => {
-  return "@dev-to/loader-react";
-};
+  return '@dev-to/loader-react'
+}

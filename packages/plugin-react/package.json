@@ -10,7 +10,7 @@
   "scripts": {
     "build": "echo 'build @dev-to/plugin-react'",
     "dev": "echo 'dev @dev-to/plugin-react'",
-    "lint": "echo 'lint @dev-to/plugin-react'",
+    "lint": "pnpm -w lint",
     "test": "echo 'test @dev-to/plugin-react'"
   }
 }

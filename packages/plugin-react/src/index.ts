@@ -1,3 +1,3 @@
 export const pluginReact = () => {
-  return "@dev-to/plugin-react";
-};
+  return '@dev-to/plugin-react'
+}
