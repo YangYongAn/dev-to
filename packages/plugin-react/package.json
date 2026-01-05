@@ -1,0 +1,16 @@
+{
+  "name": "@dev-to/plugin-react",
+  "version": "0.0.0",
+  "private": false,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "echo 'build @dev-to/plugin-react'",
+    "dev": "echo 'dev @dev-to/plugin-react'",
+    "lint": "echo 'lint @dev-to/plugin-react'",
+    "test": "echo 'test @dev-to/plugin-react'"
+  }
+}
