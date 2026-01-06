@@ -2,67 +2,139 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { spawn } from 'node:child_process'
-import { createInterface } from 'node:readline/promises'
+import { spawn, execSync } from 'node:child_process'
 import process from 'node:process'
+import * as clack from '@clack/prompts'
+import { red, cyan, yellow } from 'kolorist'
 
-type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun' | 'unknown'
+const PACKAGE_MANAGERS = ['pnpm', 'npm', 'yarn', 'bun'] as const
+type PackageManager = typeof PACKAGE_MANAGERS[number]
 
-function detectPackageManager(userAgent: string): PackageManager {
-  if (userAgent.includes('pnpm')) return 'pnpm'
-  if (userAgent.includes('yarn')) return 'yarn'
-  if (userAgent.includes('bun')) return 'bun'
-  if (userAgent.includes('npm')) return 'npm'
-  return 'unknown'
-}
+const REACT_TEMPLATES = [
+  {
+    name: 'react-ts',
+    display: 'TypeScript',
+    color: cyan,
+  },
+  {
+    name: 'react-swc-ts',
+    display: 'TypeScript + SWC',
+    color: cyan,
+  },
+  {
+    name: 'react',
+    display: 'JavaScript',
+    color: yellow,
+  },
+  {
+    name: 'react-swc',
+    display: 'JavaScript + SWC',
+    color: yellow,
+  },
+] as const
 
-function normalizeTargetDir(input: string) {
-  const trimmed = input.trim()
-  if (!trimmed) return ''
-  return trimmed === '.' ? '.' : trimmed.replace(/\/+$/, '')
-}
+const PM_CONFIGS = {
+  pnpm: {
+    install: 'pnpm install',
+    dev: 'pnpm dev',
+  },
+  npm: {
+    install: 'npm install',
+    dev: 'npm run dev',
+  },
+  yarn: {
+    install: 'yarn',
+    dev: 'yarn dev',
+  },
+  bun: {
+    install: 'bun install',
+    dev: 'bun dev',
+  },
+} as const
 
-async function promptText(message: string, initialValue = ''): Promise<string> {
-  const rl = createInterface({ input: process.stdin, output: process.stdout })
+function checkCommandExists(command: string): boolean {
   try {
-    const answer = await rl.question(initialValue ? `${message} (${initialValue}): ` : `${message}: `)
-    return normalizeTargetDir(answer || initialValue)
+    execSync(`${command} --version`, { stdio: 'ignore' })
+    return true
   }
-  finally {
-    rl.close()
-  }
-}
-
-async function promptSelect(message: string, options: string[], initialIndex = 0): Promise<string> {
-  const rl = createInterface({ input: process.stdin, output: process.stdout })
-  try {
-    process.stdout.write(`\n${message}\n`)
-    options.forEach((opt, idx) => {
-      const marker = idx === initialIndex ? '*' : ' '
-      process.stdout.write(`  ${marker} ${idx + 1}. ${opt}\n`)
-    })
-    const answer = await rl.question(`Select (1-${options.length}) [${initialIndex + 1}]: `)
-    const chosen = answer.trim() ? Number(answer.trim()) - 1 : initialIndex
-    if (Number.isNaN(chosen) || chosen < 0 || chosen >= options.length) return options[initialIndex]
-    return options[chosen]
-  }
-  finally {
-    rl.close()
+  catch {
+    return false
   }
 }
 
-function run(command: string, args: string[], cwd: string) {
-  return new Promise<void>((resolve, reject) => {
+function detectPackageManager(userAgent: string): PackageManager | null {
+  for (const pm of PACKAGE_MANAGERS) {
+    if (userAgent.includes(pm)) return pm
+  }
+  for (const pm of PACKAGE_MANAGERS) {
+    if (checkCommandExists(pm)) return pm
+  }
+  return null
+}
+
+function formatTargetDir(targetDir: string | undefined) {
+  return targetDir?.trim().replace(/\/+$/g, '')
+}
+
+function isEmpty(path: string) {
+  const files = fs.readdirSync(path)
+  return files.length === 0 || (files.length === 1 && files[0] === '.git')
+}
+function toValidPackageName(projectName: string) {
+  return projectName
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/^[._]/, '')
+    .replace(/[^a-z\d\-~]+/g, '-')
+}
+
+function emptyDir(dir: string) {
+  if (!fs.existsSync(dir)) {
+    return
+  }
+  for (const file of fs.readdirSync(dir)) {
+    if (file === '.git') {
+      continue
+    }
+    fs.rmSync(path.resolve(dir, file), { recursive: true, force: true })
+  }
+}
+
+function copyDir(srcDir: string, destDir: string) {
+  fs.mkdirSync(destDir, { recursive: true })
+  for (const file of fs.readdirSync(srcDir)) {
+    const srcFile = path.resolve(srcDir, file)
+    const destFile = path.resolve(destDir, file)
+    copy(srcFile, destFile)
+  }
+}
+
+function copy(src: string, dest: string) {
+  const stat = fs.statSync(src)
+  if (stat.isDirectory()) {
+    copyDir(src, dest)
+  }
+  else {
+    fs.copyFileSync(src, dest)
+  }
+}
+
+function run(command: string, args: string[], cwd: string): Promise<void> {
+  return new Promise((resolve, reject) => {
     const child = spawn(command, args, { cwd, stdio: 'inherit' })
     child.on('close', (code) => {
-      if (code === 0) resolve()
-      else reject(new Error(`${command} exited with code ${code}`))
+      if (code !== 0) {
+        reject(new Error(`${command} ${args.join(' ')} failed`))
+        return
+      }
+      resolve()
     })
     child.on('error', reject)
   })
 }
 
-function findViteConfigFile(projectDir: string) {
+function findViteConfigFile(projectDir: string): string | null {
   const candidates = ['vite.config.ts', 'vite.config.js', 'vite.config.mjs', 'vite.config.cjs']
   for (const name of candidates) {
     const p = path.join(projectDir, name)
@@ -71,46 +143,89 @@ function findViteConfigFile(projectDir: string) {
   return null
 }
 
-function injectDevToReactPluginIntoViteConfig(content: string): string {
-  const hasImport = /['"]@dev-to\/react-plugin['"]/.test(content)
-  const hasCall = content.includes('devToReactPlugin(') || content.includes('devToReactPlugin()')
+async function cloneViteTemplate(template: string, targetDir: string) {
+  const templateRepo = `vitejs/vite/packages/create-vite/template-${template}`
+
+  try {
+    await run('npx', ['degit', templateRepo, targetDir, '--force'], process.cwd())
+  }
+  catch (error) {
+    throw new Error(`Failed to clone template: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+function injectPluginIntoViteConfig(content: string, pluginPackage: string, pluginName: string): string {
+  const hasImport = new RegExp(`['"]${pluginPackage.replace(/\//g, '\\/')}['"]`).test(content)
+  const hasCall = content.includes(`${pluginName}(`)
 
   let out = content
 
+  // 添加 import 语句
   if (!hasImport) {
     const importMatches = Array.from(out.matchAll(/^import .+$/gm))
     if (importMatches.length > 0) {
       const last = importMatches[importMatches.length - 1]!
       const insertPos = (last.index ?? 0) + last[0].length
-      out = `${out.slice(0, insertPos)}\nimport { devToReactPlugin } from '@dev-to/react-plugin'\n${out.slice(insertPos)}`
+      out = `${out.slice(0, insertPos)}\nimport { ${pluginName} } from '${pluginPackage}'\n${out.slice(insertPos)}`
     }
     else {
-      out = `import { devToReactPlugin } from '@dev-to/react-plugin'\n${out}`
+      out = `import { ${pluginName} } from '${pluginPackage}'\n${out}`
     }
   }
 
+  // 添加插件到 plugins 数组
   if (!hasCall) {
-    const pluginsRegex = /plugins\s*:\s*\[([\s\S]*?)\]/m
+    // 匹配 plugins: [...] 或 plugins:[...]
+    const pluginsRegex = /plugins\s*:\s*\[([^\]]*(?:\[[^\]]*\][^\]]*)*)\]/
     const m = pluginsRegex.exec(out)
-    if (m && typeof m.index === 'number') {
-      const full = m[0]
-      const inner = m[1] ?? ''
 
+    if (m && m.index !== undefined) {
+      const full = m[0]
+      const inner = m[1] || ''
+
+      // 检查是否是多行格式
       if (inner.includes('\n')) {
-        const indentMatch = inner.match(/\n(\s*)\S/)
-        const indent = indentMatch ? indentMatch[1] : '  '
-        const closingIndentMatch = inner.match(/\n(\s*)$/)
-        const closingIndent = closingIndentMatch ? closingIndentMatch[1] : ''
-        const trimmedInner = inner.replace(/\s*$/, '')
-        const nextInner = `${trimmedInner}\n${indent}devToReactPlugin(),\n${closingIndent}`
-        const replaced = full.replace(inner, nextInner)
-        out = out.slice(0, m.index) + replaced + out.slice(m.index + full.length)
+        // 多行格式：找到缩进
+        const lines = inner.split('\n')
+        const pluginLines = lines.filter(line => line.trim() && !line.trim().startsWith('//'))
+
+        let indent = '    ' // 默认 4 空格
+        if (pluginLines.length > 0) {
+          const firstPluginLine = pluginLines[0]
+          const match = firstPluginLine.match(/^(\s+)/)
+          if (match) indent = match[1]
+        }
+
+        // 在最后一个插件后添加新插件
+        const trimmedInner = inner.trimEnd()
+        const hasTrailingComma = trimmedInner.trim().endsWith(',')
+        const newPlugin = `${indent}${pluginName}(),`
+
+        // 找到最后一个非空白行
+        const lastContentIndex = trimmedInner.lastIndexOf('\n')
+        if (lastContentIndex === -1) {
+          // 单行但包含换行符的情况
+          out = out.replace(full, `plugins: [\n${newPlugin}\n  ]`)
+        }
+        else {
+          const beforeLast = trimmedInner.slice(0, lastContentIndex + 1)
+          const lastLine = trimmedInner.slice(lastContentIndex + 1)
+
+          if (!hasTrailingComma && lastLine.trim()) {
+            // 最后一行没有逗号，需要添加
+            out = out.replace(full, `plugins: [${beforeLast}${lastLine},\n${newPlugin}\n  ]`)
+          }
+          else {
+            // 最后一行有逗号或为空
+            out = out.replace(full, `plugins: [${trimmedInner}\n${newPlugin}\n  ]`)
+          }
+        }
       }
       else {
+        // 单行格式
         const compactInner = inner.trim()
-        const nextInner = compactInner ? `${compactInner}, devToReactPlugin()` : 'devToReactPlugin()'
-        const replaced = full.replace(`[${inner}]`, `[${nextInner}]`)
-        out = out.slice(0, m.index) + replaced + out.slice(m.index + full.length)
+        const nextInner = compactInner ? `${compactInner}, ${pluginName}()` : `${pluginName}()`
+        out = out.replace(full, `plugins: [${nextInner}]`)
       }
     }
   }
@@ -128,57 +243,178 @@ function addDevDependency(projectDir: string, pkgName: string, version: string) 
   fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
 }
 
-async function main() {
+async function init() {
   const userAgent = process.env.npm_config_user_agent || ''
-  const pm = detectPackageManager(userAgent)
+  let packageManager = detectPackageManager(userAgent)
 
-  const args = process.argv.slice(2)
-  const firstNonFlag = args.find(a => !a.startsWith('-')) || ''
-  const targetDirFromArg = normalizeTargetDir(firstNonFlag)
-
-  const targetDir = targetDirFromArg || (await promptText('Project name', 'dev-to-react-app'))
-
-  const templateChoice = await promptSelect(
-    'Select a React template',
-    ['react', 'react-ts', 'react-swc', 'react-swc-ts'],
-    1,
-  )
+  clack.intro(cyan('create-react'))
 
   const cwd = process.cwd()
+  const argTargetDir = formatTargetDir(process.argv[2])
 
-  if (pm === 'pnpm') {
-    await run('pnpm', ['dlx', 'create-vite@latest', targetDir, '--template', templateChoice], cwd)
+  let targetDir = argTargetDir || '.'
+
+  const getProjectName = () =>
+    targetDir === '.' ? path.basename(path.resolve()) : targetDir
+
+  // 项目名称
+  const project = await clack.group(
+    {
+      projectName: () =>
+        clack.text({
+          message: 'Project name:',
+          placeholder: 'dev-to-react-app',
+          initialValue: argTargetDir,
+          defaultValue: argTargetDir || 'dev-to-react-app',
+        }),
+      shouldOverwrite: ({ results }) => {
+        targetDir = formatTargetDir(results.projectName) || 'dev-to-react-app'
+        const root = path.join(cwd, targetDir)
+
+        if (!fs.existsSync(root)) {
+          return Promise.resolve(false)
+        }
+
+        if (isEmpty(root)) {
+          return Promise.resolve(false)
+        }
+
+        return clack.confirm({
+          message:
+            targetDir === '.'
+              ? 'Current directory is not empty. Remove existing files and continue?'
+              : `Target directory "${targetDir}" is not empty. Remove existing files and continue?`,
+        })
+      },
+    },
+    {
+      onCancel: () => {
+        clack.cancel('Operation cancelled.')
+        process.exit(0)
+      },
+    },
+  )
+
+  const { shouldOverwrite } = project
+
+  // 覆盖目录
+  if (shouldOverwrite) {
+    emptyDir(path.join(cwd, targetDir))
   }
-  else if (pm === 'npm') {
-    await run('npm', ['create', 'vite@latest', targetDir, '--', '--template', templateChoice], cwd)
+
+  // 包管理器选择
+  if (!packageManager) {
+    const pmChoice = await clack.select({
+      message: 'Select a package manager:',
+      options: PACKAGE_MANAGERS.map(pm => ({
+        value: pm,
+        label: pm,
+      })),
+    })
+
+    if (clack.isCancel(pmChoice)) {
+      clack.cancel('Operation cancelled.')
+      process.exit(0)
+    }
+
+    packageManager = pmChoice as PackageManager
   }
-  else {
-    throw new Error(`Unsupported package manager: ${pm}`)
+
+  // React 模板选择
+  const variant = await clack.select({
+    message: 'Select a variant:',
+    options: REACT_TEMPLATES.map(template => ({
+      value: template.name,
+      label: template.color(template.display),
+    })),
+  })
+
+  if (clack.isCancel(variant)) {
+    clack.cancel('Operation cancelled.')
+    process.exit(0)
   }
 
-  const projectDir = path.resolve(cwd, targetDir)
+  const template = variant as string
 
-  addDevDependency(projectDir, '@dev-to/react-plugin', 'latest')
+  // 询问是否使用 Rolldown（实验性）
+  const shouldUseRolldown = await clack.confirm({
+    message: 'Use Rolldown for bundling? (Experimental)',
+    initialValue: false,
+  })
 
-  const viteConfigPath = findViteConfigFile(projectDir)
+  if (clack.isCancel(shouldUseRolldown)) {
+    clack.cancel('Operation cancelled.')
+    process.exit(0)
+  }
+
+  const root = path.join(cwd, targetDir)
+
+  const spinner = clack.spinner()
+  spinner.start('Scaffolding project')
+
+  // 使用 degit 克隆模板
+  await cloneViteTemplate(template, root)
+
+  // 修改 package.json 名称
+  const pkgPath = path.join(root, 'package.json')
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+  pkg.name = toValidPackageName(getProjectName())
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
+
+  spinner.message('Adding @dev-to/react-plugin')
+
+  // 添加插件依赖
+  const pluginPackage = '@dev-to/react-plugin'
+  const pluginName = 'devToReactPlugin'
+  addDevDependency(root, pluginPackage, 'latest')
+
+  // 注入插件到 vite.config
+  const viteConfigPath = findViteConfigFile(root)
   if (viteConfigPath) {
     const original = fs.readFileSync(viteConfigPath, 'utf-8')
-    const next = injectDevToReactPluginIntoViteConfig(original)
-    fs.writeFileSync(viteConfigPath, next)
+    const patched = injectPluginIntoViteConfig(original, pluginPackage, pluginName)
+    fs.writeFileSync(viteConfigPath, patched)
+  }
+
+  spinner.stop('Project created')
+
+  // 询问是否立即安装
+  const shouldInstall = await clack.confirm({
+    message: 'Install dependencies and start dev server?',
+    initialValue: true,
+  })
+
+  if (clack.isCancel(shouldInstall)) {
+    // 用户取消
+  }
+
+  if (shouldInstall) {
+    const installSpinner = clack.spinner()
+    installSpinner.start('Installing dependencies')
+    await run(packageManager, ['install'], root)
+    installSpinner.stop('Dependencies installed')
+
+    const devSpinner = clack.spinner()
+    devSpinner.start('Starting dev server')
+
+    // 启动 dev server
+    const devArgs = packageManager === 'npm' ? ['run', 'dev'] : ['dev']
+    spawn(packageManager, devArgs, { cwd: root, stdio: 'inherit' })
   }
   else {
-    process.stderr.write(
-      `\n[create-react] Could not find vite.config.* in ${projectDir}. Please add @dev-to/react-plugin manually.\n`,
-    )
-  }
+    const pkgManager = packageManager || 'npm'
+    const cdPath = targetDir !== '.' ? `cd ${targetDir}` : null
+    const installCmd = PM_CONFIGS[pkgManager].install
+    const devCmd = PM_CONFIGS[pkgManager].dev
 
-  process.stdout.write(`\n[create-react] Done. Next:\n`)
-  process.stdout.write(`  cd ${targetDir}\n`)
-  process.stdout.write(`  pnpm install\n`)
-  process.stdout.write(`  pnpm dev\n`)
+    const nextSteps = [cdPath, installCmd, devCmd].filter(Boolean).join('\n  ')
+
+    clack.note(nextSteps, 'Next steps')
+    clack.outro('Done')
+  }
 }
 
-main().catch((err) => {
-  process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`)
-  process.exitCode = 1
+init().catch((e) => {
+  clack.log.error(red(e.message || e))
+  process.exit(1)
 })

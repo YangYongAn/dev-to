@@ -23,5 +23,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@clack/prompts": "^0.11.0",
+    "kolorist": "^1.8.0"
+  }
 }
