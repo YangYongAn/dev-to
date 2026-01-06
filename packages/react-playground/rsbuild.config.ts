@@ -8,6 +8,9 @@ export default defineConfig({
       index: './src/main.tsx',
     },
   },
+  output: {
+    assetPrefix: './',
+  },
   html: {
     template: './index.html',
   },
