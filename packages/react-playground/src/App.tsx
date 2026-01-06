@@ -12,7 +12,7 @@ export default function App() {
     <div style={{ padding: 24 }}>
       <h1 style={{ margin: 0, fontSize: 20 }}>@dev-to/react-playground</h1>
       <p style={{ margin: '8px 0 16px', color: '#475569' }}>
-        Rspack host app loading a remote component from Vite dev server.
+        Rsbuild host app loading a remote component from Vite dev server.
       </p>
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
