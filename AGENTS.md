@@ -78,6 +78,8 @@ cd packages/react-playground && pnpm dev   # Terminal 2 (port 8080)
 
 本仓库使用 **Conventional Commits** 并**强制要求 scope**，以支持 **per-package changelogs** (通过 Changesets 实现)。
 
+**重要**: Commit message **必须使用英文**。
+
 ### 格式
 
 ```
@@ -91,6 +93,7 @@ cd packages/react-playground && pnpm dev   # Terminal 2 (port 8080)
 - **type**: `feat` | `fix` | `perf` | `refactor` | `docs` | `test` | `build` | `ci` | `chore` | `revert`
 - **scope**: **必填**，使用下表中的包名或特殊 scope
 - **!** / **BREAKING CHANGE:** 标记破坏性变更（触发 major 版本升级）
+- **subject**: **必须使用英文**
 
 ### Scope 列表
 
