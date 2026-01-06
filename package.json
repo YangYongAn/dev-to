@@ -12,7 +12,10 @@
     "lint": "eslint . --cache --cache-location .cache/eslint/ --max-warnings=0",
     "lint:staged": "lint-staged",
     "test": "pnpm -r test",
-    "prepare": "husky"
+    "prepare": "husky",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "pnpm build && changeset publish"
   },
   "lint-staged": {
     "*.{js,mjs,ts,tsx}": [
@@ -20,6 +23,7 @@
     ]
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
     "@commitlint/cli": "^20.3.0",
     "@commitlint/config-conventional": "^20.3.0",
     "@eslint/js": "^9.3.0",

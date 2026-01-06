@@ -25,6 +25,14 @@
     "react-dom": ">=18.0.0",
     "typescript": ">=5.0.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YangYongAn/dev-to.git",
+    "directory": "packages/react-loader"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@dev-to/react-shared": "workspace:*"
   }

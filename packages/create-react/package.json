@@ -15,6 +15,14 @@
     "lint": "pnpm -w lint",
     "test": "echo 'test @dev-to/create-react'"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YangYongAn/dev-to.git",
+    "directory": "packages/create-react"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {}
 }
 
