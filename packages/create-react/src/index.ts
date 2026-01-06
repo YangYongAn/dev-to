@@ -394,8 +394,7 @@ async function init() {
     await run(packageManager, ['install'], root)
     installSpinner.stop('Dependencies installed')
 
-    const devSpinner = clack.spinner()
-    devSpinner.start('Starting dev server')
+    clack.log.info('Starting dev server...')
 
     // 启动 dev server
     const devArgs = packageManager === 'npm' ? ['run', 'dev'] : ['dev']

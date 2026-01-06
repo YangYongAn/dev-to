@@ -16,6 +16,7 @@ import { getLanIPv4Hosts } from './lan.js'
 import { toFsPathFromViteEntry } from './pathUtils.js'
 
 import { DEV_TO_REACT_DID_OPEN_BROWSER_KEY } from '@dev-to/react-shared'
+import pc from 'picocolors'
 
 import type { ViteDevServer } from 'vite'
 
@@ -136,8 +137,8 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
 
     info('')
     info(`${PLUGIN_LOG_PREFIX} Debug panel:`)
-    urls.forEach(u => info(`  ${u}`))
-    info(`  JSON: ${proto}://localhost:${port}${STABLE_DEBUG_JSON_PATH}`)
+    urls.forEach(u => info(`  ${pc.cyan(u)}`))
+    info(`  JSON: ${pc.cyan(`${proto}://localhost:${port}${STABLE_DEBUG_JSON_PATH}`)}`)
     info('')
 
     if (ctx.open && !didOpenBrowser) {
