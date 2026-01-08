@@ -68,6 +68,44 @@ export function createLoaderUmdWrapper(options: CreateLoaderUmdWrapperOptions): 
     contractEndpoint: ${JSON.stringify(contractEndpoint)},
 
     /**
+     * Load contract to get component mapping
+     */
+    _loadContract: function() {
+      if (this._contractPromise) {
+        return this._contractPromise;
+      }
+
+      var self = this;
+      this._contractPromise = import(this.origin + this.contractEndpoint)
+        .then(function(contractModule) {
+          return contractModule.DEV_TO_REACT_CONTRACT || contractModule.default;
+        })
+        .catch(function(error) {
+          console.error('${PLUGIN_LOG_PREFIX} Failed to load contract:', error);
+          throw error;
+        });
+
+      return this._contractPromise;
+    },
+
+    /**
+     * Resolve component entry path from contract
+     */
+    _resolveComponentPath: function(contract) {
+      var componentMap = contract.dev && contract.dev.componentMap;
+      if (!componentMap) {
+        throw new Error('${PLUGIN_LOG_PREFIX} No componentMap found in contract');
+      }
+
+      var entryPath = componentMap[this.componentName] || componentMap['*'];
+      if (!entryPath) {
+        throw new Error('${PLUGIN_LOG_PREFIX} Component "' + this.componentName + '" not found in componentMap');
+      }
+
+      return entryPath;
+    },
+
+    /**
      * Render the component into a target element
      */
     render: function(targetElement, props) {
@@ -79,12 +117,18 @@ export function createLoaderUmdWrapper(options: CreateLoaderUmdWrapperOptions): 
         throw new Error('${PLUGIN_LOG_PREFIX} React is not loaded');
       }
 
-      // Dynamically import the component from the Vite dev server
-      return import(self.origin + '/' + self.componentName + '.tsx')
+      // Load contract first to get correct component path
+      return this._loadContract()
+        .then(function(contract) {
+          var componentPath = self._resolveComponentPath(contract);
+
+          // Import the component from resolved path
+          return import(self.origin + componentPath);
+        })
         .then(function(module) {
           var Component = module.default || module[self.componentName];
           if (!Component) {
-            throw new Error('${PLUGIN_LOG_PREFIX} Component not found in ' + self.componentName);
+            throw new Error('${PLUGIN_LOG_PREFIX} Component not found in module');
           }
 
           // Render using the appropriate API
