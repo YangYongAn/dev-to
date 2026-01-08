@@ -40,7 +40,9 @@ export default defineConfig({
           jsc: {
             transform: {
               react: {
-                runtime: 'automatic',
+                runtime: 'classic', // Use classic JSX for UMD build
+                pragma: 'React.createElement',
+                pragmaFrag: 'React.Fragment',
               },
             },
           },

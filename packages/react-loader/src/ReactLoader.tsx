@@ -1,4 +1,4 @@
-import {
+import React, {
   useCallback,
   useEffect,
   useRef,
@@ -87,9 +87,7 @@ function isBridgeContract(value: unknown): value is DevToReactBridgeContract {
   const events = value['events']
 
   if (!isRecord(paths) || typeof paths['reactRuntime'] !== 'string') return false
-  if (!isRecord(events) || typeof events['fullReload'] !== 'string') return false
-
-  return true
+  return !(!isRecord(events) || typeof events['fullReload'] !== 'string')
 }
 
 function resolveContract(initModule: unknown): DevToReactBridgeContract {

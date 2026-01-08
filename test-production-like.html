@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Production-like Test</title>
+  <style>
+    body {
+      font-family: system-ui;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    .status {
+      margin: 1rem 0;
+      padding: 1rem;
+      background: white;
+      border-radius: 4px;
+      border-left: 4px solid #3b82f6;
+    }
+    .error {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+    .success {
+      border-color: #10b981;
+      background: #f0fdf4;
+    }
+    #app {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      min-height: 200px;
+    }
+  </style>
+</head>
+<body>
+  <h1>生产环境模拟测试</h1>
+  <div id="status" class="status">正在加载依赖...</div>
+  <div id="app">Loading component...</div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+
+    function updateStatus(message, type = 'info') {
+      statusEl.textContent = message;
+      statusEl.className = 'status ' + type;
+      console.log(`[${type.toUpperCase()}]`, message);
+    }
+
+    // 模拟动态加载脚本
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => {
+          console.log('✅ Loaded:', src);
+          resolve();
+        };
+        script.onerror = (err) => {
+          console.error('❌ Failed to load:', src, err);
+          reject(new Error(`Failed to load ${src}`));
+        };
+        if (src.includes('unpkg.com')) {
+          script.crossOrigin = 'anonymous';
+        }
+        document.head.appendChild(script);
+      });
+    }
+
+    async function init() {
+      try {
+        // Step 1: Load React
+        updateStatus('正在加载 React...');
+        await loadScript('https://unpkg.com/react@18/umd/react.production.min.js');
+
+        // Step 2: Load ReactDOM
+        updateStatus('正在加载 ReactDOM...');
+        await loadScript('https://unpkg.com/react-dom@18/umd/react-dom.production.min.js');
+
+        // Step 3: Load component wrapper (will auto-load react-loader)
+        updateStatus('正在加载组件包装器...');
+        await loadScript('http://localhost:5173/__dev_to_react__/loader/RemoteCard.js');
+
+        // Step 4: Check what's available
+        updateStatus('检查加载状态...');
+        console.log('window.React:', typeof window.React);
+        console.log('window.ReactDOM:', typeof window.ReactDOM);
+        console.log('window.RemoteCard:', typeof window.RemoteCard);
+        console.log('window.DevToReactLoader:', typeof window.DevToReactLoader);
+
+        if (!window.RemoteCard) {
+          throw new Error('RemoteCard not found');
+        }
+
+        // Step 5: Render component
+        updateStatus('正在渲染组件...');
+        const root = await window.RemoteCard.render(
+          document.getElementById('app'),
+          {
+            title: '生产环境测试',
+            description: '测试 UMD loader 在生产环境中的表现'
+          }
+        );
+
+        updateStatus('✅ 组件渲染成功！', 'success');
+        console.log('Root:', root);
+
+      } catch (error) {
+        updateStatus('❌ 错误: ' + error.message, 'error');
+        console.error('Error:', error);
+        document.getElementById('app').innerHTML =
+          '<div style="color: red; padding: 1rem;">' +
+          '<h3>Error</h3>' +
+          '<pre>' + error.stack + '</pre>' +
+          '</div>';
+      }
+    }
+
+    // Start loading when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import { exec } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import {
   PLUGIN_LOG_PREFIX,
@@ -271,6 +272,37 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
       return
     }
 
+    // Handle react-loader UMD endpoint: /__dev_to_react__/react-loader.js
+    // Serve local react-loader UMD build for testing (before publishing to npm)
+    if (pathname === `${STABLE_BASE_PATH}/react-loader.js`) {
+      try {
+        // Find react-loader package
+        const __filename = fileURLToPath(import.meta.url)
+        const __dirname = path.dirname(__filename)
+        const reactLoaderUmdPath = path.resolve(__dirname, '../../react-loader/dist/index.umd.js')
+
+        if (fs.existsSync(reactLoaderUmdPath)) {
+          const umdCode = fs.readFileSync(reactLoaderUmdPath, 'utf-8')
+          res.statusCode = 200
+          res.setHeader('Content-Type', 'application/javascript; charset=utf-8')
+          res.setHeader('Access-Control-Allow-Origin', '*')
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+          res.end(umdCode)
+          return
+        }
+        else {
+          res.statusCode = 404
+          res.end(`react-loader UMD not found at ${reactLoaderUmdPath}. Run 'pnpm build' in react-loader package.`)
+          return
+        }
+      }
+      catch (error) {
+        res.statusCode = 500
+        res.end(`Error loading react-loader UMD: ${error}`)
+        return
+      }
+    }
+
     // Handle loader endpoint: /__dev_to_react__/loader/{ComponentName}.js
     // Returns a lightweight UMD wrapper that uses ReactLoader to load the component
     if (pathname.startsWith(STABLE_LOADER_BASE_PATH)) {
@@ -293,10 +325,12 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
           : `${proto}://localhost${actualPort ? `:${actualPort}` : ''}`
 
         // Generate UMD wrapper code (synchronous, no compilation needed)
+        // In dev environment, use local react-loader UMD for testing before publishing
         const code = createLoaderUmdWrapper({
           componentName,
           origin,
           contractEndpoint: STABLE_CONTRACT_PATH,
+          reactLoaderUrl: `${origin}${STABLE_BASE_PATH}/react-loader.js`, // Use local UMD for testing
         })
 
         res.statusCode = 200

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>本地开发测试 - 验证 Classic JSX 修复</title>
+  <style>
+    * { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: white;
+      padding: 2rem;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { color: #7c3aed; margin-bottom: 1rem; }
+    .info {
+      background: #1e293b;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      border-left: 4px solid #7c3aed;
+    }
+    .steps {
+      background: #1e293b;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+    .step {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 4px;
+    }
+    .step.done { background: rgba(16, 185, 129, 0.1); }
+    .step.done::before { content: "✅ "; }
+    .step.error { background: rgba(239, 68, 68, 0.1); }
+    .step.error::before { content: "❌ "; }
+    .step.loading { background: rgba(59, 130, 246, 0.1); }
+    .step.loading::before { content: "⏳ "; }
+    #app {
+      background: #1e293b;
+      padding: 2rem;
+      border-radius: 8px;
+      min-height: 300px;
+      margin-top: 2rem;
+    }
+    code {
+      background: #0f172a;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+    .console {
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 0.85em;
+    }
+    .console-log { color: #94a3b8; }
+    .console-error { color: #ef4444; }
+    .console-success { color: #10b981; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 本地开发测试</h1>
+
+    <div class="info">
+      <h2>验证 JSX Classic Transform 修复</h2>
+      <p>这个测试验证了以下修改：</p>
+      <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+        <li>✅ react-loader UMD 使用 classic JSX transform (<code>React.createElement</code>)</li>
+        <li>✅ UMD wrapper 自动加载本地 react-loader</li>
+        <li>✅ 修复了 React Error #130（invalid element type）</li>
+      </ul>
+    </div>
+
+    <div class="steps">
+      <div class="step loading" id="step1">加载 React...</div>
+      <div class="step" id="step2">加载 ReactDOM...</div>
+      <div class="step" id="step3">加载组件包装器...</div>
+      <div class="step" id="step4">渲染组件...</div>
+    </div>
+
+    <div id="app">Loading component...</div>
+
+    <div class="console" id="console"></div>
+  </div>
+
+  <script>
+    const console_el = document.getElementById('console');
+    const orig_log = console.log;
+    const orig_error = console.error;
+
+    function log(type, ...args) {
+      const msg = args.map(a => typeof a === 'string' ? a : JSON.stringify(a, null, 2)).join(' ');
+      const el = document.createElement('div');
+      el.className = `console-${type}`;
+      el.textContent = `[${type.toUpperCase()}] ${msg}`;
+      console_el.appendChild(el);
+      console_el.scrollTop = console_el.scrollHeight;
+    }
+
+    console.log = (...args) => {
+      orig_log(...args);
+      log('log', ...args);
+    };
+
+    console.error = (...args) => {
+      orig_error(...args);
+      log('error', ...args);
+    };
+
+    function updateStep(n, status, message) {
+      const step = document.getElementById(`step${n}`);
+      step.className = `step ${status}`;
+      if (message) step.textContent += ` ${message}`;
+      if (status === 'done') {
+        if (n < 4) document.getElementById(`step${n + 1}`).className = 'step loading';
+      }
+    }
+
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.crossOrigin = 'anonymous';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error(`Failed to load: ${src}`));
+        document.head.appendChild(script);
+      });
+    }
+
+    (async () => {
+      try {
+        // Step 1
+        console.log('🔄 加载 React...');
+        await loadScript('https://unpkg.com/react@18/umd/react.production.min.js');
+        updateStep(1, 'done');
+        console.log('✅ React 加载成功');
+
+        // Step 2
+        console.log('🔄 加载 ReactDOM...');
+        await loadScript('https://unpkg.com/react-dom@18/umd/react-dom.production.min.js');
+        updateStep(2, 'done');
+        console.log('✅ ReactDOM 加载成功');
+
+        // Step 3
+        console.log('🔄 加载组件包装器...');
+        console.log('   自动加载本地 react-loader: http://localhost:5173/__dev_to_react__/react-loader.js');
+        await loadScript('http://localhost:5173/__dev_to_react__/loader/RemoteCard.js');
+        updateStep(3, 'done');
+        console.log('✅ 组件包装器加载成功');
+
+        // Debug info
+        console.log('=== 环境信息 ===');
+        console.log('window.React:', typeof window.React);
+        console.log('window.ReactDOM:', typeof window.ReactDOM);
+        console.log('window.RemoteCard:', typeof window.RemoteCard);
+        console.log('window.DevToReactLoader:', typeof window.DevToReactLoader);
+
+        if (window.DevToReactLoader) {
+          console.log('DevToReactLoader exports:', Object.keys(window.DevToReactLoader));
+          console.log('DevToReactLoader.ReactLoader:', typeof window.DevToReactLoader.ReactLoader);
+        }
+
+        // Step 4
+        console.log('🔄 正在渲染组件（自动加载 react-loader）...');
+        const root = await window.RemoteCard.render(
+          document.getElementById('app'),
+          {
+            title: '测试组件',
+            description: '这是一个测试渲染'
+          }
+        );
+
+        updateStep(4, 'done', '渲染成功！');
+        console.log('✅ 组件渲染成功！');
+        console.log('Root:', root);
+
+      } catch (error) {
+        console.error('❌ 出错了:', error.message);
+        console.error('Stack:', error.stack);
+
+        const stepNum = document.querySelector('.step.loading');
+        if (stepNum) {
+          const num = stepNum.id.replace('step', '');
+          updateStep(num, 'error', error.message);
+        }
+
+        document.getElementById('app').innerHTML =
+          `<div style="color: #ef4444; padding: 1rem;">
+            <h3>❌ 错误：${error.message}</h3>
+            <pre style="margin-top: 1rem; overflow-x: auto; font-size: 0.85em;">${error.stack}</pre>
+          </div>`;
+      }
+    })();
+  </script>
+</body>
+</html>

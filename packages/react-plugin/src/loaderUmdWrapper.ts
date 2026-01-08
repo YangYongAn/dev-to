@@ -5,6 +5,7 @@ interface CreateLoaderUmdWrapperOptions {
   componentName: string
   origin: string
   contractEndpoint?: string
+  reactLoaderUrl?: string
 }
 
 /**
@@ -12,7 +13,12 @@ interface CreateLoaderUmdWrapperOptions {
  * This wrapper depends on react-loader UMD build being available.
  */
 export function createLoaderUmdWrapper(options: CreateLoaderUmdWrapperOptions): string {
-  const { componentName, origin, contractEndpoint = STABLE_CONTRACT_PATH } = options
+  const {
+    componentName,
+    origin,
+    contractEndpoint = STABLE_CONTRACT_PATH,
+    reactLoaderUrl = 'https://cdn.jsdelivr.net/npm/@dev-to/react-loader@latest/dist/index.umd.js',
+  } = options
   const globalName = toSafeUmdName(componentName)
 
   // Generate UMD wrapper code
@@ -92,9 +98,9 @@ export function createLoaderUmdWrapper(options: CreateLoaderUmdWrapperOptions): 
           return Promise.resolve();
         }
 
-        // If not available, load it from CDN
-        console.log('${PLUGIN_LOG_PREFIX} Loading @dev-to/react-loader from CDN...');
-        return loadScript('https://cdn.jsdelivr.net/npm/@dev-to/react-loader@latest/dist/index.umd.js')
+        // If not available, load it from URL
+        console.log('${PLUGIN_LOG_PREFIX} Loading @dev-to/react-loader...');
+        return loadScript(${JSON.stringify(reactLoaderUrl)})
           .then(function() {
             if (typeof window !== 'undefined' && window.DevToReactLoader && window.DevToReactLoader.ReactLoader) {
               ReactLoader = window.DevToReactLoader.ReactLoader;
