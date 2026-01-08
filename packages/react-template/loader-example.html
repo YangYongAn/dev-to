@@ -45,8 +45,8 @@
     <p>This page demonstrates loading a React component using the UMD loader endpoint:</p>
     <code>http://localhost:5173/__dev_to_react__/loader/RemoteCard.js</code>
     <p style="margin-top: 1rem; color: #94a3b8; font-size: 0.9em;">
-      The loader dynamically imports and renders the component from Vite dev server.
-      No external dependencies required besides React/ReactDOM!
+      The loader uses @dev-to/react-loader (from CDN) to dynamically load and render
+      the component from Vite dev server.
     </p>
   </div>
 
@@ -58,10 +58,13 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-  <!-- Step 2: Load the component UMD wrapper -->
+  <!-- Step 2: Load ReactLoader from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@dev-to/react-loader@latest/dist/index.umd.js"></script>
+
+  <!-- Step 3: Load the component UMD wrapper -->
   <script src="http://localhost:5173/__dev_to_react__/loader/RemoteCard.js"></script>
 
-  <!-- Step 3: Render the component -->
+  <!-- Step 4: Render the component -->
   <script>
     (function() {
       // Wait for DOM to be ready
@@ -75,19 +78,14 @@
         try {
           var rootElement = document.getElementById('root');
 
-          // Use the render method provided by the loader
+          // Use the render method provided by the loader (powered by ReactLoader)
           window.RemoteCard.render(rootElement, {
             // Add any props your component needs here
-          })
-            .then(function(result) {
-              console.log('✅ Component rendered successfully!', result);
-            })
-            .catch(function(error) {
-              console.error('❌ Failed to render component:', error);
-            });
+          });
 
+          console.log('✅ Component rendered successfully!');
         } catch (error) {
-          console.error('❌ Failed to initialize:', error);
+          console.error('❌ Failed to render component:', error);
           document.getElementById('root').innerHTML =
             '<div class="loading" style="color: #ef4444;">Error: ' + error.message + '</div>';
         }
