@@ -39,10 +39,15 @@
 ```
 Try GitHub (vitejs/vite)
   ↓ if fails
-Try Gitee Mirror (mirrors/ViteJS)
+Try Gitee Mirror (https://gitee.com/mirrors/ViteJS)
   ↓ if fails
 Show detailed error with all attempts
 ```
+
+### Important: Gitee URL Format
+Degit defaults to GitHub when given short repo paths (owner/repo format).
+For Gitee, we provide the complete HTTPS URL so degit correctly routes to
+the Gitee platform instead of attempting GitHub's domain.
 
 ### Command Mapping
 Each package manager is mapped to its native package execution tool:
