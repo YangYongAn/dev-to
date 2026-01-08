@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Syntax Test - Hello Component</title>
+</head>
+<body>
+  <h1>Testing UMD Loader Syntax</h1>
+  <div id="status">Loading...</div>
+
+  <script>
+    // Test loading the Hello.js script
+    console.log('Loading Hello.js script...');
+
+    var script = document.createElement('script');
+    script.src = 'http://localhost:5173/__dev_to_react__/loader/Hello.js';
+
+    script.onload = function() {
+      console.log('✅ Script loaded successfully without syntax errors!');
+      document.getElementById('status').innerHTML = '✅ Script loaded successfully! Check console for details.';
+      console.log('window.Hello:', window.Hello);
+    };
+
+    script.onerror = function(error) {
+      console.error('❌ Script loading failed:', error);
+      document.getElementById('status').innerHTML = '❌ Script loading failed! Check console for errors.';
+    };
+
+    document.head.appendChild(script);
+  </script>
+</body>
+</html>

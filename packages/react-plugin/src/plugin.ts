@@ -258,7 +258,7 @@ export const devToReactPlugin = (
       }
       installDebugTools(
         server,
-        { contract, stats, audit: resolvedConfig.audit, open: options.open },
+        { contract, stats, audit: resolvedConfig.audit, resolvedConfig, configDir, open: options.open },
         debugState,
       )
     },

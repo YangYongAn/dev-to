@@ -16,6 +16,7 @@ export const DEV_TO_REACT_INIT_PATH = `${DEV_TO_REACT_BASE_PATH}/init.js` as con
 export const DEV_TO_REACT_REACT_RUNTIME_PATH = `${DEV_TO_REACT_BASE_PATH}/react-runtime.js` as const
 export const DEV_TO_REACT_DEBUG_HTML_PATH = `${DEV_TO_REACT_BASE_PATH}/debug.html` as const
 export const DEV_TO_REACT_DEBUG_JSON_PATH = `${DEV_TO_REACT_BASE_PATH}/debug.json` as const
+export const DEV_TO_REACT_LOADER_BASE_PATH = `${DEV_TO_REACT_BASE_PATH}/loader` as const
 
 /** Events dispatched by the bridge runtime (`init.js`). */
 export const DEV_TO_REACT_EVENT_FULL_RELOAD = `${DEV_TO_REACT_NAMESPACE}:full-reload` as const

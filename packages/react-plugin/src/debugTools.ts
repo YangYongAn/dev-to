@@ -9,6 +9,7 @@ import {
   STABLE_DEBUG_HTML_PATH,
   STABLE_DEBUG_JSON_PATH,
   STABLE_INIT_PATH,
+  STABLE_LOADER_BASE_PATH,
   STABLE_REACT_RUNTIME_PATH,
 } from './constants.js'
 import { renderDebugHtml } from './debugHtml.js'
@@ -20,12 +21,15 @@ import pc from 'picocolors'
 
 import type { ViteDevServer } from 'vite'
 
-import type { BridgeContract, BridgeStats, DebugStartupState, DevComponentAudit } from './types.js'
+import type { BridgeContract, BridgeStats, DebugStartupState, DevComponentAudit, ResolvedDevComponentConfig } from './types.js'
+import { createLoaderUmdWrapper } from './loaderUmdWrapper.js'
 
 export interface DebugToolsContext {
   contract: BridgeContract
   stats: BridgeStats
   audit: DevComponentAudit
+  resolvedConfig: ResolvedDevComponentConfig
+  configDir: string
   open?: boolean
 }
 
@@ -265,6 +269,43 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
         ),
       )
       return
+    }
+
+    // Handle loader endpoint: /__dev_to_react__/loader/{ComponentName}.js
+    // Returns a lightweight UMD wrapper that uses ReactLoader to load the component
+    if (pathname.startsWith(STABLE_LOADER_BASE_PATH)) {
+      const loaderPathPattern = new RegExp(`^${STABLE_LOADER_BASE_PATH}/([^/]+)\\.js$`)
+      const match = pathname.match(loaderPathPattern)
+
+      if (match) {
+        const componentName = match[1]
+
+        // Get server origin
+        const isHttps = !!server.config.server.https
+        const proto = isHttps ? 'https' : 'http'
+        const hostHeader = String(req.headers.host || '')
+        const addr = server.httpServer?.address()
+        const actualPort = addr && typeof addr === 'object' ? addr.port : undefined
+
+        // Prefer host header, fallback to localhost
+        const origin = hostHeader
+          ? `${proto}://${hostHeader}`
+          : `${proto}://localhost${actualPort ? `:${actualPort}` : ''}`
+
+        // Generate UMD wrapper code (synchronous, no compilation needed)
+        const code = createLoaderUmdWrapper({
+          componentName,
+          origin,
+          contractEndpoint: STABLE_CONTRACT_PATH,
+        })
+
+        res.statusCode = 200
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8')
+        res.setHeader('Access-Control-Allow-Origin', '*')
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        res.end(code)
+        return
+      }
     }
 
     if (url.startsWith(STABLE_DEBUG_HTML_PATH)) {
