@@ -33,14 +33,33 @@ const REACT_TEMPLATES = [
   },
 ] as const
 
-const TEMPLATE_SOURCES = [
+type TemplateSource = {
+  name: string
+  getCloneCommand: (template: string, targetDir: string) => { command: string, args: string[] }
+  isGitBased?: boolean
+}
+
+const TEMPLATE_SOURCES: TemplateSource[] = [
   {
     name: 'GitHub',
-    repoPattern: (template: string) => `vitejs/vite/packages/create-vite/template-${template}`,
+    getCloneCommand: (template: string, targetDir: string) => ({
+      command: 'npx',
+      args: ['degit', `vitejs/vite/packages/create-vite/template-${template}`, targetDir, '--force'],
+    }),
   },
   {
     name: 'Gitee Mirror (国内镜像)',
-    repoPattern: (template: string) => `https://gitee.com/mirrors/ViteJS/packages/create-vite/template-${template}`,
+    isGitBased: true,
+    getCloneCommand: (_template: string, targetDir: string) => ({
+      command: 'git',
+      args: [
+        'clone',
+        '--depth',
+        '1',
+        'https://gitee.com/mirrors/ViteJS.git',
+        targetDir,
+      ],
+    }),
   },
 ] as const
 
@@ -156,38 +175,11 @@ function findViteConfigFile(projectDir: string): string | null {
 
 type Spinner = ReturnType<typeof clack.spinner>
 
-function getDegitCommand(pm: PackageManager): { command: string, args: (repo: string, dir: string) => string[] } {
-  switch (pm) {
-    case 'pnpm':
-      return {
-        command: 'pnpx',
-        args: (repo, dir) => ['degit', repo, dir, '--force'],
-      }
-    case 'npm':
-      return {
-        command: 'npx',
-        args: (repo, dir) => ['degit', repo, dir, '--force'],
-      }
-    case 'yarn':
-      return {
-        command: 'yarn',
-        args: (repo, dir) => ['dlx', 'degit', repo, dir, '--force'],
-      }
-    case 'bun':
-      return {
-        command: 'bunx',
-        args: (repo, dir) => ['degit', repo, dir, '--force'],
-      }
-  }
-}
-
 async function cloneViteTemplate(template: string, targetDir: string, packageManager: PackageManager, spinner: Spinner) {
   const errors: Array<{ source: string, error: string }> = []
-  const { command, args } = getDegitCommand(packageManager)
 
   for (let i = 0; i < TEMPLATE_SOURCES.length; i++) {
     const source = TEMPLATE_SOURCES[i]
-    const templateRepo = source.repoPattern(template)
 
     try {
       // Show which source we're trying
@@ -195,7 +187,37 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
         spinner.message(`Trying ${source.name}...`)
       }
 
-      await run(command, args(templateRepo, targetDir), process.cwd())
+      const { command, args } = source.getCloneCommand(template, targetDir)
+
+      // For git-based sources, we need special handling
+      if (source.isGitBased) {
+        // Clone the entire repo to target directory
+        await run(command, args, process.cwd())
+
+        // Extract the template folder from the cloned repo
+        const templateSrcPath = path.join(targetDir, 'packages/create-vite', `template-${template}`)
+
+        if (!fs.existsSync(templateSrcPath)) {
+          throw new Error(
+            `Template not found at ${templateSrcPath}. The repository structure may have changed.`,
+          )
+        }
+
+        // Move the template files to a temp location
+        const tempTargetDir = path.join(process.cwd(), `.tmp-template-${Date.now()}`)
+        copyDir(templateSrcPath, tempTargetDir)
+
+        // Clean up the cloned repo
+        fs.rmSync(targetDir, { recursive: true, force: true })
+        // Move the template to the final location
+        fs.renameSync(tempTargetDir, targetDir)
+      }
+      else {
+        // For degit sources, use the appropriate package manager
+        const pmCommand = getDegitCommandForPM(packageManager)
+        await run(pmCommand.command, pmCommand.args(command, args), process.cwd())
+      }
+
       return
     }
     catch (error) {
@@ -216,6 +238,31 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
         )
       }
     }
+  }
+}
+
+function getDegitCommandForPM(pm: PackageManager): { command: string, args: (cmd: string, cmdArgs: string[]) => string[] } {
+  switch (pm) {
+    case 'pnpm':
+      return {
+        command: 'pnpx',
+        args: (cmd, cmdArgs) => [cmd, ...cmdArgs],
+      }
+    case 'npm':
+      return {
+        command: 'npx',
+        args: (cmd, cmdArgs) => [cmd, ...cmdArgs],
+      }
+    case 'yarn':
+      return {
+        command: 'yarn',
+        args: (cmd, cmdArgs) => ['dlx', cmd, ...cmdArgs],
+      }
+    case 'bun':
+      return {
+        command: 'bunx',
+        args: (cmd, cmdArgs) => [cmd, ...cmdArgs],
+      }
   }
 }
 
