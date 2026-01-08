@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { pathToFileURL } from 'node:url'
 
 import ts from 'typescript'
 import { mergeConfig, type ConfigEnv, type UserConfig } from 'vite'
@@ -246,8 +245,8 @@ export function generateLibVirtualEntryCode(params: {
     )
   }
 
-  // 使用 file:// 绝对路径，避免相对虚拟模块路径解析失败
-  const importTarget = pathToFileURL(actualFile).href
+  // Use absolute path directly for Rollup to resolve
+  const importTarget = actualFile
 
   // 分析导出
   let exports: { hasDefault: boolean, namedExports: string[] }
