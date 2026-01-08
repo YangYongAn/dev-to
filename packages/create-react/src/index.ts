@@ -40,7 +40,7 @@ const TEMPLATE_SOURCES = [
   },
   {
     name: 'Gitee Mirror (国内镜像)',
-    repoPattern: (template: string) => `mirrors/ViteJS/packages/create-vite/template-${template}`,
+    repoPattern: (template: string) => `https://gitee.com/mirrors/ViteJS/packages/create-vite/template-${template}`,
   },
 ] as const
 
