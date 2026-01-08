@@ -1,8 +1,8 @@
-# @dev-to/react-plugin
+# @dev-to/react-template
 
-## 0.2.0
+## 0.0.1
 
-### Minor Changes
+### Patch Changes
 
 - c9f78dd: # UMD Loader Endpoint and Smart Dependency Loading
 
@@ -29,32 +29,3 @@
   - Add smart dependency detection in loader example
   - Automatically check if React/ReactDOM already loaded before loading from CDN
   - Improve example with promise-based sequential loading and better error handling
-
-- d1c6837: fix(react-plugin): use absolute paths instead of file:// URLs for imports
-
-### Patch Changes
-
-- Updated dependencies [c9f78dd]
-  - @dev-to/react-shared@0.1.1
-
-## 0.1.1
-
-### Patch Changes
-
-- 0233a3b: fix: add colored URL output in terminal
-
-  - Use picocolors to highlight debug panel URLs in cyan, matching Vite's output style
-  - Remove dev server spinner to prevent output interference
-
-## 0.1.0
-
-### Minor Changes
-
-- 59a4c44: initial release
-
-### Patch Changes
-
-- 94802f5: setup automated release workflow with changesets
-- Updated dependencies [59a4c44]
-- Updated dependencies [94802f5]
-  - @dev-to/react-shared@0.1.0
