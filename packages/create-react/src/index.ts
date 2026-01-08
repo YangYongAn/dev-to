@@ -33,6 +33,17 @@ const REACT_TEMPLATES = [
   },
 ] as const
 
+const TEMPLATE_SOURCES = [
+  {
+    name: 'GitHub',
+    repoPattern: (template: string) => `vitejs/vite/packages/create-vite/template-${template}`,
+  },
+  {
+    name: 'Gitee Mirror (国内镜像)',
+    repoPattern: (template: string) => `mirrors/ViteJS/packages/create-vite/template-${template}`,
+  },
+] as const
+
 const PM_CONFIGS = {
   pnpm: {
     install: 'pnpm install',
@@ -143,14 +154,42 @@ function findViteConfigFile(projectDir: string): string | null {
   return null
 }
 
-async function cloneViteTemplate(template: string, targetDir: string) {
-  const templateRepo = `vitejs/vite/packages/create-vite/template-${template}`
+type Spinner = ReturnType<typeof clack.spinner>
 
-  try {
-    await run('npx', ['degit', templateRepo, targetDir, '--force'], process.cwd())
-  }
-  catch (error) {
-    throw new Error(`Failed to clone template: ${error instanceof Error ? error.message : String(error)}`)
+async function cloneViteTemplate(template: string, targetDir: string, spinner: Spinner) {
+  const errors: Array<{ source: string, error: string }> = []
+
+  for (let i = 0; i < TEMPLATE_SOURCES.length; i++) {
+    const source = TEMPLATE_SOURCES[i]
+    const templateRepo = source.repoPattern(template)
+
+    try {
+      // Show which source we're trying
+      if (i > 0) {
+        spinner.message(`Trying ${source.name}...`)
+      }
+
+      await run('npx', ['degit', templateRepo, targetDir, '--force'], process.cwd())
+      return
+    }
+    catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      errors.push({ source: source.name, error: errorMsg })
+
+      if (i < TEMPLATE_SOURCES.length - 1) {
+        // Not the last source, will try next one
+        spinner.message(`${source.name} failed, trying ${TEMPLATE_SOURCES[i + 1].name}...`)
+      }
+      else {
+        // This is the last source, throw comprehensive error
+        const errorDetails = errors
+          .map(e => `  • ${e.source}: ${e.error}`)
+          .join('\n')
+        throw new Error(
+          `Failed to clone template from all sources:\n${errorDetails}\n\nPlease check your network connection or try again later.`,
+        )
+      }
+    }
   }
 }
 
@@ -353,7 +392,7 @@ async function init() {
   spinner.start('Scaffolding project')
 
   // 使用 degit 克隆模板
-  await cloneViteTemplate(template, root)
+  await cloneViteTemplate(template, root, spinner)
 
   // 修改 package.json 名称
   const pkgPath = path.join(root, 'package.json')
