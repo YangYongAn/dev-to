@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto-Load Test - Without Pre-loading ReactLoader</title>
+  <style>
+    body {
+      font-family: system-ui;
+      padding: 2rem;
+      background: #0f172a;
+      color: white;
+    }
+    h1 { color: #7c3aed; }
+    #root {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #1e293b;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Auto-Load Test</h1>
+  <p>This page tests automatic loading of ReactLoader when it's not pre-loaded.</p>
+  <p><strong>Expected behavior:</strong> ReactLoader should be automatically loaded from CDN.</p>
+
+  <div id="root">Loading...</div>
+
+  <!-- Load React -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- NOTE: We deliberately do NOT load ReactLoader here to test auto-loading -->
+
+  <!-- Load component wrapper -->
+  <script src="http://localhost:5173/__dev_to_react__/loader/RemoteCard.js"></script>
+
+  <!-- Render -->
+  <script>
+    console.log('=== Auto-load Test ===');
+    console.log('window.React:', typeof window.React);
+    console.log('window.ReactDOM:', typeof window.ReactDOM);
+    console.log('window.DevToReactLoader:', typeof window.DevToReactLoader, '(should be undefined before render)');
+
+    if (window.RemoteCard) {
+      console.log('RemoteCard loaded, attempting render...');
+
+      window.RemoteCard.render(document.getElementById('root'), {
+        title: 'Auto-loaded Component',
+        description: 'ReactLoader was automatically loaded from CDN'
+      }).then(function(root) {
+        console.log('✅ Render successful!');
+        console.log('window.DevToReactLoader:', typeof window.DevToReactLoader, '(should be object now)');
+      }).catch(function(error) {
+        console.error('❌ Render failed:', error);
+        document.getElementById('root').innerHTML =
+          '<div style="color: #ef4444;">Error: ' + error.message + '</div>';
+      });
+    } else {
+      console.error('❌ RemoteCard not loaded');
+    }
+  </script>
+</body>
+</html>

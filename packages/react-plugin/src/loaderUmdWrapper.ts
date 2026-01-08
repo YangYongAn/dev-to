@@ -34,14 +34,20 @@ export function createLoaderUmdWrapper(options: CreateLoaderUmdWrapperOptions): 
  * 3. Load this wrapper:
  *    <script src="${origin}/__dev_to_react__/loader/${componentName}.js"></script>
  *
- * 4. Render the component:
+ * 4. Render the component (returns a Promise):
  *    <div id="app"></div>
  *    <script>
  *      window.${globalName}.render(
  *        document.getElementById('app'),
- *        { /* your props */ }
- *      );
+ *        { prop1: 'value1', prop2: 'value2' }
+ *      ).then(function(root) {
+ *        console.log('Component rendered successfully');
+ *      }).catch(function(error) {
+ *        console.error('Failed to render component:', error);
+ *      });
  *    </script>
+ *
+ * Note: ReactLoader will be automatically loaded from CDN if not already available.
  */
 (function (root, factory) {
   if (typeof exports === 'object' && typeof module !== 'undefined') {
@@ -58,15 +64,58 @@ export function createLoaderUmdWrapper(options: CreateLoaderUmdWrapperOptions): 
 })(this, function (exports, React, ReactDOM, ReactLoaderModule) {
   'use strict';
 
-  // Get ReactLoader component from the module
-  var ReactLoader = ReactLoaderModule && ReactLoaderModule.ReactLoader;
+  var ReactLoader = null;
+  var loadingPromise = null;
 
-  if (!ReactLoader) {
-    throw new Error(
-      '${PLUGIN_LOG_PREFIX} ReactLoader not found. ' +
-      'Please load @dev-to/react-loader before this script: ' +
-      '<script src="https://cdn.jsdelivr.net/npm/@dev-to/react-loader@latest/dist/index.umd.js"></script>'
-    );
+  // Helper function to load a script dynamically
+  function loadScript(src) {
+    return new Promise(function(resolve, reject) {
+      var script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  // Helper function to ensure ReactLoader is loaded
+  function ensureReactLoaderLoaded() {
+    if (ReactLoader) {
+      return Promise.resolve();
+    }
+
+    if (!loadingPromise) {
+      loadingPromise = (function() {
+        // First, try to get ReactLoader from the global scope
+        if (typeof window !== 'undefined' && window.DevToReactLoader && window.DevToReactLoader.ReactLoader) {
+          ReactLoader = window.DevToReactLoader.ReactLoader;
+          return Promise.resolve();
+        }
+
+        // If not available, load it from CDN
+        console.log('${PLUGIN_LOG_PREFIX} Loading @dev-to/react-loader from CDN...');
+        return loadScript('https://cdn.jsdelivr.net/npm/@dev-to/react-loader@latest/dist/index.umd.js')
+          .then(function() {
+            if (typeof window !== 'undefined' && window.DevToReactLoader && window.DevToReactLoader.ReactLoader) {
+              ReactLoader = window.DevToReactLoader.ReactLoader;
+              console.log('${PLUGIN_LOG_PREFIX} ReactLoader loaded successfully');
+            } else {
+              throw new Error('${PLUGIN_LOG_PREFIX} ReactLoader not found after loading');
+            }
+          })
+          .catch(function(error) {
+            console.error('${PLUGIN_LOG_PREFIX} Failed to load ReactLoader:', error);
+            throw error;
+          });
+      })();
+    }
+
+    return loadingPromise;
+  }
+
+  // Try to get ReactLoader from the module if available
+  if (ReactLoaderModule && ReactLoaderModule.ReactLoader) {
+    ReactLoader = ReactLoaderModule.ReactLoader;
   }
 
   // Component configuration
@@ -92,19 +141,26 @@ export function createLoaderUmdWrapper(options: CreateLoaderUmdWrapperOptions): 
       throw new Error('${PLUGIN_LOG_PREFIX} ReactDOM is not loaded');
     }
 
-    // Create ReactLoader component props
-    var loaderProps = {
-      origin: config.origin,
-      name: config.name,
-      contractEndpoint: config.contractEndpoint,
-      componentProps: componentProps || {}
-    };
+    // Ensure ReactLoader is available before rendering
+    return ensureReactLoaderLoaded().then(function() {
+      if (!ReactLoader) {
+        throw new Error('${PLUGIN_LOG_PREFIX} ReactLoader initialization failed');
+      }
 
-    // Render using ReactLoader
-    var root = ReactDOM.createRoot(targetElement);
-    root.render(React.createElement(ReactLoader, loaderProps));
+      // Create ReactLoader component props
+      var loaderProps = {
+        origin: config.origin,
+        name: config.name,
+        contractEndpoint: config.contractEndpoint,
+        componentProps: componentProps || {}
+      };
 
-    return root;
+      // Render using ReactLoader
+      var root = ReactDOM.createRoot(targetElement);
+      root.render(React.createElement(ReactLoader, loaderProps));
+
+      return root;
+    });
   }
 
   // Export the API

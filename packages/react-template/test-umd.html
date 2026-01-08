@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UMD Test - Direct Load</title>
+</head>
+<body>
+  <h1>UMD Loader Test</h1>
+  <div id="root">Loading...</div>
+
+  <!-- Load React -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Load ReactLoader from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@dev-to/react-loader@latest/dist/index.umd.js"></script>
+
+  <!-- Debug script to check what's loaded -->
+  <script>
+    console.log('=== Checking loaded dependencies ===');
+    console.log('window.React:', typeof window.React);
+    console.log('window.ReactDOM:', typeof window.ReactDOM);
+    console.log('window.DevToReactLoader:', typeof window.DevToReactLoader);
+
+    if (window.DevToReactLoader) {
+      console.log('DevToReactLoader keys:', Object.keys(window.DevToReactLoader));
+      console.log('DevToReactLoader.ReactLoader:', typeof window.DevToReactLoader.ReactLoader);
+    }
+  </script>
+
+  <!-- Load component wrapper -->
+  <script src="http://localhost:5173/__dev_to_react__/loader/RemoteCard.js"></script>
+
+  <!-- Render -->
+  <script>
+    console.log('=== Attempting to render ===');
+    console.log('window.RemoteCard:', typeof window.RemoteCard);
+
+    if (window.RemoteCard) {
+      console.log('RemoteCard keys:', Object.keys(window.RemoteCard));
+
+      window.RemoteCard.render(document.getElementById('root'), {
+        title: 'Test Component',
+        description: 'Testing UMD loader'
+      }).then(function(root) {
+        console.log('✅ Render successful, root:', root);
+      }).catch(function(error) {
+        console.error('❌ Render failed:', error);
+      });
+    }
+  </script>
+</body>
+</html>
