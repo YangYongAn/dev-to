@@ -35,17 +35,20 @@ const REACT_TEMPLATES = [
 
 type TemplateSource = {
   name: string
-  getCloneCommand: (template: string, targetDir: string) => { command: string, args: string[] }
+  getCloneCommand: (template: string, targetDir: string, packageManager: PackageManager) => { command: string, args: string[] }
   isGitBased?: boolean
 }
 
 const TEMPLATE_SOURCES: TemplateSource[] = [
   {
     name: 'GitHub',
-    getCloneCommand: (template: string, targetDir: string) => ({
-      command: 'npx',
-      args: ['degit', `vitejs/vite/packages/create-vite/template-${template}`, targetDir, '--force'],
-    }),
+    getCloneCommand: (template: string, targetDir: string, packageManager: PackageManager) => {
+      const pmCommand = getDegitCommandForPM(packageManager)
+      return {
+        command: pmCommand.command,
+        args: pmCommand.args('degit', [`vitejs/vite/packages/create-vite/template-${template}`, targetDir, '--force']),
+      }
+    },
   },
   {
     name: 'Gitee Mirror (国内镜像)',
@@ -187,7 +190,7 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
         spinner.message(`Trying ${source.name}...`)
       }
 
-      const { command, args } = source.getCloneCommand(template, targetDir)
+      const { command, args } = source.getCloneCommand(template, targetDir, packageManager)
 
       // For git-based sources, we need special handling
       if (source.isGitBased) {
@@ -213,9 +216,8 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
         fs.renameSync(tempTargetDir, targetDir)
       }
       else {
-        // For degit sources, use the appropriate package manager
-        const pmCommand = getDegitCommandForPM(packageManager)
-        await run(pmCommand.command, pmCommand.args(command, args), process.cwd())
+        // For degit sources, command and args are already properly formatted
+        await run(command, args, process.cwd())
       }
 
       return
