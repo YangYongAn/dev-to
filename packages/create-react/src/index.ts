@@ -156,8 +156,34 @@ function findViteConfigFile(projectDir: string): string | null {
 
 type Spinner = ReturnType<typeof clack.spinner>
 
-async function cloneViteTemplate(template: string, targetDir: string, spinner: Spinner) {
+function getDegitCommand(pm: PackageManager): { command: string, args: (repo: string, dir: string) => string[] } {
+  switch (pm) {
+    case 'pnpm':
+      return {
+        command: 'pnpx',
+        args: (repo, dir) => ['degit', repo, dir, '--force'],
+      }
+    case 'npm':
+      return {
+        command: 'npx',
+        args: (repo, dir) => ['degit', repo, dir, '--force'],
+      }
+    case 'yarn':
+      return {
+        command: 'yarn',
+        args: (repo, dir) => ['dlx', 'degit', repo, dir, '--force'],
+      }
+    case 'bun':
+      return {
+        command: 'bunx',
+        args: (repo, dir) => ['degit', repo, dir, '--force'],
+      }
+  }
+}
+
+async function cloneViteTemplate(template: string, targetDir: string, packageManager: PackageManager, spinner: Spinner) {
   const errors: Array<{ source: string, error: string }> = []
+  const { command, args } = getDegitCommand(packageManager)
 
   for (let i = 0; i < TEMPLATE_SOURCES.length; i++) {
     const source = TEMPLATE_SOURCES[i]
@@ -169,7 +195,7 @@ async function cloneViteTemplate(template: string, targetDir: string, spinner: S
         spinner.message(`Trying ${source.name}...`)
       }
 
-      await run('npx', ['degit', templateRepo, targetDir, '--force'], process.cwd())
+      await run(command, args(templateRepo, targetDir), process.cwd())
       return
     }
     catch (error) {
@@ -392,7 +418,7 @@ async function init() {
   spinner.start('Scaffolding project')
 
   // 使用 degit 克隆模板
-  await cloneViteTemplate(template, root, spinner)
+  await cloneViteTemplate(template, root, packageManager, spinner)
 
   // 修改 package.json 名称
   const pkgPath = path.join(root, 'package.json')
