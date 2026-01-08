@@ -2,13 +2,16 @@
 "@dev-to/create-react": patch
 ---
 
-# Fix Gitee URL Format for Degit Compatibility
+# Use Git Clone for Gitee Fallback Support
 
-Fixed the Gitee mirror URL to use complete HTTPS format instead of short owner/repo format.
+Replaced degit with native `git clone` for Gitee fallback, as degit does not support Gitee.
 
-Degit defaults to GitHub when given short repository paths (e.g., `owner/repo`).
-To properly route to Gitee, the complete URL including the host is required:
-`https://gitee.com/mirrors/ViteJS/packages/create-vite/template-{template}`
+**Problem:** Degit only supports GitHub, GitLab, Sourcehut, and BitBucket. When attempting
+to use degit with Gitee URLs, it throws `DegitError: degit supports GitHub, GitLab, Sourcehut and BitBucket`.
 
-This fix ensures that when GitHub is unavailable, the fallback to Gitee mirrors
-works correctly and users can successfully scaffold projects in network-restricted regions.
+**Solution:** Implement dual clone strategies:
+- **GitHub (Primary):** Continue using degit via the user's preferred package manager
+- **Gitee (Fallback):** Use native `git clone --depth 1` for efficient cloning
+
+The implementation extracts the template folder from the cloned repo structure,
+handling the different directory layouts between GitHub and Gitee mirrors.
