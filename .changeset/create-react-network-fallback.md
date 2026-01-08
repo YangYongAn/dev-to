@@ -56,10 +56,31 @@ User runs: pnpm create-react
 ```
 
 ### Implementation
+
+#### Source Configuration
 - `TEMPLATE_SOURCES` array defines available sources with their clone strategies
 - `isGitBased` flag distinguishes between degit and git-based sources
-- For git-based sources: extracts `packages/create-vite/template-{template}` subfolder
-- For degit sources: uses package manager-specific command runner
+- Each source's `getCloneCommand()` returns the command and arguments needed
+
+#### GitHub (Degit) Flow
+- Uses package manager-specific command runner (pnpx/npx/yarn dlx/bunx)
+- Returns already-formatted command and args
+- Direct execution without further wrapping
+
+#### Gitee (Git Clone) Flow
+- Uses native `git clone --depth 1` for efficient cloning
+- Two-stage temporary directories:
+  1. `tempCloneDir`: Staging area for git clone (avoids targetDir collision)
+  2. `tempTargetDir`: Intermediate extraction before final move
+- Extracts `packages/create-vite/template-{template}` subfolder
+- Proper cleanup on all error paths (extraction, file operations)
+- Uses `randomUUID()` for collision-free temporary directory names
+
+#### Error Handling
+- Nested try-catch for git-based sources to ensure tempCloneDir cleanup
+- Final catch block cleans up tempTargetDir on any failure
+- Prevents orphaned temporary directories in edge cases
+- Comprehensive error messages showing all attempted sources
 
 ## Backward Compatibility
 - No breaking changes to CLI interface
