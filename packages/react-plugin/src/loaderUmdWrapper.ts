@@ -126,9 +126,32 @@ export function createLoaderUmdWrapper(options: CreateLoaderUmdWrapperOptions): 
           return import(self.origin + componentPath);
         })
         .then(function(module) {
-          var Component = module.default || module[self.componentName];
+          // Try multiple ways to extract the component
+          var Component = module.default;
+
+          // If default is an object with the component name as a property
+          if (Component && typeof Component === 'object' && !Component.$$typeof) {
+            Component = Component[self.componentName] || Component;
+          }
+
+          // Try named export if default didn't work
+          if (!Component || !Component.$$typeof) {
+            Component = module[self.componentName];
+          }
+
+          // Validate component
           if (!Component) {
-            throw new Error('${PLUGIN_LOG_PREFIX} Component not found in module');
+            console.error('${PLUGIN_LOG_PREFIX} Module exports:', Object.keys(module));
+            throw new Error('${PLUGIN_LOG_PREFIX} Component not found in module. Available exports: ' + Object.keys(module).join(', '));
+          }
+
+          if (typeof Component !== 'function' && !Component.$$typeof) {
+            throw new Error('${PLUGIN_LOG_PREFIX} Component is not a valid React component. Got: ' + typeof Component);
+          }
+
+          // Ensure React is available in the global scope for automatic JSX runtime
+          if (typeof window !== 'undefined' && !window.React && React) {
+            window.React = React;
           }
 
           // Render using the appropriate API
