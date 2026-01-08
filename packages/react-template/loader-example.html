@@ -54,29 +54,83 @@
     <div class="loading">Loading component...</div>
   </div>
 
-  <!-- Step 1: Load React and ReactDOM -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-
-  <!-- Step 2: Load ReactLoader from CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@dev-to/react-loader@latest/dist/index.umd.js"></script>
-
-  <!-- Step 3: Load the component UMD wrapper -->
-  <script src="http://localhost:5173/__dev_to_react__/loader/RemoteCard.js"></script>
-
-  <!-- Step 4: Render the component -->
+  <!-- Smart loader: Only loads dependencies if not already present -->
   <script>
     (function() {
-      // Wait for DOM to be ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', renderComponent);
-      } else {
-        renderComponent();
+      // Helper function to load a script dynamically
+      function loadScript(src, attributes) {
+        return new Promise(function(resolve, reject) {
+          var script = document.createElement('script');
+          script.src = src;
+          script.onload = resolve;
+          script.onerror = reject;
+
+          if (attributes) {
+            Object.keys(attributes).forEach(function(key) {
+              script.setAttribute(key, attributes[key]);
+            });
+          }
+
+          document.head.appendChild(script);
+        });
       }
 
+      // Check and load dependencies
+      function loadDependencies() {
+        var promises = [];
+
+        // Step 1: Load React if not present
+        if (!window.React) {
+          console.log('🔄 Loading React...');
+          promises.push(
+            loadScript('https://unpkg.com/react@18/umd/react.development.js', { crossorigin: 'true' })
+              .then(function() { console.log('✅ React loaded'); })
+          );
+        } else {
+          console.log('✅ React already available');
+        }
+
+        // Step 2: Load ReactDOM if not present
+        if (!window.ReactDOM) {
+          console.log('🔄 Loading ReactDOM...');
+          promises.push(
+            loadScript('https://unpkg.com/react-dom@18/umd/react-dom.development.js', { crossorigin: 'true' })
+              .then(function() { console.log('✅ ReactDOM loaded'); })
+          );
+        } else {
+          console.log('✅ ReactDOM already available');
+        }
+
+        return Promise.all(promises);
+      }
+
+      // Load react-loader
+      function loadReactLoader() {
+        if (!window.DevToReactLoader) {
+          console.log('🔄 Loading ReactLoader...');
+          return loadScript('https://cdn.jsdelivr.net/npm/@dev-to/react-loader@latest/dist/index.umd.js')
+            .then(function() { console.log('✅ ReactLoader loaded'); });
+        } else {
+          console.log('✅ ReactLoader already available');
+          return Promise.resolve();
+        }
+      }
+
+      // Load component wrapper
+      function loadComponentWrapper() {
+        console.log('🔄 Loading RemoteCard wrapper...');
+        return loadScript('http://localhost:5173/__dev_to_react__/loader/RemoteCard.js')
+          .then(function() { console.log('✅ RemoteCard wrapper loaded'); });
+      }
+
+      // Render the component
       function renderComponent() {
         try {
           var rootElement = document.getElementById('root');
+
+          if (!window.RemoteCard) {
+            throw new Error('RemoteCard not loaded');
+          }
 
           // Use the render method provided by the loader (powered by ReactLoader)
           window.RemoteCard.render(rootElement, {
@@ -89,6 +143,31 @@
           document.getElementById('root').innerHTML =
             '<div class="loading" style="color: #ef4444;">Error: ' + error.message + '</div>';
         }
+      }
+
+      // Main execution flow
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          loadDependencies()
+            .then(loadReactLoader)
+            .then(loadComponentWrapper)
+            .then(renderComponent)
+            .catch(function(error) {
+              console.error('❌ Failed to load dependencies:', error);
+              document.getElementById('root').innerHTML =
+                '<div class="loading" style="color: #ef4444;">Error loading: ' + error.message + '</div>';
+            });
+        });
+      } else {
+        loadDependencies()
+          .then(loadReactLoader)
+          .then(loadComponentWrapper)
+          .then(renderComponent)
+          .catch(function(error) {
+            console.error('❌ Failed to load dependencies:', error);
+            document.getElementById('root').innerHTML =
+              '<div class="loading" style="color: #ef4444;">Error loading: ' + error.message + '</div>';
+          });
       }
     })();
   </script>
