@@ -298,18 +298,24 @@ export function renderDebugHtml(params: DebugHtmlRenderParams) {
               hasConfig
                 ? `
                 <table>
-                    <thead><tr><th>组件名称 <small class="muted">(Component Name)</small></th><th>映射入口 <small class="muted">(Short Path)</small></th></tr></thead>
+                    <thead><tr><th>组件名称 <small class="muted">(Component Name)</small></th><th>映射入口 <small class="muted">(Short Path)</small></th><th>包装地址 <small class="muted">(UMD Wrapper)</small></th></tr></thead>
                     <tbody>
                         ${Object.entries(resolvedDevComponentMap)
                           .map(([name, entry]) => {
                             const abs = entryPathMap[name]
                             const displayPath = abs ? getShortPath(abs) : entry
-                            return `<tr>
-                                <td><code class="code-name">${name}</code></td>
-                                <td>
-                                    ${abs ? `<a href="${toVsCodeUrl(abs)}" class="link-code" title="点击在 IDE 中打开"><code>${escapeHtml(displayPath)}</code></a>` : `<code>${escapeHtml(entry)}</code>`}
-                                </td>
-                            </tr>`
+                            const wrapperUrl = (originCandidates[0] || 'http://localhost:5173') + '/__dev_to_react__/loader/' + name + '.js'
+                            const entryHtml = abs ? '<a href="' + toVsCodeUrl(abs) + '" class="link-code" title="点击在 IDE 中打开"><code>' + escapeHtml(displayPath) + '</code></a>' : '<code>' + escapeHtml(entry) + '</code>'
+                            return '<tr>'
+                              + '<td><code class="code-name">' + name + '</code></td>'
+                              + '<td>' + entryHtml + '</td>'
+                              + '<td>'
+                              + '<div style="display: flex; align-items: center; gap: 6px;">'
+                              + '<code style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px;">' + escapeHtml(wrapperUrl) + '</code>'
+                              + '<button class="copy-wrapper-btn" data-url="' + wrapperUrl + '" style="padding: 2px 8px; font-size: 11px; border: 1px solid var(--b); background: #fff; border-radius: 4px; cursor: pointer; color: var(--t); transition: .2s;" title="复制包装地址">📋</button>'
+                              + '</div>'
+                              + '</td>'
+                              + '</tr>'
                           })
                           .join('')}
                     </tbody>
@@ -390,6 +396,56 @@ reactHmrHostPlugin(<span class="str">'Demo'</span>, { open: <span class="kw">tru
                             </ul>
                         </div>
                     </div>
+                </div>
+            </details>
+        </div>
+
+        <div class="card">
+            <h3>🎁 UMD 动态包装器 (Auto-Generated Wrapper)</h3>
+            <p class="muted">无需额外配置，每个组件都自动生成一个轻量级 UMD 包装器，可直接在无 React 框架支持的宿主环境中使用。</p>
+
+            <div class="info-grid">
+                <div class="info-label">端点:</div>
+                <div class="info-value"><code>/__dev_to_react__/loader/{ComponentName}.js</code></div>
+                <div class="info-label">作用:</div>
+                <div class="info-value">自动将组件导出为 React 组件实例，无需宿主集成 @dev-to/react-loader</div>
+                <div class="info-label">依赖:</div>
+                <div class="info-value"><code>react</code> &amp; <code>react-dom@18</code> (CDN 或本地)</div>
+            </div>
+
+            <details>
+                <summary>包装器工作原理与集成示例</summary>
+                <div style="margin-top: 12px;">
+                    <h4 style="color: var(--t); font-size: 14px; margin-top: 0; margin-bottom: 8px;">🔧 什么是包装器？</h4>
+                    <p class="muted" style="margin-bottom: 12px;">
+                        包装器是一个自动生成的 UMD 模块，它包装了原始的 render 函数并导出为 React 组件。
+                        这样，无论宿主是否集成了 ReactLoader，都能直接作为 React 组件使用。
+                    </p>
+
+                    <h4 style="color: var(--t); font-size: 14px; margin-top: 16px; margin-bottom: 8px;">📖 集成方式</h4>
+                    <pre style="font-size: 12px; line-height: 1.7;">
+<span class="cmt">// 1. 加载 React 和 ReactDOM</span>
+<span class="kw">&lt;script&gt;</span> <span class="kw">src</span>=<span class="str">"https://unpkg.com/react@18/umd/react.production.min.js"</span> <span class="kw">&lt;/script&gt;</span>
+<span class="kw">&lt;script&gt;</span> <span class="kw">src</span>=<span class="str">"https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"</span> <span class="kw">&lt;/script&gt;</span>
+
+<span class="cmt">// 2. 加载包装器脚本</span>
+<span class="kw">&lt;script&gt;</span> <span class="kw">src</span>=<span class="str">"\${originCandidates[0] || 'http://localhost:5173'}/__dev_to_react__/loader/{ComponentName}.js"</span> <span class="kw">&lt;/script&gt;</span>
+
+<span class="cmt">// 3. 直接作为 React 组件使用</span>
+<span class="kw">const</span> root = ReactDOM.createRoot(document.getElementById(<span class="str">'app'</span>));
+root.render(React.createElement(window.ComponentName, { prop1: <span class="str">'value1'</span> }));
+
+<span class="cmt">// 或在宿主 React 组件中使用</span>
+<span class="kw">const</span> Component = window.ComponentName;
+<span class="kw">&lt;&gt;</span>&lt;Component prop1=<span class="str">"value1"</span> /&gt;<span class="kw">&lt;/&gt;</span></pre>
+
+                    <h4 style="color: var(--t); font-size: 14px; margin-top: 16px; margin-bottom: 8px;">⚡ 关键特性</h4>
+                    <ul class="muted" style="margin: 8px 0; padding-left: 20px;">
+                        <li><b>零配置</b>：自动为每个组件生成包装器，无需手动编写</li>
+                        <li><b>兼容现有宿主</b>：支持 CommonJS、AMD、浏览器全局三种模式</li>
+                        <li><b>自动依赖管理</b>：若未加载 React，包装器会自动从 CDN 加载（可配置）</li>
+                        <li><b>轻量级</b>：仅包含加载逻辑，核心渲染由 ReactLoader 负责</li>
+                    </ul>
                 </div>
             </details>
         </div>
@@ -530,6 +586,27 @@ CSS: <span class="str">dist/&lt;name&gt;/&lt;name&gt;.css</span></pre>
             copyFullBtn.onclick = () => copy(fullCmdPreview.textContent, () => {
                 copyFullBtn.textContent = '✓ 已成功复制';
                 setTimeout(() => { copyFullBtn.textContent = '复制原始命令'; }, 2000);
+            });
+
+            // 绑定包装地址复制按钮事件
+            document.querySelectorAll('.copy-wrapper-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    const url = btn.getAttribute('data-url');
+                    copy(url, () => {
+                        const originalText = btn.textContent;
+                        btn.textContent = '✓';
+                        btn.style.borderColor = '#10b981';
+                        btn.style.color = '#10b981';
+                        setTimeout(() => {
+                            btn.textContent = originalText;
+                            btn.style.borderColor = '';
+                            btn.style.color = '';
+                        }, 1500);
+                    });
+                };
+                btn.onmouseover = () => { btn.style.borderColor = 'var(--p)'; btn.style.color = 'var(--p)'; };
+                btn.onmouseout = () => { btn.style.borderColor = ''; btn.style.color = ''; };
             });
 
             const serverActualPort = ${typeof actualPort === 'number' ? actualPort : 'null'};
