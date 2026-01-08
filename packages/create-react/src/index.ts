@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { spawn, execSync } from 'node:child_process'
 import process from 'node:process'
+import { randomUUID } from 'node:crypto'
 import * as clack from '@clack/prompts'
 import { red, cyan, yellow } from 'kolorist'
 
@@ -183,6 +184,7 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
 
   for (let i = 0; i < TEMPLATE_SOURCES.length; i++) {
     const source = TEMPLATE_SOURCES[i]
+    let tempTargetDir: string | null = null
 
     try {
       // Show which source we're trying
@@ -194,26 +196,41 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
 
       // For git-based sources, we need special handling
       if (source.isGitBased) {
-        // Clone the entire repo to target directory
-        await run(command, args, process.cwd())
+        // Create temp directory for cloning (git clone will create the target folder)
+        const tempCloneDir = path.join(process.cwd(), `.tmp-clone-${randomUUID()}`)
+        const cloneArgs = [...args.slice(0, -1), tempCloneDir] // Replace last arg (targetDir) with tempCloneDir
 
-        // Extract the template folder from the cloned repo
-        const templateSrcPath = path.join(targetDir, 'packages/create-vite', `template-${template}`)
+        // Clone the entire repo to temp directory
+        await run(command, cloneArgs, process.cwd())
 
-        if (!fs.existsSync(templateSrcPath)) {
-          throw new Error(
-            `Template not found at ${templateSrcPath}. The repository structure may have changed.`,
-          )
+        try {
+          // Extract the template folder from the cloned repo
+          const templateSrcPath = path.join(tempCloneDir, 'packages/create-vite', `template-${template}`)
+
+          if (!fs.existsSync(templateSrcPath)) {
+            throw new Error(
+              `Template not found at packages/create-vite/template-${template}. The repository structure may have changed.`,
+            )
+          }
+
+          // Move the template files to a temp location with unique name
+          tempTargetDir = path.join(process.cwd(), `.tmp-template-${randomUUID()}`)
+          copyDir(templateSrcPath, tempTargetDir)
+
+          // Clean up the cloned repo
+          fs.rmSync(tempCloneDir, { recursive: true, force: true })
+
+          // Move the template to the final location
+          fs.renameSync(tempTargetDir, targetDir)
+          tempTargetDir = null // Mark as successfully moved
         }
-
-        // Move the template files to a temp location
-        const tempTargetDir = path.join(process.cwd(), `.tmp-template-${Date.now()}`)
-        copyDir(templateSrcPath, tempTargetDir)
-
-        // Clean up the cloned repo
-        fs.rmSync(targetDir, { recursive: true, force: true })
-        // Move the template to the final location
-        fs.renameSync(tempTargetDir, targetDir)
+        catch (extractError) {
+          // Clean up temp clone directory on extraction error
+          if (fs.existsSync(tempCloneDir)) {
+            fs.rmSync(tempCloneDir, { recursive: true, force: true })
+          }
+          throw extractError
+        }
       }
       else {
         // For degit sources, command and args are already properly formatted
@@ -223,6 +240,11 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
       return
     }
     catch (error) {
+      // Clean up any temp directory on failure
+      if (tempTargetDir && fs.existsSync(tempTargetDir)) {
+        fs.rmSync(tempTargetDir, { recursive: true, force: true })
+      }
+
       const errorMsg = error instanceof Error ? error.message : String(error)
       errors.push({ source: source.name, error: errorMsg })
 
