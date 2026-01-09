@@ -28,7 +28,7 @@
 | **@dev-to/react-shared** | 0.1.0 | 桥接协议和常量定义 | TypeScript | 无依赖（基础层） |
 | **@dev-to/react-plugin** | 0.1.1 | Vite 插件（组件提供方） | Rslib, picocolors | 依赖 react-shared |
 | **@dev-to/react-loader** | 0.1.0 | 宿主侧加载器组件 | Rslib, React 18 | 依赖 react-shared |
-| **@dev-to/create-react** | 1.0.1 | 脚手架工具 | TypeScript, @clack/prompts | 独立（CLI 工具） |
+| **create-dev-to** | 0.0.1 | 脚手架工具 | TypeScript, @clack/prompts | 独立（CLI 工具） |
 
 ### 示例包（私有，不发布）
 
@@ -47,7 +47,7 @@
   └── @dev-to/react-loader (宿主侧加载器)
       └── @dev-to/react-playground (示例)
 
-@dev-to/create-react (独立 CLI 工具)
+create-dev-to (独立 CLI 工具)
 ```
 
 ---
@@ -99,7 +99,7 @@ cd packages/react-playground && pnpm dev   # Terminal 2 (port 8080)
 
 **包相关 scope**（对应 `packages/` 下的目录名）:
 
-- `create-react` - 脚手架工具
+- `create-dev-to` - 脚手架工具
 - `react-loader` - 宿主侧加载器
 - `react-playground` - 示例项目（宿主应用）
 - `react-plugin` - Vite 插件
@@ -252,7 +252,7 @@ pnpm -r --parallel dev
 ```
 1. react-shared (无依赖)
 2. react-plugin, react-loader (依赖 shared)
-3. create-react (独立)
+3. create-dev-to (独立)
 4. react-template, react-playground (依赖 plugin/loader)
 ```
 

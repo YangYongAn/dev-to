@@ -22,7 +22,7 @@ This monorepo uses **Conventional Commits** with **mandatory scopes** for all co
 ## Allowed Scopes
 
 **Package scopes** (use the package folder name):
-- `create-react`
+- `create-dev-to`
 - `react-loader`
 - `react-playground`
 - `react-plugin`

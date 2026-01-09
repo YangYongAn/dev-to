@@ -29,7 +29,7 @@ When generating commit messages, you MUST follow the Conventional Commits format
    - `revert` - revert previous commit
 
 2. **Scope** (required): MUST be one of:
-   - Package scopes: `create-react`, `react-loader`, `react-playground`, `react-plugin`, `react-shared`, `react-template`
+   - Package scopes: `create-dev-to`, `react-loader`, `react-playground`, `react-plugin`, `react-shared`, `react-template`
    - Non-package scopes: `repo`, `deps`, `ci`
 
 3. **Subject** (required):

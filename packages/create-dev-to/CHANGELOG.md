@@ -1,4 +1,4 @@
-# @dev-to/create-react
+# create-dev-to
 
 ## 1.2.0
 
@@ -52,7 +52,7 @@
   ### Clone Flow
 
   ```
-  User runs: pnpm create-react
+  User runs: pnpm create-dev-to
 
   1. Detect package manager (pnpm)
   2. Try GitHub with degit (via pnpx)
