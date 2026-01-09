@@ -63,7 +63,7 @@ importers:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@22.19.3)(less@4.5.1)
 
-  packages/create-react:
+  packages/create-dev-to:
     dependencies:
       '@clack/prompts':
         specifier: ^0.11.0
