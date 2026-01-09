@@ -543,8 +543,8 @@ function getPackageVersion(): string {
 
 function getGitInfo(): { commit: string, branch: string } {
   try {
-    const commit = execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).trim()
-    const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim()
+    const commit = execSync('git rev-parse --short HEAD 2>/dev/null', { encoding: 'utf-8' }).trim()
+    const branch = execSync('git rev-parse --abbrev-ref HEAD 2>/dev/null', { encoding: 'utf-8' }).trim()
     return { commit, branch }
   }
   catch {
