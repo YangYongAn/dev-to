@@ -62,10 +62,53 @@ type LibBannerExtra = Partial<{
   took: string
 }>
 
-export const devToReactPlugin = (
-  devComponentMap: DevComponentMapInput = {},
-  options: DevToReactPluginOptions = {},
-): Plugin[] => {
+/**
+ * Dev-to React Plugin for Vite
+ *
+ * Enables rapid development and library building of React components with hot module replacement.
+ * Supports single or multiple component configurations with customizable CSS and build options.
+ *
+ * Compatible with Vite 4.0.0+
+ *
+ * @param components - Component configuration
+ *   - `string`: Single component name as wildcard (e.g. `'Button'`)
+ *   - `Record<string, string>`: Component name to file path mapping (e.g. `{ Button: 'src/Button.tsx' }`)
+ *   - `undefined`: Fallback to root index file
+ * @param options - Plugin options for CSS and build configuration
+ * @returns Array of Vite plugins (compatible with all Vite versions)
+ *
+ * @example
+ * // Single component with wildcard
+ * devToReactPlugin('Button')
+ *
+ * @example
+ * // Multiple components
+ * devToReactPlugin({
+ *   Button: 'src/Button.tsx',
+ *   Dialog: 'src/Dialog.tsx',
+ *   Input: 'src/Input.tsx',
+ * })
+ *
+ * @example
+ * // With custom options
+ * devToReactPlugin(
+ *   { Button: 'src/Button.tsx' },
+ *   {
+ *     css: { modules: { localsConvention: 'camelCase' } },
+ *     open: true,
+ *   }
+ * )
+ *
+ * @example
+ * // Fallback to root entry
+ * devToReactPlugin(undefined, { css: false })
+ */
+export function devToReactPlugin(
+  components?: DevComponentMapInput,
+  options?: DevToReactPluginOptions,
+): any { // eslint-disable-line @typescript-eslint/no-explicit-any
+  const devComponentMap = components ?? {}
+  const opts = options ?? {}
   const stats: BridgeStats = {
     contract: { count: 0, lastAt: 0 },
     init: { count: 0, lastAt: 0 },
@@ -258,7 +301,7 @@ export const devToReactPlugin = (
       }
       installDebugTools(
         server,
-        { contract, stats, audit: resolvedConfig.audit, resolvedConfig, configDir, open: options.open },
+        { contract, stats, audit: resolvedConfig.audit, resolvedConfig, configDir, open: opts.open },
         debugState,
       )
     },
@@ -282,11 +325,11 @@ export const devToReactPlugin = (
         css: { modules: { generateScopedName: '[name]__[local]___[hash:base64:5]' } },
       }
 
-      if (options.css === false) {
+      if (opts.css === false) {
         next.css = undefined
       }
-      else if (options.css) {
-        next.css = mergeConfig({ css: next.css }, { css: options.css }).css
+      else if (opts.css) {
+        next.css = mergeConfig({ css: next.css }, { css: opts.css }).css
       }
 
       if (isLibBuild(env)) {
@@ -344,7 +387,7 @@ export const devToReactPlugin = (
           picked,
           componentMap: contract.dev.componentMap,
           resolvedConfig,
-          options,
+          options: opts,
           userConfig,
         })
 
