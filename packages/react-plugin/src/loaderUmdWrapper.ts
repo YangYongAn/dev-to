@@ -37,7 +37,7 @@ export function createLoaderUmdWrapper(options: CreateLoaderUmdWrapperOptions): 
  *    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
  *
  * 2. Load this wrapper:
- *    <script src="${origin}/__dev_to_react__/loader/${componentName}.js"></script>
+ *    <script src="${origin}/__dev_to__/react/loader/${componentName}.js"></script>
  *
  * 3. Use as a React component:
  *
