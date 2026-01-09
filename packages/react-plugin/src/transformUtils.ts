@@ -73,13 +73,13 @@ export function transformViteDevCssAssetUrls(code: string, id: string) {
   if (!/\.(css|less|sass|scss|styl|stylus)$/.test(cleanId)) return null
   if (!code.includes('__vite__updateStyle') || !code.includes('const __vite__css')) return null
   if (!/url\(\s*['"]?\//.test(code)) return null
-  if (code.includes('__dev_to_react_css')) return null
+  if (code.includes('__dev_to__css')) return null
 
   const updateCallRE = /__vite__updateStyle\(\s*__vite__id\s*,\s*__vite__css\s*\)/
   if (!updateCallRE.test(code)) return null
 
   const injected = `
-const __dev_to_react_resolveAsset = (path) => {
+const __dev_to__resolveAsset = (path) => {
   if (!path) return path;
   if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:') || path.startsWith('blob:')) {
     return path;
@@ -99,15 +99,15 @@ const __dev_to_react_resolveAsset = (path) => {
     return path;
   }
 };
-const __dev_to_react_css = __vite__css.replace(/url\\(\\s*(['"]?)(\\/(?!\\/)[^'")]+)\\1\\s*\\)/g, (_m, q, p) => {
-  const next = __dev_to_react_resolveAsset(p);
+const __dev_to__css = __vite__css.replace(/url\\(\\s*(['"]?)(\\/(?!\\/)[^'")]+)\\1\\s*\\)/g, (_m, q, p) => {
+  const next = __dev_to__resolveAsset(p);
   return 'url(' + q + next + q + ')';
 });
 `
 
   const nextCode = code.replace(
     updateCallRE,
-    `${injected}__vite__updateStyle(__vite__id, __dev_to_react_css)`,
+    `${injected}__vite__updateStyle(__vite__id, __dev_to__css)`,
   )
 
   return { code: nextCode, map: null }
