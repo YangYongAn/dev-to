@@ -12,10 +12,19 @@ export abstract class OutputParser {
 }
 
 export class PnpmParser extends OutputParser {
+  private totalPackages: number = 0
+  private maxResolved: number = 0
+  private lastPhase: string = 'resolving'
+
   parse(line: string, stream: 'stdout' | 'stderr'): ParsedOutput {
-    // Detect resolving phase
-    if (line.includes('Resolving:') || line.includes('Resolving dependencies')) {
-      return { type: 'phase_change', phase: 'resolving' }
+    // Detect resolving phase start
+    if (line.includes('Lockfile is up to date') || line.includes('Already up to date')) {
+      return {
+        type: 'progress',
+        phase: 'installing',
+        progress: 100,
+        packageCount: 0,
+      }
     }
 
     // Parse progress line: "Progress: resolved 245, reused 180, downloaded 65, added 0"
@@ -24,38 +33,70 @@ export class PnpmParser extends OutputParser {
     )
     if (progressMatch) {
       const resolved = parseInt(progressMatch[1])
+      const reused = parseInt(progressMatch[2] || '0')
+      const downloaded = parseInt(progressMatch[3] || '0')
       const added = parseInt(progressMatch[4] || '0')
 
-      if (added > 0) {
+      // Track max resolved as estimated total
+      this.maxResolved = Math.max(this.maxResolved, resolved)
+
+      // Determine phase and progress based on the numbers
+      // When added === resolved, installation is complete
+      if (added > 0 && added >= resolved) {
+        this.lastPhase = 'installing'
         return {
           type: 'progress',
           phase: 'installing',
           packageCount: added,
-          progress: Math.min(100, 70 + (added / Math.max(resolved, 1)) * 30),
+          progress: 100,
         }
       }
-      else {
+      // When we have added > 0 but not all, we're installing
+      else if (added > 0) {
+        this.lastPhase = 'installing'
+        const installProgress = Math.min(99, Math.max(10, (added / resolved) * 100))
+        return {
+          type: 'progress',
+          phase: 'installing',
+          progress: installProgress,
+        }
+      }
+      // When downloaded > 0, we're in downloading phase
+      else if (downloaded > 0 || reused > 0) {
+        const total = downloaded + reused
+        if (this.lastPhase !== 'downloading') {
+          this.lastPhase = 'downloading'
+        }
+        const downloadProgress = Math.min(99, Math.max(10, (total / resolved) * 100))
+        return {
+          type: 'progress',
+          phase: 'downloading',
+          progress: downloadProgress,
+        }
+      }
+      // Otherwise, we're still resolving
+      else if (resolved > 0) {
+        if (this.lastPhase !== 'resolving') {
+          this.lastPhase = 'resolving'
+        }
+        // Use a dynamic progress that gradually increases
+        const resolveProgress = Math.min(95, Math.max(10, (resolved / Math.max(this.maxResolved, 200)) * 100))
         return {
           type: 'progress',
           phase: 'resolving',
-          progress: Math.min(100, (resolved / Math.max(resolved, 100)) * 30),
+          progress: resolveProgress,
         }
       }
     }
 
-    // Detect downloading phase
-    if (line.includes('Downloading') || line.includes('downloading')) {
-      return { type: 'phase_change', phase: 'downloading' }
-    }
-
-    // Parse package info: "Packages: +245" or "Packages: +245 ~5 -2"
-    const packagesMatch = line.match(
-      /Packages:\s*([+\-~]?\d+)?(?:\s+([+\-~]\d+))?(?:\s+([+\-~]\d+))?/,
-    )
-    if (packagesMatch && packagesMatch[1]) {
+    // Parse package info from summary: "Packages: +245"
+    const packagesMatch = line.match(/Packages:\s*\+(\d+)/)
+    if (packagesMatch) {
+      const count = parseInt(packagesMatch[1])
+      this.totalPackages = count
       return {
         type: 'package_info',
-        packageCount: parseInt(packagesMatch[1]),
+        packageCount: count,
       }
     }
 
@@ -80,14 +121,17 @@ export class PnpmParser extends OutputParser {
 }
 
 export class NpmParser extends OutputParser {
+  private isInstalling: boolean = false
+
   parse(line: string, stream: 'stdout' | 'stderr'): ParsedOutput {
     // Parse completion line: "added 245 packages, and audited 246 packages in 10s"
     const completionMatch = line.match(
       /added (\d+) packages?(?:, (?:and|)?(?:audited|updated) (\d+) packages)?/,
     )
     if (completionMatch) {
+      this.isInstalling = true
       return {
-        type: 'package_info',
+        type: 'progress',
         packageCount: parseInt(completionMatch[1]),
         progress: 100,
         phase: 'installing',
@@ -96,17 +140,13 @@ export class NpmParser extends OutputParser {
 
     // Parse up to date: "up to date, audited 245 packages in 0.5s"
     if (line.includes('up to date')) {
+      this.isInstalling = true
       return {
-        type: 'package_info',
+        type: 'progress',
         packageCount: 0,
         progress: 100,
         phase: 'installing',
       }
-    }
-
-    // Detect phases
-    if (line.includes('up to date') || line.includes('added')) {
-      return { type: 'phase_change', phase: 'installing' }
     }
 
     // Parse npm output with progress (some versions show this)
@@ -115,7 +155,7 @@ export class NpmParser extends OutputParser {
       const progress = (progressMatch[1].length / 50) * 100
       return {
         type: 'progress',
-        progress: Math.min(100, progress),
+        progress: Math.min(95, Math.max(1, progress)),
         phase: 'downloading',
       }
     }
@@ -211,7 +251,7 @@ export class BunParser extends OutputParser {
     const completionMatch = line.match(/^\s*\+\s*(\d+)\s+packages installed\s*\[([\d.]+)s\]/)
     if (completionMatch) {
       return {
-        type: 'package_info',
+        type: 'progress',
         packageCount: parseInt(completionMatch[1]),
         progress: 100,
         phase: 'installing',
@@ -222,7 +262,7 @@ export class BunParser extends OutputParser {
     const alreadyMatch = line.match(/^\s*(\d+)\s+packages already installed/)
     if (alreadyMatch) {
       return {
-        type: 'package_info',
+        type: 'progress',
         packageCount: 0,
         progress: 100,
         phase: 'installing',

@@ -304,8 +304,14 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
         const tempCloneDir = path.join(process.cwd(), `.tmp-clone-${randomUUID()}`)
         const cloneArgs = [...args.slice(0, -1), tempCloneDir] // Replace last arg (targetDir) with tempCloneDir
 
+        // Stop spinner before git clone to ensure proper output formatting
+        spinner.stop()
+
         // Clone the entire repo to temp directory
         await run(command, cloneArgs, process.cwd())
+
+        // Restart spinner after git clone
+        spinner.start('Processing template')
 
         try {
           // Extract the template folder from the cloned repo
@@ -354,7 +360,13 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
 
       if (i < TEMPLATE_SOURCES.length - 1) {
         // Not the last source, will try next one
-        spinner.message(`${source.name} failed, trying ${TEMPLATE_SOURCES[i + 1].name}...`)
+        // Ensure spinner is running before showing retry message
+        if (source.isGitBased) {
+          spinner.start(`${source.name} failed, trying ${TEMPLATE_SOURCES[i + 1].name}`)
+        }
+        else {
+          spinner.message(`${source.name} failed, trying ${TEMPLATE_SOURCES[i + 1].name}...`)
+        }
       }
       else {
         // This is the last source, throw comprehensive error

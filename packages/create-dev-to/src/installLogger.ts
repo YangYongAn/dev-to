@@ -15,7 +15,8 @@ export class InstallLogger {
   private phases: InstallPhase[]
   private renderScheduled: boolean = false
   private lastRenderTime: number = 0
-  private readonly RENDER_INTERVAL = 100
+  private readonly RENDER_INTERVAL = 50
+  private smoothProgressTimer: NodeJS.Timeout | null = null
 
   constructor(packageManager: PackageManager) {
     this.packageManager = packageManager
@@ -41,6 +42,7 @@ export class InstallLogger {
   start(): void {
     this.stats.startTime = performance.now()
     this.render()
+    this.startSmoothProgress()
   }
 
   processLine(line: string, stream: 'stdout' | 'stderr'): void {
@@ -59,6 +61,9 @@ export class InstallLogger {
   }
 
   async finish(projectDir: string): Promise<InstallStats> {
+    // Stop smooth progress updates
+    this.stopSmoothProgress()
+
     this.stats.endTime = performance.now()
     this.stats.duration = this.stats.endTime - (this.stats.startTime || 0)
 
@@ -80,7 +85,28 @@ export class InstallLogger {
   }
 
   error(): void {
+    this.stopSmoothProgress()
     this.renderer.clear()
+  }
+
+  private startSmoothProgress(): void {
+    // Update progress smoothly even without output updates
+    this.smoothProgressTimer = setInterval(() => {
+      const activePhase = this.phases.find(p => p.active)
+      if (activePhase && activePhase.progress < 95) {
+        // Gradually increase progress with diminishing speed
+        const increment = Math.max(0.5, (95 - activePhase.progress) / 20)
+        activePhase.progress = Math.min(95, activePhase.progress + increment)
+        this.render()
+      }
+    }, 200)
+  }
+
+  private stopSmoothProgress(): void {
+    if (this.smoothProgressTimer) {
+      clearInterval(this.smoothProgressTimer)
+      this.smoothProgressTimer = null
+    }
   }
 
   private handleParsedOutput(parsed: ParsedOutput): void {
@@ -121,23 +147,28 @@ export class InstallLogger {
   private activatePhase(phaseName: string): void {
     const phase = this.phases.find(p => p.name === phaseName)
     if (phase) {
+      // Don't reactivate if already completed
+      if (phase.progress >= 100) {
+        return
+      }
+
+      // Deactivate all phases first
       this.phases.forEach(p => (p.active = false))
       phase.active = true
 
-      if (phaseName === 'resolving' && phase.progress === 0) {
-        phase.progress = 10
+      // Set initial progress if starting fresh
+      if (phase.progress === 0) {
+        phase.progress = 1
       }
-      else if (phaseName === 'downloading' && phase.progress === 0) {
-        const resolvingPhase = this.phases.find(p => p.name === 'resolving')
-        if (resolvingPhase) resolvingPhase.progress = 100
-        phase.progress = 10
-      }
-      else if (phaseName === 'installing' && phase.progress === 0) {
-        const downloadingPhase = this.phases.find(
-          p => p.name === 'downloading',
-        )
-        if (downloadingPhase) downloadingPhase.progress = 100
-        phase.progress = 10
+
+      // When activating a phase, complete previous phases
+      const phaseIndex = this.phases.findIndex(p => p.name === phaseName)
+      for (let i = 0; i < phaseIndex; i++) {
+        const prevPhase = this.phases[i]
+        if (prevPhase.progress < 100) {
+          prevPhase.progress = 100
+        }
+        prevPhase.active = false
       }
     }
   }
@@ -146,13 +177,31 @@ export class InstallLogger {
     const phase = this.phases.find(p => p.name === phaseName)
     if (phase) {
       phase.progress = Math.max(phase.progress, Math.min(100, progress))
-      phase.active = true
 
+      // When a phase is updated, complete all previous phases
+      const phaseIndex = this.phases.findIndex(p => p.name === phaseName)
+      for (let i = 0; i < phaseIndex; i++) {
+        if (this.phases[i].progress < 100) {
+          this.phases[i].progress = 100
+          this.phases[i].active = false
+        }
+      }
+
+      // Only mark current phase as active if not already completed
+      if (phase.progress < 100) {
+        phase.active = true
+      }
+
+      // When a phase reaches 100%, mark it as complete and activate next
       if (progress >= 100) {
-        const phaseIndex = this.phases.findIndex(p => p.name === phaseName)
+        phase.active = false
         if (phaseIndex < this.phases.length - 1) {
-          this.phases[phaseIndex + 1].active = true
-          phase.active = false
+          // Only activate next phase if current one is complete
+          const nextPhase = this.phases[phaseIndex + 1]
+          if (nextPhase && nextPhase.progress === 0) {
+            nextPhase.active = true
+            nextPhase.progress = 1 // Start with small progress
+          }
         }
       }
     }
