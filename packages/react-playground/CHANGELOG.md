@@ -1,5 +1,12 @@
 # @dev-to/react-playground
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [ea3b5d3]
+  - @dev-to/react-loader@1.0.0
+
 ## 0.0.3
 
 ### Patch Changes
