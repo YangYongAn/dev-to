@@ -485,6 +485,21 @@ function injectPluginIntoViteConfig(content: string, pluginPackage: string, plug
   return out
 }
 
+function updatePluginComponentName(content: string, pluginName: string, componentName: string): string {
+  // 匹配 devToReactPlugin() 的调用，替换为 devToReactPlugin({ [ComponentName]: 'src/[ComponentName]/index.tsx' })
+  const pluginCall = `${pluginName}()`
+  const newPluginCall = `${pluginName}({
+      ${componentName}: 'src/${componentName}/index.tsx',
+    })`
+
+  // 检查 pluginCall 是否存在
+  if (content.includes(pluginCall)) {
+    return content.replace(pluginCall, newPluginCall)
+  }
+
+  return content
+}
+
 function addDevDependency(projectDir: string, pkgName: string, version: string) {
   const pkgPath = path.join(projectDir, 'package.json')
   const raw = fs.readFileSync(pkgPath, 'utf-8')
@@ -562,7 +577,7 @@ async function init() {
     },
   )
 
-  const { shouldOverwrite } = project
+  const { shouldOverwrite, componentName } = project
 
   // 覆盖目录
   if (shouldOverwrite) {
@@ -665,8 +680,9 @@ async function init() {
   // 注入插件到 vite.config
   const viteConfigPath = findViteConfigFile(root)
   if (viteConfigPath) {
-    const original = fs.readFileSync(viteConfigPath, 'utf-8')
-    const patched = injectPluginIntoViteConfig(original, pluginPackage, pluginName)
+    let patched = fs.readFileSync(viteConfigPath, 'utf-8')
+    patched = injectPluginIntoViteConfig(patched, pluginPackage, pluginName)
+    patched = updatePluginComponentName(patched, pluginName, componentName as string)
     fs.writeFileSync(viteConfigPath, patched)
   }
 
