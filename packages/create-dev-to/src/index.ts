@@ -557,7 +557,13 @@ function printVersionInfo() {
   const { commit, branch } = getGitInfo()
   const buildTime = new Date().toISOString().split('T')[0]
 
-  clack.log.message(dim(`create-dev-to v${version} (${commit} on ${branch}) - ${buildTime}`))
+  // 只在有 git 信息时才显示完整信息
+  if (commit === 'unknown' || branch === 'unknown') {
+    clack.log.message(dim(`create-dev-to v${version} - ${buildTime}`))
+  }
+  else {
+    clack.log.message(dim(`create-dev-to v${version} (${commit} on ${branch}) - ${buildTime}`))
+  }
 }
 
 function addDevDependency(projectDir: string, pkgName: string, version: string) {
