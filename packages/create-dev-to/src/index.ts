@@ -529,7 +529,7 @@ async function init() {
     {
       projectName: () =>
         clack.text({
-          message: 'Project name:',
+          message: `Project name ${dim('\n│    Directory where your project will be created.\n')}`,
           placeholder: 'dev-to-app',
           initialValue: argTargetDir,
           defaultValue: argTargetDir || 'dev-to-app',
@@ -562,9 +562,8 @@ async function init() {
           .join('')
 
         return clack.text({
-          message: 'First component name (the component you will develop):',
+          message: `First component name ${dim('\n│    Leave blank to default to project name.You can modify it in vite config later.\n')}`,
           placeholder: defaultComponentName,
-          initialValue: defaultComponentName,
           defaultValue: defaultComponentName,
         })
       },
