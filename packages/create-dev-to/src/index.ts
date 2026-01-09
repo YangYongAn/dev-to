@@ -5,11 +5,65 @@ import path from 'node:path'
 import { spawn, execSync } from 'node:child_process'
 import process from 'node:process'
 import { randomUUID } from 'node:crypto'
+import readline from 'node:readline'
 import * as clack from '@clack/prompts'
-import { red, cyan, yellow } from 'kolorist'
+import { red, cyan, yellow, green, dim } from 'kolorist'
+import { InstallLogger } from './installLogger.js'
+import { displayInstallSummary, type InstallStats } from './visualComponents.js'
 
 const PACKAGE_MANAGERS = ['pnpm', 'npm', 'yarn', 'bun'] as const
 type PackageManager = typeof PACKAGE_MANAGERS[number]
+
+const FRAMEWORKS = [
+  {
+    name: 'react',
+    display: 'React',
+    color: cyan,
+    supported: true,
+  },
+  {
+    name: 'vue',
+    display: 'Vue',
+    color: green,
+    supported: false,
+  },
+  {
+    name: 'svelte',
+    display: 'Svelte',
+    color: red,
+    supported: false,
+  },
+  {
+    name: 'solid',
+    display: 'Solid',
+    color: cyan,
+    supported: false,
+  },
+  {
+    name: 'preact',
+    display: 'Preact',
+    color: cyan,
+    supported: false,
+  },
+  {
+    name: 'lit',
+    display: 'Lit',
+    color: yellow,
+    supported: false,
+  },
+  {
+    name: 'qwik',
+    display: 'Qwik',
+    color: cyan,
+    supported: false,
+  },
+  {
+    name: 'vanilla',
+    display: 'Vanilla',
+    color: yellow,
+    supported: false,
+  },
+] as const
 
 const REACT_TEMPLATES = [
   {
@@ -165,6 +219,56 @@ function run(command: string, args: string[], cwd: string): Promise<void> {
       resolve()
     })
     child.on('error', reject)
+  })
+}
+
+async function runWithLogger(
+  command: string,
+  args: string[],
+  cwd: string,
+  packageManager: PackageManager,
+): Promise<InstallStats> {
+  const logger = new InstallLogger(packageManager)
+
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+
+    logger.start()
+
+    if (child.stdout) {
+      const stdoutReader = readline.createInterface({
+        input: child.stdout,
+        crlfDelay: Infinity,
+      })
+      stdoutReader.on('line', line => logger.processLine(line, 'stdout'))
+    }
+
+    if (child.stderr) {
+      const stderrReader = readline.createInterface({
+        input: child.stderr,
+        crlfDelay: Infinity,
+      })
+      stderrReader.on('line', line => logger.processLine(line, 'stderr'))
+    }
+
+    child.on('close', async (code) => {
+      if (code !== 0) {
+        logger.error()
+        reject(new Error(`${command} ${args.join(' ')} failed`))
+        return
+      }
+
+      const stats = await logger.finish(cwd)
+      resolve(stats)
+    })
+
+    child.on('error', (err) => {
+      logger.error()
+      reject(err)
+    })
   })
 }
 
@@ -383,7 +487,7 @@ async function init() {
   const userAgent = process.env.npm_config_user_agent || ''
   let packageManager = detectPackageManager(userAgent)
 
-  clack.intro(cyan('create-react'))
+  clack.intro(cyan('create-dev-to'))
 
   const cwd = process.cwd()
   const argTargetDir = formatTargetDir(process.argv[2])
@@ -399,12 +503,12 @@ async function init() {
       projectName: () =>
         clack.text({
           message: 'Project name:',
-          placeholder: 'dev-to-react-app',
+          placeholder: 'dev-to-app',
           initialValue: argTargetDir,
-          defaultValue: argTargetDir || 'dev-to-react-app',
+          defaultValue: argTargetDir || 'dev-to-app',
         }),
       shouldOverwrite: ({ results }) => {
-        targetDir = formatTargetDir(results.projectName) || 'dev-to-react-app'
+        targetDir = formatTargetDir(results.projectName) || 'dev-to-app'
         const root = path.join(cwd, targetDir)
 
         if (!fs.existsSync(root)) {
@@ -454,6 +558,33 @@ async function init() {
     }
 
     packageManager = pmChoice as PackageManager
+  }
+
+  // 框架选择
+  const framework = await clack.select({
+    message: 'Select a framework:',
+    options: FRAMEWORKS.map(fw => ({
+      value: fw.name,
+      label: fw.supported ? fw.color(fw.display) : `${fw.color(fw.display)} ${dim('(Coming soon)')}`,
+      hint: fw.supported ? undefined : 'Not yet supported',
+    })),
+    initialValue: 'react',
+  })
+
+  if (clack.isCancel(framework)) {
+    clack.cancel('Operation cancelled.')
+    process.exit(0)
+  }
+
+  // 检查框架是否支持
+  const selectedFramework = FRAMEWORKS.find(fw => fw.name === framework)
+  if (!selectedFramework?.supported) {
+    clack.outro(yellow(`⚠️  ${selectedFramework?.display} support is coming soon!`))
+    clack.note(
+      `We're working hard to add support for ${selectedFramework?.display}.\n\nFor now, please use React or stay tuned for updates!`,
+      'Roadmap',
+    )
+    process.exit(0)
   }
 
   // React 模板选择
@@ -525,16 +656,20 @@ async function init() {
   }
 
   if (shouldInstall) {
-    const installSpinner = clack.spinner()
-    installSpinner.start('Installing dependencies')
-    await run(packageManager, ['install'], root)
-    installSpinner.stop('Dependencies installed')
+    try {
+      const stats = await runWithLogger(packageManager, ['install'], root, packageManager)
 
-    clack.log.info('Starting dev server...')
+      displayInstallSummary(stats)
 
-    // 启动 dev server
-    const devArgs = packageManager === 'npm' ? ['run', 'dev'] : ['dev']
-    spawn(packageManager, devArgs, { cwd: root, stdio: 'inherit' })
+      clack.log.info('Starting dev server...')
+
+      const devArgs = packageManager === 'npm' ? ['run', 'dev'] : ['dev']
+      spawn(packageManager, devArgs, { cwd: root, stdio: 'inherit' })
+    }
+    catch (error) {
+      clack.log.error('Installation failed')
+      throw error
+    }
   }
   else {
     const pkgManager = packageManager || 'npm'

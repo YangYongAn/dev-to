@@ -63,7 +63,7 @@
 |---------|---------|------|
 | [@dev-to/react-plugin](./packages/react-plugin) | [![npm](https://img.shields.io/npm/v/@dev-to/react-plugin.svg)](https://www.npmjs.com/package/@dev-to/react-plugin) | **Vite 侧插件** - 在 Vite Dev Server 上暴露稳定的桥接入口 |
 | [@dev-to/react-loader](./packages/react-loader) | [![npm](https://img.shields.io/npm/v/@dev-to/react-loader.svg)](https://www.npmjs.com/package/@dev-to/react-loader) | **宿主侧加载器** - 在任意页面中动态加载远程 React 组件 |
-| [@dev-to/create-react](./packages/create-react) | [![npm](https://img.shields.io/npm/v/@dev-to/create-react.svg)](https://www.npmjs.com/package/@dev-to/create-react) | **脚手架工具** - 快速创建集成 dev-to 的 React 项目 |
+| [create-dev-to](packages/create-dev-to) | [![npm](https://img.shields.io/npm/v/create-dev-to.svg)](https://www.npmjs.com/package/create-dev-to) | **脚手架工具** - 快速创建集成 dev-to 的前端项目（支持多框架） |
 | [@dev-to/react-shared](./packages/react-shared) | [![npm](https://img.shields.io/npm/v/@dev-to/react-shared.svg)](https://www.npmjs.com/package/@dev-to/react-shared) | **共享协议** - Vite 侧与宿主侧的通信协议和类型定义 |
 | @dev-to/react-template | - | **示例项目** - 演示 Vite 组件提供方的完整实现 |
 | @dev-to/react-playground | - | **示例项目** - 演示宿主应用如何加载远程组件 |
@@ -161,7 +161,7 @@ graph TB
   └── @dev-to/react-loader (宿主侧)
       └── @dev-to/react-playground (示例)
 
-@dev-to/create-react (独立脚手架)
+create-dev-to (独立脚手架)
 ```
 
 ---
@@ -172,17 +172,18 @@ graph TB
 
 ```bash
 # 使用 npm，或者 pnpm、yarn、bun 等
-npm create @dev-to/react   
+npm create dev-to
 
-# 或者使用 npx (无需安装)
-npx @dev-to/create-react  
+# 或者直接使用 create-dev-to 命令
+npx create-dev-to
 ```
 
 脚手架会自动：
-1. 选择包管理器 (pnpm/npm/yarn/bun)
-2. 选择 React 模板 (TypeScript/JavaScript)
-3. 自动注入 `@dev-to/react-plugin` 到 `vite.config.ts`
-4. 安装依赖并启动开发服务器
+1. 选择框架 (React、Vue 等，目前 React 已支持)
+2. 选择包管理器 (pnpm/npm/yarn/bun)
+3. 选择 React 模板 (TypeScript/JavaScript)
+4. 自动注入 `@dev-to/react-plugin` 到 `vite.config.ts`
+5. 安装依赖并启动开发服务器
 
 ### 方式 2: 手动集成到现有项目
 
@@ -457,7 +458,7 @@ git push --follow-tags
 ```bash
 # 格式: <type>(scope): <subject>
 # scope 必须是以下之一:
-# - create-react
+# - create-dev-to
 # - react-loader
 # - react-playground
 # - react-plugin
@@ -557,7 +558,7 @@ MIT © [YangYongAn](https://github.com/YangYongAn)
 
 - [npm - @dev-to/react-plugin](https://www.npmjs.com/package/@dev-to/react-plugin)
 - [npm - @dev-to/react-loader](https://www.npmjs.com/package/@dev-to/react-loader)
-- [npm - @dev-to/create-react](https://www.npmjs.com/package/@dev-to/create-react)
+- [npm - create-dev-to](https://www.npmjs.com/package/create-dev-to)
 - [GitHub Issues](https://github.com/YangYongAn/dev-to/issues)
 
 ---
