@@ -20,7 +20,7 @@ import { renderDebugHtml } from './debugHtml.js'
 import { getLanIPv4Hosts } from './lan.js'
 import { toFsPathFromViteEntry } from './pathUtils.js'
 
-import { DEV_TO_REACT_DID_OPEN_BROWSER_KEY } from '@dev-to/react-shared'
+import { DEV_TO_BASE_PATH, DEV_TO_REACT_DID_OPEN_BROWSER_KEY } from '@dev-to/react-shared'
 import pc from 'picocolors'
 
 import type { DevToDiscoveryContract } from '@dev-to/react-shared'
@@ -192,23 +192,21 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
       return 5173
     })()
 
-    const lanHosts = getLanIPv4Hosts()
-    const candidateHosts = ['localhost', '127.0.0.1', ...lanHosts]
-    const urls = candidateHosts.map(h => `${proto}://${h}:${port}${STABLE_DEBUG_HTML_PATH}`)
-
     const logger = server.config.logger
     const info = typeof logger?.info === 'function' ? logger.info.bind(logger) : console.log
 
-    info('')
-    info(`${PLUGIN_LOG_PREFIX} Debug panel:`)
-    urls.forEach(u => info(`  ${pc.cyan(u)}`))
-    info(`  JSON: ${pc.cyan(`${proto}://localhost:${port}${STABLE_DEBUG_JSON_PATH}`)}`)
-    info('')
+    // 在 Vite 启动信息打印后延迟打印 debug panel 信息
+    // 使用 setImmediate 确保在 Vite 的 printUrls 之后执行
+    setImmediate(() => {
+      info('')
+      info(`  ${pc.yellowBright('➜')}  ${pc.bgCyanBright(pc.yellow(pc.bold(' DevTo ')))}  ${pc.cyan(`${proto}://localhost:${port}${DEV_TO_BASE_PATH}`)}`)
+    })
 
     if (ctx.open && !didOpenBrowser) {
       didOpenBrowser = true
       globalState[DEV_TO_REACT_DID_OPEN_BROWSER_KEY] = true
-      openBrowser(urls[0])
+      const debugUrl = `${proto}://localhost:${port}${STABLE_DEBUG_HTML_PATH}`
+      openBrowser(debugUrl)
     }
   }
 
