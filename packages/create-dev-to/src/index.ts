@@ -538,6 +538,21 @@ async function init() {
               : `Target directory "${targetDir}" is not empty. Remove existing files and continue?`,
         })
       },
+      componentName: ({ results }) => {
+        // Convert project name to PascalCase for component name
+        const projectName = results.projectName || 'dev-to-app'
+        const defaultComponentName = projectName
+          .split(/[-_\s]+/)
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join('')
+
+        return clack.text({
+          message: 'First component name (the component you will develop):',
+          placeholder: defaultComponentName,
+          initialValue: defaultComponentName,
+          defaultValue: defaultComponentName,
+        })
+      },
     },
     {
       onCancel: () => {
