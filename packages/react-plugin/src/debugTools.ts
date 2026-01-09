@@ -2,6 +2,7 @@ import { exec } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
 
 import {
   PLUGIN_LOG_PREFIX,
@@ -117,8 +118,10 @@ function openBrowser(url: string) {
  * 兼容 npm 包和 monorepo 两种场景，使用 Node.js 标准模块解析规则
  */
 function getReactLoaderUmdPath(): string {
+  const require = createRequire(import.meta.url)
+
+  // 策略 1: 直接解析 package.json（npm 包场景）
   try {
-    const require = createRequire(import.meta.url)
     const loaderPkgPath = require.resolve('@dev-to/react-loader/package.json')
     const loaderPkgDir = path.dirname(loaderPkgPath)
     const umdPath = path.join(loaderPkgDir, 'dist/index.umd.js')
@@ -128,10 +131,38 @@ function getReactLoaderUmdPath(): string {
     }
   }
   catch {
-    // package.json 找不到的话继续
+    // 继续尝试下一个策略
   }
 
-  // 如果模块解析失败，抛出错误
+  // 策略 2: 通过主模块回溯找到 package.json（monorepo 场景）
+  try {
+    const loaderMainPath = require.resolve('@dev-to/react-loader')
+    // 从 dist/index.js 往上两级到包根目录
+    const loaderPkgDir = path.dirname(path.dirname(loaderMainPath))
+    const umdPath = path.join(loaderPkgDir, 'dist/index.umd.js')
+
+    if (fs.existsSync(umdPath)) {
+      return umdPath
+    }
+  }
+  catch {
+    // 继续尝试下一个策略
+  }
+
+  // 策略 3: 兼容 monorepo 本地开发的相对路径
+  try {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url))
+    const umdPath = path.resolve(__dirname, '../../react-loader/dist/index.umd.js')
+
+    if (fs.existsSync(umdPath)) {
+      return umdPath
+    }
+  }
+  catch {
+    // 继续
+  }
+
+  // 所有策略都失败
   throw new Error(
     `${PLUGIN_LOG_PREFIX} react-loader UMD not found. Run 'pnpm build' in react-loader package.`,
   )
