@@ -490,6 +490,46 @@ function updatePluginComponentName(content: string, pluginName: string, componen
   return content
 }
 
+function editFile(file: string, callback: (content: string) => string) {
+  const content = fs.readFileSync(file, 'utf-8')
+  fs.writeFileSync(file, callback(content), 'utf-8')
+}
+
+function setupReactSWC(root: string, isTs: boolean) {
+  editFile(path.join(root, 'package.json'), (content) => {
+    return content.replace(
+      /"@vitejs\/plugin-react": ".+?"/,
+      '"@vitejs/plugin-react-swc": "^4.2.2"',
+    )
+  })
+  editFile(path.join(root, `vite.config.${isTs ? 'ts' : 'js'}`), (content) => {
+    return content.replace('@vitejs/plugin-react', '@vitejs/plugin-react-swc')
+  })
+}
+
+function setupReactCompiler(root: string, isTs: boolean) {
+  editFile(path.join(root, 'package.json'), (content) => {
+    const asObject = JSON.parse(content)
+    const devDepsEntries = Object.entries(asObject.devDependencies || {})
+    devDepsEntries.push(['babel-plugin-react-compiler', '^1.0.0'])
+    devDepsEntries.sort()
+    asObject.devDependencies = Object.fromEntries(devDepsEntries)
+    return JSON.stringify(asObject, null, 2) + '\n'
+  })
+  editFile(path.join(root, `vite.config.${isTs ? 'ts' : 'js'}`), (content) => {
+    return content.replace(
+      '  plugins: [react()],',
+      `  plugins: [
+    react({
+      babel: {
+        plugins: [['babel-plugin-react-compiler']],
+      },
+    }),
+  ],`,
+    )
+  })
+}
+
 function addDevDependency(projectDir: string, pkgName: string, version: string) {
   const pkgPath = path.join(projectDir, 'package.json')
   const raw = fs.readFileSync(pkgPath, 'utf-8')
@@ -634,6 +674,28 @@ async function init() {
 
   const template = variant as string
 
+  // 询问是否使用 SWC
+  const shouldUseSWC = await clack.confirm({
+    message: 'Use SWC for faster transpilation? (Optional)',
+    initialValue: false,
+  })
+
+  if (clack.isCancel(shouldUseSWC)) {
+    clack.cancel('Operation cancelled.')
+    process.exit(0)
+  }
+
+  // 询问是否使用 React Compiler
+  const shouldUseReactCompiler = await clack.confirm({
+    message: 'Use React Compiler? (Experimental)',
+    initialValue: false,
+  })
+
+  if (clack.isCancel(shouldUseReactCompiler)) {
+    clack.cancel('Operation cancelled.')
+    process.exit(0)
+  }
+
   // 询问是否使用 Rolldown（实验性）
   const shouldUseRolldown = await clack.confirm({
     message: 'Use Rolldown for bundling? (Experimental)',
@@ -658,6 +720,17 @@ async function init() {
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
   pkg.name = toValidPackageName(getProjectName())
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
+
+  // 处理 SWC 和 React Compiler 配置
+  const isTs = template.includes('ts')
+  if (shouldUseSWC) {
+    spinner.message('Setting up SWC...')
+    setupReactSWC(root, isTs)
+  }
+  if (shouldUseReactCompiler) {
+    spinner.message('Setting up React Compiler...')
+    setupReactCompiler(root, isTs)
+  }
 
   spinner.message('Adding @dev-to/react-plugin')
 
