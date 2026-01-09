@@ -530,6 +530,36 @@ function setupReactCompiler(root: string, isTs: boolean) {
   })
 }
 
+function getPackageVersion(): string {
+  try {
+    const pkgPath = path.join(path.dirname(new URL(import.meta.url).pathname), '../package.json')
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+    return pkg.version || 'unknown'
+  }
+  catch {
+    return 'unknown'
+  }
+}
+
+function getGitInfo(): { commit: string, branch: string } {
+  try {
+    const commit = execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).trim()
+    const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim()
+    return { commit, branch }
+  }
+  catch {
+    return { commit: 'unknown', branch: 'unknown' }
+  }
+}
+
+function printVersionInfo() {
+  const version = getPackageVersion()
+  const { commit, branch } = getGitInfo()
+  const buildTime = new Date().toISOString().split('T')[0]
+
+  clack.log.message(dim(`create-dev-to v${version} (${commit} on ${branch}) - ${buildTime}`))
+}
+
 function addDevDependency(projectDir: string, pkgName: string, version: string) {
   const pkgPath = path.join(projectDir, 'package.json')
   const raw = fs.readFileSync(pkgPath, 'utf-8')
@@ -545,6 +575,7 @@ async function init() {
   let packageManager = detectPackageManager(userAgent)
 
   clack.intro(cyan('create-dev-to'))
+  printVersionInfo()
 
   const cwd = process.cwd()
   const argTargetDir = formatTargetDir(process.argv[2])
