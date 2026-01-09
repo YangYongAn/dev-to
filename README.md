@@ -2,6 +2,8 @@
 
 一套面向 **AI Agent 平台**和**智能体容器**的 React 组件开发工具链，让第三方开发者享受"本地级"的开发体验。
 
+> **🚀 快速开始：** `npm create dev-to` - 30 秒创建你的第一个项目！
+
 ## 💡 为什么需要它？
 
 随着 AI Agent 和智能体平台的兴起，越来越多的企业（如集团公司、AI 平台）需要构建一个**智能体容器**，允许：
@@ -61,12 +63,12 @@
 
 | Package | Version | 说明 |
 |---------|---------|------|
-| [@dev-to/react-plugin](./packages/react-plugin) | [![npm](https://img.shields.io/npm/v/@dev-to/react-plugin.svg)](https://www.npmjs.com/package/@dev-to/react-plugin) | **Vite 侧插件** - 在 Vite Dev Server 上暴露稳定的桥接入口 |
-| [@dev-to/react-loader](./packages/react-loader) | [![npm](https://img.shields.io/npm/v/@dev-to/react-loader.svg)](https://www.npmjs.com/package/@dev-to/react-loader) | **宿主侧加载器** - 在任意页面中动态加载远程 React 组件 |
-| [create-dev-to](packages/create-dev-to) | [![npm](https://img.shields.io/npm/v/create-dev-to.svg)](https://www.npmjs.com/package/create-dev-to) | **脚手架工具** - 快速创建集成 dev-to 的前端项目（支持多框架） |
-| [@dev-to/react-shared](./packages/react-shared) | [![npm](https://img.shields.io/npm/v/@dev-to/react-shared.svg)](https://www.npmjs.com/package/@dev-to/react-shared) | **共享协议** - Vite 侧与宿主侧的通信协议和类型定义 |
-| @dev-to/react-template | - | **示例项目** - 演示 Vite 组件提供方的完整实现 |
-| @dev-to/react-playground | - | **示例项目** - 演示宿主应用如何加载远程组件 |
+| [create-dev-to](./packages/create-dev-to) | [![npm](https://img.shields.io/npm/v/create-dev-to.svg)](https://www.npmjs.com/package/create-dev-to) | 🚀 **脚手架工具** - 快速创建集成 dev-to 的前端项目（支持多框架） |
+| [@dev-to/react-plugin](./packages/react-plugin) | [![npm](https://img.shields.io/npm/v/@dev-to/react-plugin.svg)](https://www.npmjs.com/package/@dev-to/react-plugin) | ⚡ **Vite 侧插件** - 在 Vite Dev Server 上暴露稳定的桥接入口 |
+| [@dev-to/react-loader](./packages/react-loader) | [![npm](https://img.shields.io/npm/v/@dev-to/react-loader.svg)](https://www.npmjs.com/package/@dev-to/react-loader) | 🔌 **宿主侧加载器** - 在任意页面中动态加载远程 React 组件 |
+| [@dev-to/react-shared](./packages/react-shared) | [![npm](https://img.shields.io/npm/v/@dev-to/react-shared.svg)](https://www.npmjs.com/package/@dev-to/react-shared) | 📡 **共享协议** - Vite 侧与宿主侧的通信协议和类型定义 |
+| @dev-to/react-template | - | 📋 **示例项目** - 演示 Vite 组件提供方的完整实现 |
+| @dev-to/react-playground | - | 🎮 **示例项目** - 演示宿主应用如何加载远程组件 |
 
 ---
 
@@ -168,22 +170,36 @@ create-dev-to (独立脚手架)
 
 ## 🚀 快速上手
 
-### 方式 1: 使用脚手架创建项目 (推荐)
+### 方式 1: 使用脚手架创建项目 ⭐ 推荐
+
+使用 `create-dev-to` 一键创建项目，体验极速开发：
 
 ```bash
-# 使用 npm，或者 pnpm、yarn、bun 等
+# 使用你喜欢的包管理器
 npm create dev-to
-
-# 或者直接使用 create-dev-to 命令
-npx create-dev-to
+# 或
+pnpm create dev-to
+# 或
+yarn create dev-to
+# 或
+bun create dev-to
 ```
 
-脚手架会自动：
-1. 选择框架 (React、Vue 等，目前 React 已支持)
-2. 选择包管理器 (pnpm/npm/yarn/bun)
-3. 选择 React 模板 (TypeScript/JavaScript)
-4. 自动注入 `@dev-to/react-plugin` 到 `vite.config.ts`
-5. 安装依赖并启动开发服务器
+**脚手架特性：**
+
+✨ **智能引导**
+- 🎨 选择框架 (React ✅ 已支持 | Vue/Svelte/Solid 等即将推出)
+- 📦 选择包管理器 (pnpm/npm/yarn/bun)
+- 🔧 选择 React 模板 (TypeScript/JavaScript，支持 SWC)
+- 🎯 可选 Rolldown 实验性支持
+
+⚡ **开箱即用**
+- 自动注入 `@dev-to/react-plugin` 到 `vite.config.ts`
+- 自动安装所有依赖
+- 自动启动开发服务器
+- 美观的安装进度显示（三阶段进度条 + 实时统计）
+
+🎬 **从创建到运行，只需 30 秒！**
 
 ### 方式 2: 手动集成到现有项目
 
