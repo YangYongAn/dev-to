@@ -31,7 +31,7 @@ export default defineConfig({
 })
 ```
 
-### devComponentMap 形态
+### components 参数形态
 
 - `devToReactPlugin()`：通配符模式（默认 `'*': '/'`），便于开发；但 `vite build --mode lib` 需要显式 componentName。
 - `devToReactPlugin('MyCard')`：字符串快捷模式，等价于 `{ MyCard: '/' }`。
@@ -50,7 +50,7 @@ export default defineConfig({
 
 ## 生产构建（Library Mode）
 
-执行 `vite build --mode lib` 时，插件会按 `devComponentMap` 为每个组件产出一个 UMD bundle，默认输出到 `dist/<component>/`。
+执行 `vite build --mode lib` 时，插件会按 `components` 参数为每个组件产出一个 UMD bundle，默认输出到 `dist/<component>/`。
 
 > 提示：`'*': '/'` 的通配符模式仅适合开发；lib 构建请显式列出组件名。
 

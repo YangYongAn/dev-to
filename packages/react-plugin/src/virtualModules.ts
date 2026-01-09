@@ -25,7 +25,7 @@ export function createContractVirtualModuleCode(contract: BridgeContract) {
       console.log('Events:', CONTRACT.events);
       console.log('Dev mode:', CONTRACT?.dev?.mode);
       console.log('Default entry:', CONTRACT?.dev?.defaultEntry);
-      console.log('devComponentMap keys:', Object.keys(CONTRACT?.dev?.componentMap || {}));
+      console.log('Components:', Object.keys(CONTRACT?.dev?.componentMap || {}));
       console.log('Tip: open', ORIGIN + '${STABLE_DEBUG_HTML_PATH}');
       console.groupEnd();
     }

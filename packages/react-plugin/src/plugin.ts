@@ -107,7 +107,7 @@ export function devToReactPlugin(
   components?: DevComponentMapInput,
   options?: DevToReactPluginOptions,
 ): any { // eslint-disable-line @typescript-eslint/no-explicit-any
-  const devComponentMap = components ?? {}
+  const componentsMap = components ?? {}
   const opts = options ?? {}
   const stats: BridgeStats = {
     contract: { count: 0, lastAt: 0 },
@@ -116,10 +116,10 @@ export function devToReactPlugin(
   }
   const debugState: DebugStartupState = { didPrintStartupDebugUrl: false }
 
-  // 以配置文件所在目录作为“工程根”进行路径解析，不依赖 Vite 的 root 配置
+  // 以配置文件所在目录作为"工程根"进行路径解析，不依赖 Vite 的 root 配置
   let configDir = process.cwd()
   let currentRootDir = configDir
-  let resolvedConfig = resolveDevComponentConfig(currentRootDir, devComponentMap, configDir)
+  let resolvedConfig = resolveDevComponentConfig(currentRootDir, componentsMap, configDir)
 
   // Get version from package.json in the config directory
   let version = '0.0.0'
@@ -310,7 +310,7 @@ export function devToReactPlugin(
       const rootDir = configDir
       if (rootDir !== currentRootDir) {
         currentRootDir = rootDir
-        resolvedConfig = resolveDevComponentConfig(rootDir, devComponentMap, configDir)
+        resolvedConfig = resolveDevComponentConfig(rootDir, componentsMap, configDir)
         // 在 config hook 中，如果是 build lib 模式，保留 @；如果是 dev 模式，会在 configureServer 中转换
         const isDev = !isLibBuild(env)
         contract = createContract(
@@ -424,7 +424,7 @@ export function devToReactPlugin(
         if (nextConfigDir !== configDir) {
           configDir = nextConfigDir
           currentRootDir = configDir
-          resolvedConfig = resolveDevComponentConfig(currentRootDir, devComponentMap, configDir)
+          resolvedConfig = resolveDevComponentConfig(currentRootDir, componentsMap, configDir)
           const isDev = resolved.command === 'serve'
           contract = createContract(
             resolvedConfig.componentMap,

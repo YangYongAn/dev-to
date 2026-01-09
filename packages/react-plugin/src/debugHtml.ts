@@ -328,14 +328,14 @@ export function renderDebugHtml(params: DebugHtmlRenderParams) {
                 <summary>插件参数与配置说明 (Plugin API)</summary>
                 <div class="parameter-desc">
                     <div style="margin-bottom: 24px;">
-                        <pre style="background: #ebf8ff; color: #2c5282; border-color: #bee3f8; font-size: 14px; font-weight: 600;">reactHmrHostPlugin(devComponentMap?, options?)</pre>
+                        <pre style="background: #ebf8ff; color: #2c5282; border-color: #bee3f8; font-size: 14px; font-weight: 600;">devToReactPlugin(components?, options?)</pre>
                         <div class="muted" style="margin-top: 8px;">
                             支持单组件简写、对象全量映射，以及透传 Vite 原生配置。
                         </div>
                     </div>
 
                     <div class="parameter-item">
-                        <span class="parameter-name">1. devComponentMap (第一个参数)</span>
+                        <span class="parameter-name">1. components (第一个参数)</span>
                         <div class="parameter-info">
                             定义组件名与本地入口文件的映射：
                             <ul style="margin-top: 8px;">
@@ -344,10 +344,10 @@ export function renderDebugHtml(params: DebugHtmlRenderParams) {
                                 <li><b>多组件映射</b>：支持具体的相对/绝对路径。</li>
                             </ul>
                             <pre><span class="cmt">// Option 1: Shorthand (Default)</span>
-reactHmrHostPlugin(<span class="str">'Demo'</span>)
+devToReactPlugin(<span class="str">'Demo'</span>)
 
 <span class="cmt">// Option 2: Explicit Mapping with Wildcard</span>
-reactHmrHostPlugin({
+devToReactPlugin({
   <span class="str">'*'</span>: <span class="str">'/'</span>, <span class="cmt">// Wildcard to default entry</span>
   <span class="str">'Card'</span>: <span class="str">'src/Card.tsx'</span> <span class="cmt">// Specific file</span>
 })</pre>
@@ -368,8 +368,8 @@ reactHmrHostPlugin({
                                         <li>详细配置请参考 <a href="https://cn.vite.dev/config/shared-options#css-modules" target="_blank" style="color:#3b82f6;">Vite CSS 官方文档 ↗</a></li>
                                     </ul>
                                     <pre><span class="cmt">// Disable plugin CSS config or provide custom overrides</span>
-reactHmrHostPlugin(<span class="str">'Demo'</span>, { css: <span class="kw">false</span> })
-reactHmrHostPlugin(<span class="str">'Demo'</span>, { css: { ... } })</pre>
+devToReactPlugin(<span class="str">'Demo'</span>, { css: <span class="kw">false</span> })
+devToReactPlugin(<span class="str">'Demo'</span>, { css: { ... } })</pre>
                                 </li>
                                 <li style="margin-top: 12px;"><code class="kw">build</code>:
                                     <ul>
@@ -381,7 +381,7 @@ globals: { react: <span class="str">'React'</span>, <span class="str">'react-dom
                                         <li>详细配置请参考 <a href="https://cn.vite.dev/config/build-options" target="_blank" style="color:#3b82f6;">Vite 构建官方文档 ↗</a></li>
                                     </ul>
                                     <pre><span class="cmt">// Example: Disable asset inlining during build</span>
-reactHmrHostPlugin(<span class="str">'Demo'</span>, {
+devToReactPlugin(<span class="str">'Demo'</span>, {
   build: { assetsInlineLimit: <span class="val">0</span> }
 })</pre>
                                 </li>
@@ -391,7 +391,7 @@ reactHmrHostPlugin(<span class="str">'Demo'</span>, {
                                         <li>是否在启动 Vite 开发服务器后自动在浏览器中打开此调试面板。</li>
                                     </ul>
                                     <pre><span class="cmt">// Enable auto-open</span>
-reactHmrHostPlugin(<span class="str">'Demo'</span>, { open: <span class="kw">true</span> })</pre>
+devToReactPlugin(<span class="str">'Demo'</span>, { open: <span class="kw">true</span> })</pre>
                                 </li>
                             </ul>
                         </div>
