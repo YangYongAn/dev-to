@@ -72,18 +72,8 @@ const REACT_TEMPLATES = [
     color: cyan,
   },
   {
-    name: 'react-swc-ts',
-    display: 'TypeScript + SWC',
-    color: cyan,
-  },
-  {
     name: 'react',
     display: 'JavaScript',
-    color: yellow,
-  },
-  {
-    name: 'react-swc',
-    display: 'JavaScript + SWC',
     color: yellow,
   },
 ] as const
