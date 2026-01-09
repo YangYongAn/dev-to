@@ -46,14 +46,46 @@ export function Demo() {
 
 ## 默认桥接端点
 
-- Contract：`/__dev_to_react__/contract.js`
-- Init：`/__dev_to_react__/init.js`
+### v2.0+ 统一发现端点（推荐）
+- **Discovery**: `/__dev_to__/discovery.json` - 统一发现端点，包含所有配置信息
+
+### React 专用端点（兼容）
+- **Contract**: `/__dev_to__/react/contract.js` - 桥接合约
+- **Init**: `/__dev_to__/react/init.js` - 初始化脚本
 
 这些端点常量由 `@dev-to/react-shared` 统一定义，保证与 `@dev-to/react-plugin` 保持一致。
 
 可通过 `contractEndpoint` 自定义 contract 路径；init 路径由 contract 返回值决定（未提供时回退到默认值）。
 
+### 新增功能（v2.0+）
+
+使用新的发现端点 API：
+
+```tsx
+import { loadDiscoveryContract } from '@dev-to/react-loader'
+
+// 加载统一发现合约
+const discovery = await loadDiscoveryContract('http://localhost:5173')
+
+console.log(discovery.framework.type)    // 'react'
+console.log(discovery.framework.version) // '18.2.0'
+console.log(discovery.server.origins)     // 所有可用的 origin
+console.log(discovery.components)         // 组件映射
+```
+
 ## 导出内容
 
-- React 组件：`ReactLoader`
-- 底层能力：`loadBridgeContract` / `ensureBridgeInit` / `resolveReactEntry` / `resolveReactEntryForLoader`
+### React 组件
+- `ReactLoader` - 主加载器组件
+
+### 底层能力
+- `loadDiscoveryContract` - (新) 加载统一发现合约
+- `loadBridgeContract` - 加载桥接合约（兼容旧版）
+- `ensureBridgeInit` - 确保 HMR 运行时初始化
+- `resolveReactEntry` - 解析组件入口 URL
+- `resolveReactEntryForLoader` - 带错误处理的入口解析
+
+### 常量
+- `DEFAULT_DISCOVERY_ENDPOINT` - (新) 默认发现端点
+- `DEFAULT_CONTRACT_ENDPOINT` - 默认合约端点
+- `DEFAULT_INIT_ENDPOINT` - 默认初始化端点

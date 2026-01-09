@@ -68,9 +68,6 @@ export interface DevToReactPluginOptions {
   open?: boolean
 }
 
-/** @deprecated Use `DevToReactPluginOptions` instead. */
-export type ViteHostReactBridgePluginOptions = DevToReactPluginOptions
-
 /**
  * Component configuration input type
  *

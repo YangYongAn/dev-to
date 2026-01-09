@@ -39,14 +39,25 @@ export default defineConfig({
 
 ## 稳定桥接路径
 
-插件会提供以下稳定路径（下划线版本）：
+插件会提供以下稳定路径（v2.0+ 统一命名空间）：
 
-- Contract：`/__dev_to_react__/contract.js`
-- Init（安装 HMR + React Refresh preamble）：`/__dev_to_react__/init.js`
-- React Runtime（React + ReactDOMClient）：`/__dev_to_react__/react-runtime.js`
-- Debug：`/__dev_to_react__/debug.html` / `debug.json`
+### 框架无关端点（Framework-Agnostic）
+- **Discovery** (新): `/__dev_to__/discovery.json` - 统一发现端点，包含框架信息、服务器元数据、所有可用端点
+- **Debug HTML**: `/__dev_to__/debug.html` - 可视化调试面板
+- **Debug JSON**: `/__dev_to__/debug.json` - JSON 格式的调试信息
+
+### React 专用端点（React-Specific）
+- **Contract** (兼容): `/__dev_to__/react/contract.js` - 桥接合约
+- **Init**: `/__dev_to__/react/init.js` - 安装 HMR + React Refresh preamble
+- **Runtime**: `/__dev_to__/react/runtime.js` - React + ReactDOMClient
+- **Loader UMD**: `/__dev_to__/react/loader.js` - ReactLoader UMD 构建
+- **Component Loaders**: `/__dev_to__/react/loader/{ComponentName}.js` - 单组件加载器
 
 这些路径与事件名常量集中在 `@dev-to/react-shared`，用于保证 Vite 侧与宿主侧协议一致。
+
+### HMR 事件
+- Full Reload: `dev_to:react:full-reload`
+- HMR Update: `dev_to:react:hmr-update`
 
 ## 生产构建（Library Mode）
 

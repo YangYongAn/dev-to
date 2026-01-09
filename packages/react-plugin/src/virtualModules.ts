@@ -1,4 +1,4 @@
-import { PLUGIN_LOG_PREFIX, STABLE_CONTRACT_PATH, STABLE_DEBUG_HTML_PATH } from './constants.js'
+import { PLUGIN_LOG_PREFIX, STABLE_CONTRACT_PATH, STABLE_DEBUG_HTML_PATH, STABLE_LOADER_BASE_PATH } from './constants.js'
 
 import {
   DEV_TO_REACT_CONTRACT_KEY,
@@ -175,7 +175,7 @@ export function createLoaderWrapperCode(params: {
      * Direct usage with @dev-to/react-loader:
      *
      * import { ReactLoader } from '@dev-to/react-loader'
-     * import { loaderConfig, createLoaderProps } from '${origin}/__dev_to_react__/loader/${componentName}.js'
+     * import { loaderConfig, createLoaderProps } from '${origin}${STABLE_LOADER_BASE_PATH}/${componentName}.js'
      *
      * // Option 1: Use the config directly
      * <ReactLoader {...loaderConfig} componentProps={{ your: 'props' }} />

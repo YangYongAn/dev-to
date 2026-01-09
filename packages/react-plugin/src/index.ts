@@ -7,11 +7,15 @@ export {
   STABLE_CONTRACT_PATH,
   STABLE_DEBUG_HTML_PATH,
   STABLE_DEBUG_JSON_PATH,
+  STABLE_DISCOVERY_PATH,
   STABLE_INIT_PATH,
+  STABLE_LOADER_BASE_PATH,
+  STABLE_LOADER_UMD_PATH,
+  STABLE_REACT_BASE_PATH,
   STABLE_REACT_RUNTIME_PATH,
 } from './constants.js'
 
-export { devToReactPlugin, viteHostReactBridgePlugin } from './plugin.js'
+export { devToReactPlugin } from './plugin.js'
 
 export type {
   BridgeContract,
@@ -22,5 +26,4 @@ export type {
   DevComponentMapInput,
   DevToReactPluginOptions,
   ResolvedDevComponentConfig,
-  ViteHostReactBridgePluginOptions,
 } from './types.js'

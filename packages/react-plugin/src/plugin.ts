@@ -619,6 +619,3 @@ export function devToReactPlugin(
 
   return [corePlugin, devCssAssetPlugin, libPostPlugin]
 }
-
-/** @deprecated Use `devToReactPlugin` instead. */
-export const viteHostReactBridgePlugin = devToReactPlugin

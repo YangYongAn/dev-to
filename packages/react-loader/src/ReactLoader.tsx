@@ -11,11 +11,13 @@ import React, {
 import type { Root } from 'react-dom/client'
 
 import {
+  DEV_TO_DEBUG_HTML_PATH,
+  DEV_TO_DISCOVERY_PATH,
   DEV_TO_REACT_BASE_PATH,
   DEV_TO_REACT_CONTRACT_PATH,
-  DEV_TO_REACT_DEBUG_HTML_PATH,
   DEV_TO_REACT_INIT_PATH,
   DEV_TO_REACT_NAMESPACE,
+  type DevToDiscoveryContract,
   type DevToReactBridgeContract,
 } from '@dev-to/react-shared'
 
@@ -71,6 +73,7 @@ function resolveRemoteRuntime(runtimeModule: unknown): RemoteReactRuntime {
  * --- DevTo React Bridge Protocol Types & Utils ---
  */
 
+export const DEFAULT_DISCOVERY_ENDPOINT = DEV_TO_DISCOVERY_PATH
 export const DEFAULT_CONTRACT_ENDPOINT = DEV_TO_REACT_CONTRACT_PATH
 export const DEFAULT_INIT_ENDPOINT = DEV_TO_REACT_INIT_PATH
 
@@ -110,8 +113,42 @@ function resolveContract(initModule: unknown): DevToReactBridgeContract {
 
 const nativeImport = new Function('url', 'return import(url)') as (url: string) => Promise<unknown>
 
+const discoveryCache = new Map<string, Promise<DevToDiscoveryContract>>()
 const contractCache = new Map<string, Promise<DevToReactBridgeContract>>()
 const initCache = new Map<string, Promise<void>>()
+
+/**
+ * Load unified discovery contract from dev server (framework-agnostic).
+ * This is the new recommended way to discover server capabilities.
+ */
+export async function loadDiscoveryContract(
+  origin: string,
+  discoveryEndpoint?: string,
+): Promise<DevToDiscoveryContract> {
+  const endpoint = discoveryEndpoint || DEFAULT_DISCOVERY_ENDPOINT
+  const discoveryUrl = resolveEndpointUrl(origin, endpoint)
+
+  if (discoveryCache.has(discoveryUrl)) return discoveryCache.get(discoveryUrl)!
+
+  const p = fetch(discoveryUrl)
+    .then(async (resp) => {
+      if (!resp.ok) {
+        throw new Error(`Discovery endpoint returned ${resp.status}: ${resp.statusText}`)
+      }
+      const data = await resp.json()
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid discovery response: not a JSON object')
+      }
+      return data as DevToDiscoveryContract
+    })
+    .catch((e) => {
+      discoveryCache.delete(discoveryUrl)
+      throw e instanceof Error ? e : new Error(String(e))
+    })
+
+  discoveryCache.set(discoveryUrl, p)
+  return p
+}
 
 /** 加载远程 dev server 的桥接合约（无副作用） */
 export async function loadBridgeContract(
@@ -734,7 +771,7 @@ function InlineViteErrorView(props: {
     codeComment: { color: '#94a3b8', fontStyle: 'italic' },
   }
 
-  const debugPanelUrl = `${currentOrigin}${DEV_TO_REACT_DEBUG_HTML_PATH}`
+  const debugPanelUrl = `${currentOrigin}${DEV_TO_DEBUG_HTML_PATH}`
   const componentNameLabel = componentName || ''
 
   return (

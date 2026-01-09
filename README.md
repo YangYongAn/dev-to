@@ -131,18 +131,64 @@ graph TB
 
 ### 核心通信协议
 
-**Bridge Contract** - 桥接合约 (`contract.js`)
+**Unified Discovery Endpoint** - 统一发现端点 (`/__dev_to__/discovery.json`) - v2.0+
+
+```json5
+{
+  framework: {
+    type: 'react',
+    version: '18.2.0'
+  },
+  server: {
+    host: 'localhost',
+    port: 5173,
+    protocol: 'http',
+    origins: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://192.168.x.x:5173']
+  },
+  endpoints: {
+    discovery: '/__dev_to__/discovery.json',
+    contract: '/__dev_to__/react/contract.js',
+    init: '/__dev_to__/react/init.js',
+    runtime: '/__dev_to__/react/runtime.js',
+    debug: {
+      html: '/__dev_to__/debug.html',
+      json: '/__dev_to__/debug.json'
+    },
+    loader: {
+      base: '/__dev_to__/react/loader',
+      umd: '/__dev_to__/react/loader.js'
+    }
+  },
+  components: {
+    'MyCard': {
+      name: 'MyCard',
+      entry: 'src/components/MyCard.tsx',
+      framework: 'react'
+    }
+  },
+  events: {
+    fullReload: 'dev_to:react:full-reload',
+    hmrUpdate: 'dev_to:react:hmr-update'
+  },
+  protocol: {
+    version: '2.0.0',
+    apiLevel: 1
+  }
+}
+```
+
+**Legacy Bridge Contract** - 兼容旧版本 (`/__dev_to__/react/contract.js`)
 
 ```json5
 {
   paths: {
-    contract: '/__dev_to_react__/contract.js',
-    initClient: '/__dev_to_react__/init.js',
-    reactRuntime: '/__dev_to_react__/react-runtime.js'
+    contract: '/__dev_to__/react/contract.js',
+    initClient: '/__dev_to__/react/init.js',
+    reactRuntime: '/__dev_to__/react/runtime.js'
   },
   events: {
-    fullReload: 'dev_to_react:full-reload',
-    hmrUpdate: 'dev_to_react:hmr-update'
+    fullReload: 'dev_to:react:full-reload',
+    hmrUpdate: 'dev_to:react:hmr-update'
   },
   dev: {
     componentMap: {
@@ -317,11 +363,18 @@ devToReactPlugin({
 启动 Vite 后访问调试面板：
 
 ```
-http://localhost:5173/__dev_to_react__/debug.html
+http://localhost:5173/__dev_to__/debug.html
+```
+
+或访问发现端点查看 JSON 格式的完整信息：
+
+```
+http://localhost:5173/__dev_to__/discovery.json
 ```
 
 你可以查看：
-- **Contract 状态**: 组件映射配置
+- **Discovery Contract**: 框架类型、版本、服务器信息、所有可用端点
+- **Component Map**: 组件映射配置和入口路径
 - **HMR 统计**: 热更新触发次数和时间
 - **资源追踪**: 已重定向的资源列表
 - **快速测试**: 复制粘贴示例代码

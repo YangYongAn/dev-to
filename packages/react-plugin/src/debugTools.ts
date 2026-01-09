@@ -10,8 +10,10 @@ import {
   STABLE_CONTRACT_PATH,
   STABLE_DEBUG_HTML_PATH,
   STABLE_DEBUG_JSON_PATH,
+  STABLE_DISCOVERY_PATH,
   STABLE_INIT_PATH,
   STABLE_LOADER_BASE_PATH,
+  STABLE_LOADER_UMD_PATH,
   STABLE_REACT_RUNTIME_PATH,
 } from './constants.js'
 import { renderDebugHtml } from './debugHtml.js'
@@ -21,6 +23,7 @@ import { toFsPathFromViteEntry } from './pathUtils.js'
 import { DEV_TO_REACT_DID_OPEN_BROWSER_KEY } from '@dev-to/react-shared'
 import pc from 'picocolors'
 
+import type { DevToDiscoveryContract } from '@dev-to/react-shared'
 import type { ViteDevServer } from 'vite'
 
 import type { BridgeContract, BridgeStats, DebugStartupState, DevComponentAudit, ResolvedDevComponentConfig } from './types.js'
@@ -250,6 +253,85 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
       return
     }
 
+    // Handle unified discovery endpoint: /__dev_to__/discovery.json
+    if (url.startsWith(STABLE_DISCOVERY_PATH)) {
+      const isHttps = !!server.config.server.https
+      const proto = isHttps ? 'https' : 'http'
+      const addr = server.httpServer?.address()
+      const actualPort = addr && typeof addr === 'object' ? addr.port : undefined
+
+      const lanHosts = getLanIPv4Hosts()
+      const candidateHosts = ['localhost', '127.0.0.1', ...lanHosts]
+      const originCandidates = candidateHosts.map(
+        h => `${proto}://${h}${actualPort ? `:${actualPort}` : ''}`,
+      )
+
+      // Get React version from package.json
+      const require = createRequire(import.meta.url)
+      let reactVersion = '18.x'
+      try {
+        const reactPkgPath = require.resolve('react/package.json')
+        const reactPkg = JSON.parse(fs.readFileSync(reactPkgPath, 'utf-8'))
+        reactVersion = reactPkg.version || '18.x'
+      }
+      catch {
+        // Fallback to default
+      }
+
+      // Transform component map to discovery format
+      const components: DevToDiscoveryContract['components'] = {}
+      for (const [name, entry] of Object.entries(ctx.contract?.dev?.componentMap || {})) {
+        components[name] = {
+          name,
+          entry,
+          framework: 'react',
+        }
+      }
+
+      const discovery: DevToDiscoveryContract = {
+        framework: {
+          type: 'react',
+          version: reactVersion,
+        },
+        server: {
+          host: String(server.config.server.host || 'localhost'),
+          port: actualPort || server.config.server.port || 5173,
+          protocol: proto as 'http' | 'https',
+          origins: originCandidates,
+        },
+        endpoints: {
+          discovery: STABLE_DISCOVERY_PATH,
+          contract: STABLE_CONTRACT_PATH,
+          init: STABLE_INIT_PATH,
+          runtime: STABLE_REACT_RUNTIME_PATH,
+          debug: {
+            html: STABLE_DEBUG_HTML_PATH,
+            json: STABLE_DEBUG_JSON_PATH,
+          },
+          loader: {
+            base: STABLE_LOADER_BASE_PATH,
+            umd: STABLE_LOADER_UMD_PATH,
+          },
+        },
+        components,
+        events: {
+          fullReload: ctx.contract?.events?.fullReload || '',
+          hmrUpdate: ctx.contract?.events?.hmrUpdate || '',
+        },
+        protocol: {
+          version: '2.0.0',
+          apiLevel: 1,
+        },
+      }
+
+      res.statusCode = 200
+      res.setHeader('Content-Type', 'application/json; charset=utf-8')
+      res.setHeader('Access-Control-Allow-Origin', '*')
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+      res.end(JSON.stringify(discovery, null, 2))
+      return
+    }
+
     if (url.startsWith(STABLE_DEBUG_JSON_PATH)) {
       const isHttps = !!server.config.server.https
       const proto = isHttps ? 'https' : 'http'
@@ -328,9 +410,9 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
       return
     }
 
-    // Handle react-loader UMD endpoint: /__dev_to_react__/react-loader.js
+    // Handle react-loader UMD endpoint: /__dev_to__/react/loader.js
     // Serve local react-loader UMD build for testing (before publishing to npm)
-    if (pathname === `${STABLE_BASE_PATH}/react-loader.js`) {
+    if (pathname === STABLE_LOADER_UMD_PATH) {
       try {
         const reactLoaderUmdPath = getReactLoaderUmdPath()
         const umdCode = fs.readFileSync(reactLoaderUmdPath, 'utf-8')
@@ -348,7 +430,7 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
       }
     }
 
-    // Handle loader endpoint: /__dev_to_react__/loader/{ComponentName}.js
+    // Handle loader endpoint: /__dev_to__/react/loader/{ComponentName}.js
     // Returns a lightweight UMD wrapper that uses ReactLoader to load the component
     if (pathname.startsWith(STABLE_LOADER_BASE_PATH)) {
       const loaderPathPattern = new RegExp(`^${STABLE_LOADER_BASE_PATH}/([^/]+)\\.js$`)
@@ -375,7 +457,7 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
           componentName,
           origin,
           contractEndpoint: STABLE_CONTRACT_PATH,
-          reactLoaderUrl: `${origin}${STABLE_BASE_PATH}/react-loader.js`, // Use local UMD for testing
+          reactLoaderUrl: `${origin}${STABLE_LOADER_UMD_PATH}`, // Use local UMD for testing
         })
 
         res.statusCode = 200
