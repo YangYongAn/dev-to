@@ -1,7 +1,7 @@
 import { exec } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
 
 import {
   PLUGIN_LOG_PREFIX,
@@ -110,6 +110,31 @@ function openBrowser(url: string) {
     return
   }
   exec(`xdg-open "${url}"`)
+}
+
+/**
+ * 获取 @dev-to/react-loader 的 UMD 文件路径
+ * 兼容 npm 包和 monorepo 两种场景，使用 Node.js 标准模块解析规则
+ */
+function getReactLoaderUmdPath(): string {
+  try {
+    const require = createRequire(import.meta.url)
+    const loaderPkgPath = require.resolve('@dev-to/react-loader/package.json')
+    const loaderPkgDir = path.dirname(loaderPkgPath)
+    const umdPath = path.join(loaderPkgDir, 'dist/index.umd.js')
+
+    if (fs.existsSync(umdPath)) {
+      return umdPath
+    }
+  }
+  catch {
+    // package.json 找不到的话继续
+  }
+
+  // 如果模块解析失败，抛出错误
+  throw new Error(
+    `${PLUGIN_LOG_PREFIX} react-loader UMD not found. Run 'pnpm build' in react-loader package.`,
+  )
 }
 
 // 模块级全局变量，确保进程生命周期内只打开一次
@@ -276,29 +301,18 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
     // Serve local react-loader UMD build for testing (before publishing to npm)
     if (pathname === `${STABLE_BASE_PATH}/react-loader.js`) {
       try {
-        // Find react-loader package
-        const __filename = fileURLToPath(import.meta.url)
-        const __dirname = path.dirname(__filename)
-        const reactLoaderUmdPath = path.resolve(__dirname, '../../react-loader/dist/index.umd.js')
-
-        if (fs.existsSync(reactLoaderUmdPath)) {
-          const umdCode = fs.readFileSync(reactLoaderUmdPath, 'utf-8')
-          res.statusCode = 200
-          res.setHeader('Content-Type', 'application/javascript; charset=utf-8')
-          res.setHeader('Access-Control-Allow-Origin', '*')
-          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-          res.end(umdCode)
-          return
-        }
-        else {
-          res.statusCode = 404
-          res.end(`react-loader UMD not found at ${reactLoaderUmdPath}. Run 'pnpm build' in react-loader package.`)
-          return
-        }
+        const reactLoaderUmdPath = getReactLoaderUmdPath()
+        const umdCode = fs.readFileSync(reactLoaderUmdPath, 'utf-8')
+        res.statusCode = 200
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8')
+        res.setHeader('Access-Control-Allow-Origin', '*')
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        res.end(umdCode)
+        return
       }
       catch (error) {
-        res.statusCode = 500
-        res.end(`Error loading react-loader UMD: ${error}`)
+        res.statusCode = 404
+        res.end(`${error instanceof Error ? error.message : String(error)}`)
         return
       }
     }
