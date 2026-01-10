@@ -289,11 +289,22 @@ type Spinner = ReturnType<typeof clack.spinner>
 
 async function cloneViteTemplate(template: string, targetDir: string, packageManager: PackageManager, spinner: Spinner) {
   // Try to restore from cache first
-  spinner.message('Checking cache...')
-  const cachedRestored = await restoreFromCache(template, targetDir)
-  if (cachedRestored) {
-    spinner.message('Restored from cache')
-    return
+  spinner.message('Checking local cache...')
+  const cacheMetadata = getTemplateCacheMetadata(template)
+
+  if (cacheMetadata) {
+    const shortHash = cacheMetadata.commitHash.slice(0, 8)
+    spinner.message(`Found cached template (${shortHash})`)
+
+    const cachedRestored = await restoreFromCache(template, targetDir)
+    if (cachedRestored) {
+      spinner.message(`Restored from cache ${dim(`(${shortHash})`)}`)
+      return
+    }
+    spinner.message('Cache invalid, downloading fresh template...')
+  }
+  else {
+    spinner.message('No cache found, downloading template...')
   }
 
   const errors: Array<{ source: string, error: string }> = []
@@ -309,7 +320,13 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
       }
 
       // Get the current commit hash for cache validation
+      spinner.message(`Checking template version from ${source.name}...`)
       const commitHash = getTemplateCommitHash(source, template)
+
+      if (commitHash) {
+        const shortHash = commitHash.slice(0, 8)
+        spinner.message(`Latest template version: ${shortHash}`)
+      }
 
       const { command, args } = source.getCloneCommand(template, targetDir, packageManager)
 
@@ -368,8 +385,10 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
 
       // Save to cache if we got a commit hash
       if (commitHash) {
-        spinner.message('Saving to cache...')
+        const shortHash = commitHash.slice(0, 8)
+        spinner.message(`Caching template ${dim(`(${shortHash})`)} for future use...`)
         await saveToCache(template, targetDir, commitHash)
+        spinner.message(`Template cached ${dim(`(${shortHash})`)}`)
       }
 
       return
