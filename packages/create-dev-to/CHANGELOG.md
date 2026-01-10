@@ -1,5 +1,11 @@
 # create-dev-to
 
+## 1.3.3
+
+### Patch Changes
+
+- 7fa2e13: fix plugin injection and add component generation
+
 ## 1.3.2
 
 ### Patch Changes

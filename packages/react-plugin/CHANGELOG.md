@@ -1,5 +1,11 @@
 # @dev-to/react-plugin
 
+## 1.0.2
+
+### Patch Changes
+
+- 7fa2e13: fallback to CDN when local react-loader UMD not found
+
 ## 1.0.1
 
 ### Patch Changes
