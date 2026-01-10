@@ -60,12 +60,24 @@ jobs:
             rm release.json
             if [ -n "$RELEASES" ] && [ "$RELEASES" != "" ]; then
               echo "releases=$RELEASES" >> $GITHUB_OUTPUT
+
+              # Calculate commit message length (commitlint max is 100)
+              COMMIT_MSG="chore(repo): release packages ($RELEASES)"
+              if [ ${#COMMIT_MSG} -gt 100 ]; then
+                # If too long, just use generic message for commit
+                echo "commit_msg=chore(repo): release packages" >> $GITHUB_OUTPUT
+              else
+                echo "commit_msg=$COMMIT_MSG" >> $GITHUB_OUTPUT
+              fi
+
               echo "has_releases=true" >> $GITHUB_OUTPUT
             else
               echo "has_releases=false" >> $GITHUB_OUTPUT
+              echo "commit_msg=chore(repo): release packages" >> $GITHUB_OUTPUT
             fi
           else
             echo "has_releases=false" >> $GITHUB_OUTPUT
+            echo "commit_msg=chore(repo): release packages" >> $GITHUB_OUTPUT
           fi
 
       - name: Create Release Pull Request or Publish to npm
@@ -73,7 +85,7 @@ jobs:
         uses: changesets/action@v1
         with:
           publish: pnpm release
-          commit: "chore(repo): release packages${{ steps.version-info.outputs.has_releases == 'true' && format(' ({0})', steps.version-info.outputs.releases) || '' }}"
+          commit: "${{ steps.version-info.outputs.commit_msg }}"
           title: "chore(repo): release packages${{ steps.version-info.outputs.has_releases == 'true' && format(' ({0})', steps.version-info.outputs.releases) || '' }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
