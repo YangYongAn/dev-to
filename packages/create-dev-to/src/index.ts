@@ -14,6 +14,19 @@ import { displayInstallSummary, type InstallStats } from './visualComponents.js'
 const PACKAGE_MANAGERS = ['pnpm', 'npm', 'yarn', 'bun'] as const
 type PackageManager = typeof PACKAGE_MANAGERS[number]
 
+// Build-time injected values - will be replaced by esbuild
+declare const __GIT_COMMIT__: string
+declare const __GIT_BRANCH__: string
+declare const __BUILD_TIME__: string
+declare const __PACKAGE_VERSION__: string
+
+const __BUILD_INFO__ = {
+  commit: __GIT_COMMIT__,
+  branch: __GIT_BRANCH__,
+  buildTime: __BUILD_TIME__,
+  version: __PACKAGE_VERSION__,
+}
+
 const FRAMEWORKS = [
   {
     name: 'react',
@@ -530,40 +543,31 @@ function setupReactCompiler(root: string, isTs: boolean) {
   })
 }
 
-function getPackageVersion(): string {
-  try {
-    const pkgPath = path.join(path.dirname(new URL(import.meta.url).pathname), '../package.json')
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
-    return pkg.version || 'unknown'
-  }
-  catch {
-    return 'unknown'
-  }
-}
+function printBanner() {
+  const version = __BUILD_INFO__.version
+  const commit = __BUILD_INFO__.commit
+  const branch = __BUILD_INFO__.branch
 
-function getGitInfo(): { commit: string, branch: string } {
-  try {
-    const commit = execSync('git rev-parse --short HEAD 2>/dev/null', { encoding: 'utf-8' }).trim()
-    const branch = execSync('git rev-parse --abbrev-ref HEAD 2>/dev/null', { encoding: 'utf-8' }).trim()
-    return { commit, branch }
-  }
-  catch {
-    return { commit: 'unknown', branch: 'unknown' }
-  }
-}
+  // Convert UTC build time to local time for display
+  const buildTimeUTC = __BUILD_INFO__.buildTime
+  const [date, time] = buildTimeUTC.split(' ')
+  const utcDateTime = new Date(`${date}T${time}:00Z`)
+  const year = utcDateTime.getFullYear()
+  const month = String(utcDateTime.getMonth() + 1).padStart(2, '0')
+  const day = String(utcDateTime.getDate()).padStart(2, '0')
+  const hours = String(utcDateTime.getHours()).padStart(2, '0')
+  const minutes = String(utcDateTime.getMinutes()).padStart(2, '0')
+  const localTime = `${year}-${month}-${day} ${hours}:${minutes}`
 
-function printVersionInfo() {
-  const version = getPackageVersion()
-  const { commit, branch } = getGitInfo()
-  const buildTime = new Date().toISOString().split('T')[0]
-
-  // 只在有 git 信息时才显示完整信息
-  if (commit === 'unknown' || branch === 'unknown') {
-    clack.log.message(dim(`create-dev-to v${version} - ${buildTime}`))
-  }
-  else {
-    clack.log.message(dim(`create-dev-to v${version} (${commit} on ${branch}) - ${buildTime}`))
-  }
+  const logo = `
+${cyan('  ██████╗ ███████╗██╗   ██╗')}${yellow('    ████████╗ ██████╗')}   ${green(`v${version}`)}
+${cyan('  ██╔══██╗██╔════╝██║   ██║')}${yellow('    ╚══██╔══╝██╔═══██╗')}  ${dim(`${commit === 'unknown' ? '' : `${commit} on ${branch}`}`)}
+${cyan('  ██║  ██║█████╗  ██║   ██║')}${yellow('       ██║   ██║   ██║')}  ${dim(`${localTime}`)}
+${cyan('  ██║  ██║██╔══╝  ╚██╗ ██╔╝')}${yellow('       ██║   ██║   ██║')}
+${cyan('  ██████╔╝███████╗ ╚████╔╝')}${yellow('        ██║   ╚██████╔╝')}
+${cyan('  ╚═════╝ ╚══════╝  ╚═══╝')}${yellow('         ╚═╝    ╚═════╝')}
+  `
+  console.log(logo)
 }
 
 function addDevDependency(projectDir: string, pkgName: string, version: string) {
@@ -580,8 +584,7 @@ async function init() {
   const userAgent = process.env.npm_config_user_agent || ''
   let packageManager = detectPackageManager(userAgent)
 
-  clack.intro(cyan('create-dev-to'))
-  printVersionInfo()
+  printBanner()
 
   const cwd = process.cwd()
   const argTargetDir = formatTargetDir(process.argv[2])

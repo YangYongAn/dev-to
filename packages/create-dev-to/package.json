@@ -10,8 +10,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json -w",
+    "build": "node build.js",
+    "dev": "node build.js --watch",
     "lint": "pnpm -w lint",
     "test": "echo 'test create-dev-to'"
   },
