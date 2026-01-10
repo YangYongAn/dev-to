@@ -1,5 +1,23 @@
 # @dev-to/react-plugin
 
+## 1.0.1
+
+### Patch Changes
+
+- Fix plugin injection and add UMD fallback
+
+  **create-dev-to changes:**
+
+  - Fix React Compiler branch plugin format issue by rewriting injectPluginIntoViteConfig with bracket depth matching
+  - Auto-generate HelloWorld component files with useState example and responsive styles
+  - Fix Gitee mirror clone failing due to non-empty target directory
+
+  **react-plugin changes:**
+
+  - Fallback to CDN when local react-loader UMD not found
+  - Add HTTP 302 redirect to CDN for missing local UMD files
+  - Auto-detect local UMD availability and use CDN in user projects
+
 ## 1.0.0
 
 ### Major Changes
