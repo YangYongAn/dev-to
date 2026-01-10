@@ -334,6 +334,10 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
           fs.rmSync(tempCloneDir, { recursive: true, force: true })
 
           // Move the template to the final location
+          // If target exists, remove it first (fs.renameSync cannot rename to existing non-empty dir)
+          if (fs.existsSync(targetDir)) {
+            fs.rmSync(targetDir, { recursive: true, force: true })
+          }
           fs.renameSync(tempTargetDir, targetDir)
           tempTargetDir = null // Mark as successfully moved
         }
@@ -430,58 +434,76 @@ function injectPluginIntoViteConfig(content: string, pluginPackage: string, plug
 
   // 添加插件到 plugins 数组
   if (!hasCall) {
-    // 匹配 plugins: [...] 或 plugins:[...]
-    const pluginsRegex = /plugins\s*:\s*\[([^\]]*(?:\[[^\]]*\][^\]]*)*)\]/
-    const m = pluginsRegex.exec(out)
+    // 找到 plugins: [ 的位置
+    const pluginsStartMatch = /plugins\s*:\s*\[/.exec(out)
+    if (!pluginsStartMatch || pluginsStartMatch.index === undefined) {
+      return out
+    }
 
-    if (m && m.index !== undefined) {
-      const full = m[0]
-      const inner = m[1] || ''
+    const startIndex = pluginsStartMatch.index + pluginsStartMatch[0].length
 
-      // 检查是否是多行格式
-      if (inner.includes('\n')) {
-        // 多行格式：找到缩进
-        const lines = inner.split('\n')
-        const pluginLines = lines.filter(line => line.trim() && !line.trim().startsWith('//'))
+    // 使用括号匹配找到对应的 ]
+    let depth = 1
+    let endIndex = startIndex
 
-        let indent = '    ' // 默认 4 空格
-        if (pluginLines.length > 0) {
-          const firstPluginLine = pluginLines[0]
-          const match = firstPluginLine.match(/^(\s+)/)
-          if (match) indent = match[1]
+    for (let i = startIndex; i < out.length; i++) {
+      const char = out[i]
+      if (char === '[') depth++
+      else if (char === ']') {
+        depth--
+        if (depth === 0) {
+          endIndex = i
+          break
         }
+      }
+    }
 
-        // 在最后一个插件后添加新插件
-        const trimmedInner = inner.trimEnd()
-        const hasTrailingComma = trimmedInner.trim().endsWith(',')
-        const newPlugin = `${indent}${pluginName}(),`
+    const full = out.slice(pluginsStartMatch.index, endIndex + 1)
+    const inner = out.slice(startIndex, endIndex)
 
-        // 找到最后一个非空白行
-        const lastContentIndex = trimmedInner.lastIndexOf('\n')
-        if (lastContentIndex === -1) {
-          // 单行但包含换行符的情况
-          out = out.replace(full, `plugins: [\n${newPlugin}\n  ]`)
-        }
-        else {
-          const beforeLast = trimmedInner.slice(0, lastContentIndex + 1)
-          const lastLine = trimmedInner.slice(lastContentIndex + 1)
+    // 检查是否是多行格式
+    if (inner.includes('\n')) {
+      // 多行格式：找到缩进
+      const lines = inner.split('\n')
+      const pluginLines = lines.filter(line => line.trim() && !line.trim().startsWith('//'))
 
-          if (!hasTrailingComma && lastLine.trim()) {
-            // 最后一行没有逗号，需要添加
-            out = out.replace(full, `plugins: [${beforeLast}${lastLine},\n${newPlugin}\n  ]`)
-          }
-          else {
-            // 最后一行有逗号或为空
-            out = out.replace(full, `plugins: [${trimmedInner}\n${newPlugin}\n  ]`)
-          }
-        }
+      let indent = '    ' // 默认 4 空格
+      if (pluginLines.length > 0) {
+        const firstPluginLine = pluginLines[0]
+        const match = firstPluginLine.match(/^(\s+)/)
+        if (match) indent = match[1]
+      }
+
+      // 在最后一个插件后添加新插件
+      const trimmedInner = inner.trimEnd()
+      const hasTrailingComma = trimmedInner.trim().endsWith(',') || trimmedInner.trim().endsWith('),')
+      const newPlugin = `${indent}${pluginName}(),`
+
+      // 找到最后一个非空白行
+      const lastContentIndex = trimmedInner.lastIndexOf('\n')
+      if (lastContentIndex === -1) {
+        // 单行但包含换行符的情况
+        out = out.replace(full, `plugins: [\n${newPlugin}\n  ]`)
       }
       else {
-        // 单行格式
-        const compactInner = inner.trim()
-        const nextInner = compactInner ? `${compactInner}, ${pluginName}()` : `${pluginName}()`
-        out = out.replace(full, `plugins: [${nextInner}]`)
+        const beforeLast = trimmedInner.slice(0, lastContentIndex + 1)
+        const lastLine = trimmedInner.slice(lastContentIndex + 1)
+
+        if (!hasTrailingComma && lastLine.trim()) {
+          // 最后一行没有逗号，需要添加
+          out = out.replace(full, `plugins: [${beforeLast}${lastLine},\n${newPlugin}\n  ]`)
+        }
+        else {
+          // 最后一行有逗号或为空
+          out = out.replace(full, `plugins: [${trimmedInner}\n${newPlugin}\n  ]`)
+        }
       }
+    }
+    else {
+      // 单行格式
+      const compactInner = inner.trim()
+      const nextInner = compactInner ? `${compactInner}, ${pluginName}()` : `${pluginName}()`
+      out = out.replace(full, `plugins: [${nextInner}]`)
     }
   }
 
@@ -508,6 +530,142 @@ function editFile(file: string, callback: (content: string) => string) {
   fs.writeFileSync(file, callback(content), 'utf-8')
 }
 
+function createComponentFile(root: string, componentName: string, isTs: boolean) {
+  const componentDir = path.join(root, 'src', componentName)
+  const componentFile = path.join(componentDir, `index.${isTs ? 'tsx' : 'jsx'}`)
+
+  // 创建组件目录
+  if (!fs.existsSync(componentDir)) {
+    fs.mkdirSync(componentDir, { recursive: true })
+  }
+
+  // 生成组件内容
+  const componentContent = isTs
+    ? `import { useState } from 'react'
+import './index.css'
+
+export interface ${componentName}Props {
+  title?: string
+}
+
+export default function ${componentName}(props: ${componentName}Props) {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div className="${componentName.toLowerCase()}-container">
+      <h1>{props.title || 'Hello from ${componentName}'}</h1>
+      <div className="card">
+        <button onClick={() => setCount(count => count + 1)}>
+          count is {count}
+        </button>
+        <p>
+          Edit <code>src/${componentName}/index.tsx</code> to test HMR
+        </p>
+      </div>
+      <p className="info">
+        This component is loaded remotely via <code>@dev-to/react-loader</code>
+      </p>
+    </div>
+  )
+}
+`
+    : `import { useState } from 'react'
+import './index.css'
+
+export default function ${componentName}(props) {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div className="${componentName.toLowerCase()}-container">
+      <h1>{props.title || 'Hello from ${componentName}'}</h1>
+      <div className="card">
+        <button onClick={() => setCount(count => count + 1)}>
+          count is {count}
+        </button>
+        <p>
+          Edit <code>src/${componentName}/index.jsx</code> to test HMR
+        </p>
+      </div>
+      <p className="info">
+        This component is loaded remotely via <code>@dev-to/react-loader</code>
+      </p>
+    </div>
+  )
+}
+`
+
+  // 生成样式文件
+  const styleContent = `.${componentName.toLowerCase()}-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.${componentName.toLowerCase()}-container h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  margin-bottom: 2rem;
+}
+
+.card {
+  padding: 2em;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  color: white;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: #646cff;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+.info {
+  color: #888;
+  font-size: 0.9em;
+  margin-top: 2rem;
+}
+
+code {
+  background-color: #f0f0f0;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  .card {
+    background-color: #2a2a2a;
+  }
+
+  code {
+    background-color: #3a3a3a;
+  }
+}
+`
+
+  // 写入文件
+  fs.writeFileSync(componentFile, componentContent, 'utf-8')
+  fs.writeFileSync(path.join(componentDir, 'index.css'), styleContent, 'utf-8')
+}
+
 function setupReactSWC(root: string, isTs: boolean) {
   editFile(path.join(root, 'package.json'), (content) => {
     return content.replace(
@@ -530,15 +688,19 @@ function setupReactCompiler(root: string, isTs: boolean) {
     return JSON.stringify(asObject, null, 2) + '\n'
   })
   editFile(path.join(root, `vite.config.${isTs ? 'ts' : 'js'}`), (content) => {
+    // 如果已经有 babel-plugin-react-compiler，跳过
+    if (content.includes('babel-plugin-react-compiler')) {
+      return content
+    }
+
+    // 简单替换 react() 为带有 babel 配置的版本
     return content.replace(
-      '  plugins: [react()],',
-      `  plugins: [
-    react({
+      /react\(\)/,
+      `react({
       babel: {
         plugins: [['babel-plugin-react-compiler']],
       },
-    }),
-  ],`,
+    })`,
     )
   })
 }
@@ -787,6 +949,10 @@ async function init() {
     patched = updatePluginComponentName(patched, pluginName, componentName as string)
     fs.writeFileSync(viteConfigPath, patched)
   }
+
+  // 创建组件文件
+  spinner.message(`Creating component ${componentName}...`)
+  createComponentFile(root, componentName as string, isTs)
 
   spinner.stop('Project created')
 
