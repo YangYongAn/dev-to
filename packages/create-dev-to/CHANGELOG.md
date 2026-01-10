@@ -1,5 +1,56 @@
 # create-dev-to
 
+## 1.3.0
+
+### Minor Changes
+
+- c641388: Redesign CLI banner with ASCII art logo and enhanced build information
+
+  Complete redesign of the create-dev-to startup banner featuring a colorful ASCII art logo and comprehensive build information display.
+
+  **Visual Improvements:**
+
+  - Large 6-line ASCII art "dev-to" logo with DEV in cyan and TO in yellow
+  - Version number highlighted in green for better visibility
+  - Build metadata (git commit/branch, local timestamp) displayed alongside logo
+
+  **Technical Improvements:**
+
+  - Migrated from TypeScript compiler to esbuild for faster builds
+  - Build-time git info injection via esbuild `define` option
+  - Consolidated build and dev scripts with `--watch` flag support
+  - UTC timestamp stored at build time, converted to local timezone at runtime
+  - Preserved source shebang for flexibility with future Node.js runtime options (tsx, --experimental-strip-types)
+
+  **Example Output:**
+
+  ```
+    ██████╗ ███████╗██╗   ██╗    ████████╗ ██████╗   v1.1.0
+    ██╔══██╗██╔════╝██║   ██║    ╚══██╔══╝██╔═══██╗  abc1234 on main
+    ██║  ██║█████╗  ██║   ██║       ██║   ██║   ██║  2026-01-10 14:30
+    ██║  ██║██╔══╝  ╚██╗ ██╔╝       ██║   ██║   ██║
+    ██████╔╝███████╗ ╚████╔╝        ██║   ╚██████╔╝
+    ╚═════╝ ╚══════╝  ╚═══╝         ╚═╝    ╚═════╝
+  ```
+
+### Patch Changes
+
+- 0f223e1: Add version and build information display on startup
+
+  Display package version, git commit hash, branch name, and build date when
+  create-dev-to runs. This helps users verify they have the correct version
+  and understand the build information.
+
+  Example output:
+  create-dev-to v1.1.0 (abc1234 on main) - 2026-01-09
+
+  Features:
+
+  - Reads version from package.json
+  - Retrieves git commit hash and branch via git commands
+  - Gracefully handles errors if git is unavailable
+  - Displays info in dim/gray text after intro
+
 ## 1.2.0
 
 ### Minor Changes
