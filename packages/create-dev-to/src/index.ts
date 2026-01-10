@@ -6,6 +6,7 @@ import { spawn, execSync } from 'node:child_process'
 import process from 'node:process'
 import { randomUUID } from 'node:crypto'
 import readline from 'node:readline'
+import os from 'node:os'
 import * as clack from '@clack/prompts'
 import { red, cyan, yellow, green, dim } from 'kolorist'
 import { InstallLogger } from './installLogger.js'
@@ -287,6 +288,14 @@ function findViteConfigFile(projectDir: string): string | null {
 type Spinner = ReturnType<typeof clack.spinner>
 
 async function cloneViteTemplate(template: string, targetDir: string, packageManager: PackageManager, spinner: Spinner) {
+  // Try to restore from cache first
+  spinner.message('Checking cache...')
+  const cachedRestored = await restoreFromCache(template, targetDir)
+  if (cachedRestored) {
+    spinner.message('Restored from cache')
+    return
+  }
+
   const errors: Array<{ source: string, error: string }> = []
 
   for (let i = 0; i < TEMPLATE_SOURCES.length; i++) {
@@ -298,6 +307,9 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
       if (i > 0) {
         spinner.message(`Trying ${source.name}...`)
       }
+
+      // Get the current commit hash for cache validation
+      const commitHash = getTemplateCommitHash(source)
 
       const { command, args } = source.getCloneCommand(template, targetDir, packageManager)
 
@@ -352,6 +364,12 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
       else {
         // For degit sources, command and args are already properly formatted
         await run(command, args, process.cwd())
+      }
+
+      // Save to cache if we got a commit hash
+      if (commitHash) {
+        spinner.message('Saving to cache...')
+        await saveToCache(template, targetDir, commitHash)
       }
 
       return
@@ -410,6 +428,115 @@ function getDegitCommandForPM(pm: PackageManager): { command: string, args: (cmd
         command: 'bunx',
         args: (cmd, cmdArgs) => [cmd, ...cmdArgs],
       }
+  }
+}
+
+function getTemplateCacheDir(): string {
+  const cacheDir = path.join(process.env.HOME || process.env.USERPROFILE || os.homedir(), '.create-dev-to-cache')
+  return cacheDir
+}
+
+function getTemplateCommitHash(source: TemplateSource): string | null {
+  try {
+    if (source.name === 'GitHub') {
+      // For GitHub source via degit, we can check the vite repo commit hash
+      // Using git ls-remote to get the latest commit hash of the main branch
+      const hash = execSync('git ls-remote https://github.com/vitejs/vite.git HEAD', { stdio: 'pipe' })
+        .toString()
+        .split('\t')[0]
+        .trim()
+      return hash
+    }
+    else if (source.name === 'Gitee Mirror (国内镜像)') {
+      // For Gitee mirror
+      const hash = execSync('git ls-remote https://gitee.com/mirrors/ViteJS.git HEAD', { stdio: 'pipe' })
+        .toString()
+        .split('\t')[0]
+        .trim()
+      return hash
+    }
+    else {
+      return null
+    }
+  }
+  catch {
+    return null
+  }
+}
+
+function getTemplateCachePath(template: string, commitHash: string): string {
+  const cacheDir = getTemplateCacheDir()
+  const templateCacheFile = `${template}-${commitHash.slice(0, 8)}.zip`
+  return path.join(cacheDir, templateCacheFile)
+}
+
+function getTemplateCacheMetadata(template: string): { commitHash: string } | null {
+  const cacheDir = getTemplateCacheDir()
+  const metadataFile = path.join(cacheDir, `${template}.json`)
+  try {
+    if (fs.existsSync(metadataFile)) {
+      const metadata = JSON.parse(fs.readFileSync(metadataFile, 'utf-8'))
+      return metadata
+    }
+  }
+  catch {
+    // Ignore metadata read errors
+  }
+  return null
+}
+
+function saveTemplateCacheMetadata(template: string, commitHash: string): void {
+  const cacheDir = getTemplateCacheDir()
+  if (!fs.existsSync(cacheDir)) {
+    fs.mkdirSync(cacheDir, { recursive: true })
+  }
+  const metadataFile = path.join(cacheDir, `${template}.json`)
+  fs.writeFileSync(metadataFile, JSON.stringify({ commitHash }, null, 2))
+}
+
+async function restoreFromCache(template: string, targetDir: string): Promise<boolean> {
+  try {
+    const metadata = getTemplateCacheMetadata(template)
+    if (!metadata) return false
+
+    const cachePath = getTemplateCachePath(template, metadata.commitHash)
+    const cacheSourceDir = path.join(path.dirname(cachePath), `${template}-${metadata.commitHash.slice(0, 8)}`)
+
+    // Check if the cache directory exists (we store uncompressed directories for faster access)
+    if (fs.existsSync(cacheSourceDir)) {
+      if (fs.existsSync(targetDir)) {
+        fs.rmSync(targetDir, { recursive: true, force: true })
+      }
+      copyDir(cacheSourceDir, targetDir)
+      return true
+    }
+  }
+  catch {
+    // Ignore cache restore errors and fall back to download
+  }
+  return false
+}
+
+async function saveToCache(template: string, sourceDir: string, commitHash: string): Promise<void> {
+  try {
+    const cacheDir = getTemplateCacheDir()
+    if (!fs.existsSync(cacheDir)) {
+      fs.mkdirSync(cacheDir, { recursive: true })
+    }
+
+    const cachePath = getTemplateCachePath(template, commitHash)
+    const cacheSourceDir = path.join(path.dirname(cachePath), `${template}-${commitHash.slice(0, 8)}`)
+
+    // Store uncompressed directory for faster access
+    if (!fs.existsSync(cacheSourceDir)) {
+      copyDir(sourceDir, cacheSourceDir)
+    }
+
+    // Save metadata with the commit hash
+    saveTemplateCacheMetadata(template, commitHash)
+  }
+  catch {
+    // Ignore cache save errors, it's not critical
   }
 }
 
