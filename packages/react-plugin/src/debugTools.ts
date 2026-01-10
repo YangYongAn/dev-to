@@ -5,7 +5,6 @@ import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 
 import {
-  PLUGIN_LOG_PREFIX,
   STABLE_BASE_PATH,
   STABLE_CONTRACT_PATH,
   STABLE_DEBUG_HTML_PATH,
@@ -120,7 +119,7 @@ function openBrowser(url: string) {
  * 获取 @dev-to/react-loader 的 UMD 文件路径
  * 兼容 npm 包和 monorepo 两种场景，使用 Node.js 标准模块解析规则
  */
-function getReactLoaderUmdPath(): string {
+function getReactLoaderUmdPath(): string | null {
   const require = createRequire(import.meta.url)
 
   // 策略 1: 直接解析 package.json（npm 包场景）
@@ -165,10 +164,8 @@ function getReactLoaderUmdPath(): string {
     // 继续
   }
 
-  // 所有策略都失败
-  throw new Error(
-    `${PLUGIN_LOG_PREFIX} react-loader UMD not found. Run 'pnpm build' in react-loader package.`,
-  )
+  // 所有策略都失败，返回 null
+  return null
 }
 
 // 模块级全局变量，确保进程生命周期内只打开一次
@@ -411,21 +408,32 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
     // Handle react-loader UMD endpoint: /__dev_to__/react/loader.js
     // Serve local react-loader UMD build for testing (before publishing to npm)
     if (pathname === STABLE_LOADER_UMD_PATH) {
-      try {
-        const reactLoaderUmdPath = getReactLoaderUmdPath()
-        const umdCode = fs.readFileSync(reactLoaderUmdPath, 'utf-8')
-        res.statusCode = 200
-        res.setHeader('Content-Type', 'application/javascript; charset=utf-8')
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        res.end(umdCode)
-        return
+      const reactLoaderUmdPath = getReactLoaderUmdPath()
+
+      if (reactLoaderUmdPath) {
+        // 本地 UMD 存在，直接返回
+        try {
+          const umdCode = fs.readFileSync(reactLoaderUmdPath, 'utf-8')
+          res.statusCode = 200
+          res.setHeader('Content-Type', 'application/javascript; charset=utf-8')
+          res.setHeader('Access-Control-Allow-Origin', '*')
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+          res.end(umdCode)
+          return
+        }
+        catch (error) {
+          // 读取失败，回退到 CDN
+          console.warn(`[dev_to:react] Failed to read local UMD: ${error}. Falling back to CDN.`)
+        }
       }
-      catch (error) {
-        res.statusCode = 404
-        res.end(`${error instanceof Error ? error.message : String(error)}`)
-        return
-      }
+
+      // 本地 UMD 不存在或读取失败，重定向到 CDN
+      const cdnUrl = 'https://cdn.jsdelivr.net/npm/@dev-to/react-loader@latest/dist/index.umd.js'
+      res.statusCode = 302
+      res.setHeader('Location', cdnUrl)
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+      res.end()
+      return
     }
 
     // Handle loader endpoint: /__dev_to__/react/loader/{ComponentName}.js
@@ -450,12 +458,17 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
           : `${proto}://localhost${actualPort ? `:${actualPort}` : ''}`
 
         // Generate UMD wrapper code (synchronous, no compilation needed)
-        // In dev environment, use local react-loader UMD for testing before publishing
+        // Check if local UMD exists, otherwise use CDN
+        const hasLocalUmd = getReactLoaderUmdPath() !== null
+        const reactLoaderUrl = hasLocalUmd
+          ? `${origin}${STABLE_LOADER_UMD_PATH}` // Use local UMD for testing
+          : 'https://cdn.jsdelivr.net/npm/@dev-to/react-loader@latest/dist/index.umd.js' // Fallback to CDN
+
         const code = createLoaderUmdWrapper({
           componentName,
           origin,
           contractEndpoint: STABLE_CONTRACT_PATH,
-          reactLoaderUrl: `${origin}${STABLE_LOADER_UMD_PATH}`, // Use local UMD for testing
+          reactLoaderUrl,
         })
 
         res.statusCode = 200
