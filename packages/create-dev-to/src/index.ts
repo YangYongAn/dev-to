@@ -287,24 +287,28 @@ function findViteConfigFile(projectDir: string): string | null {
 
 type Spinner = ReturnType<typeof clack.spinner>
 
-async function cloneViteTemplate(template: string, targetDir: string, packageManager: PackageManager, spinner: Spinner) {
+type CloneResult = {
+  fromCache: boolean
+  commitHash: string | null
+}
+
+async function cloneViteTemplate(template: string, targetDir: string, packageManager: PackageManager, spinner: Spinner): Promise<CloneResult> {
   // Try to restore from cache first
-  spinner.message('Checking local cache...')
   const cacheMetadata = getTemplateCacheMetadata(template)
 
   if (cacheMetadata) {
     const shortHash = cacheMetadata.commitHash.slice(0, 8)
-    spinner.message(`Found cached template (${shortHash})`)
+    spinner.message(`Checking cache ${dim(`(${shortHash})`)}`)
 
     const cachedRestored = await restoreFromCache(template, targetDir)
     if (cachedRestored) {
-      spinner.message(`Restored from cache ${dim(`(${shortHash})`)}`)
-      return
+      spinner.stop(`Template restored from cache ${dim(`(${shortHash})`)}`)
+      return { fromCache: true, commitHash: cacheMetadata.commitHash }
     }
-    spinner.message('Cache invalid, downloading fresh template...')
+    spinner.message(`Downloading template ${dim('(cache outdated)')}`)
   }
   else {
-    spinner.message('No cache found, downloading template...')
+    spinner.message('Downloading template')
   }
 
   const errors: Array<{ source: string, error: string }> = []
@@ -391,7 +395,7 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
         spinner.message(`Template cached ${dim(`(${shortHash})`)}`)
       }
 
-      return
+      return { fromCache: false, commitHash }
     }
     catch (error) {
       // Clean up any temp directory on failure
@@ -1096,7 +1100,7 @@ async function init() {
   spinner.start('Scaffolding project')
 
   // 使用 degit 克隆模板
-  await cloneViteTemplate(template, root, packageManager, spinner)
+  const cloneResult = await cloneViteTemplate(template, root, packageManager, spinner)
 
   // 修改 package.json 名称
   const pkgPath = path.join(root, 'package.json')
@@ -1135,7 +1139,18 @@ async function init() {
   spinner.message(`Creating component ${componentName}...`)
   createComponentFile(root, componentName as string, isTs)
 
-  spinner.stop('Project created')
+  // 显示项目创建完成的消息，包含缓存信息
+  let completionMessage = 'Project created'
+  if (cloneResult.commitHash) {
+    const shortHash = cloneResult.commitHash.slice(0, 8)
+    if (cloneResult.fromCache) {
+      completionMessage += ` ${dim(`with cached template (${shortHash})`)}`
+    }
+    else {
+      completionMessage += ` ${dim(`(${shortHash})`)}`
+    }
+  }
+  spinner.stop(completionMessage)
 
   // 询问是否立即安装
   const shouldInstall = await clack.confirm({
