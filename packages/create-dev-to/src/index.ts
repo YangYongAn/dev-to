@@ -510,9 +510,25 @@ function injectPluginIntoViteConfig(content: string, pluginPackage: string, plug
   return out
 }
 
-function updatePluginComponentName(content: string, pluginName: string, componentName: string): string {
-  // 匹配 devToReactPlugin() 的调用，替换为 devToReactPlugin({ [ComponentName]: 'src/[ComponentName]/index.tsx' })
+function updatePluginComponentName(content: string, pluginName: string, componentName: string, projectName: string): string {
+  // 生成默认组件名称（与项目名称转换逻辑保持一致）
+  const defaultComponentName = projectName
+    .split(/[-_\s]+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join('')
+
   const pluginCall = `${pluginName}()`
+
+  // 如果组件名称与默认名称相同，使用字符串简写形式
+  if (componentName === defaultComponentName) {
+    const newPluginCall = `${pluginName}('${componentName}')`
+    if (content.includes(pluginCall)) {
+      return content.replace(pluginCall, newPluginCall)
+    }
+    return content
+  }
+
+  // 否则，使用对象配置形式 devToReactPlugin({ [ComponentName]: 'src/[ComponentName]/index.tsx' })
   const newPluginCall = `${pluginName}({
       ${componentName}: 'src/${componentName}/index.tsx',
     })`
@@ -808,7 +824,7 @@ async function init() {
     },
   )
 
-  const { shouldOverwrite, componentName } = project
+  const { shouldOverwrite, componentName, projectName } = project
 
   // 覆盖目录
   if (shouldOverwrite) {
@@ -946,7 +962,7 @@ async function init() {
   if (viteConfigPath) {
     let patched = fs.readFileSync(viteConfigPath, 'utf-8')
     patched = injectPluginIntoViteConfig(patched, pluginPackage, pluginName)
-    patched = updatePluginComponentName(patched, pluginName, componentName as string)
+    patched = updatePluginComponentName(patched, pluginName, componentName as string, projectName as string)
     fs.writeFileSync(viteConfigPath, patched)
   }
 
