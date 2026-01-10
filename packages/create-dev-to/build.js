@@ -43,8 +43,8 @@ else {
 }
 
 const buildOptions = {
-  entryPoints: ['src/index.ts'],
-  outfile: 'dist/index.js',
+  entryPoints: ['src/**/*.ts'],
+  outdir: 'dist',
   bundle: false,
   platform: 'node',
   format: 'esm',
