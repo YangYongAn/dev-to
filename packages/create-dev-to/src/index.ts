@@ -309,7 +309,7 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
       }
 
       // Get the current commit hash for cache validation
-      const commitHash = getTemplateCommitHash(source)
+      const commitHash = getTemplateCommitHash(source, template)
 
       const { command, args } = source.getCloneCommand(template, targetDir, packageManager)
 
@@ -436,19 +436,38 @@ function getTemplateCacheDir(): string {
   return cacheDir
 }
 
-function getTemplateCommitHash(source: TemplateSource): string | null {
+function getTemplateCommitHash(source: TemplateSource, template: string): string | null {
   try {
     if (source.name === 'GitHub') {
-      // For GitHub source via degit, we can check the vite repo commit hash
-      // Using git ls-remote to get the latest commit hash of the main branch
-      const hash = execSync('git ls-remote https://github.com/vitejs/vite.git HEAD', { stdio: 'pipe' })
+      // Get the latest commit hash that modified the specific template directory
+      // Using GitHub API to get the last commit for the template path
+      const templatePath = `packages/create-vite/template-${template}`
+      const hash = execSync(
+        `git ls-remote https://github.com/vitejs/vite.git HEAD | cut -f1`,
+        { stdio: 'pipe' },
+      )
         .toString()
-        .split('\t')[0]
         .trim()
-      return hash
+
+      // Use git log to get the last commit that modified this specific template directory
+      // This requires a shallow clone, so we'll use the GitHub API instead
+      try {
+        const apiUrl = `https://api.github.com/repos/vitejs/vite/commits?path=${templatePath}&per_page=1`
+        const apiHash = execSync(
+          `curl -s "${apiUrl}" | grep -m 1 '"sha"' | cut -d'"' -f4`,
+          { stdio: 'pipe' },
+        )
+          .toString()
+          .trim()
+        return apiHash || hash
+      }
+      catch {
+        // Fallback to HEAD commit if API call fails
+        return hash
+      }
     }
     else if (source.name === 'Gitee Mirror (国内镜像)') {
-      // For Gitee mirror
+      // For Gitee mirror, get HEAD commit (Gitee API may not be as reliable)
       const hash = execSync('git ls-remote https://gitee.com/mirrors/ViteJS.git HEAD', { stdio: 'pipe' })
         .toString()
         .split('\t')[0]
