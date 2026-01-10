@@ -50,13 +50,31 @@ jobs:
       - name: Build Packages
         run: pnpm build
 
+      - name: Get version changes
+        id: version-info
+        run: |
+          # Get changeset status and extract version information
+          STATUS_OUTPUT=$(pnpm changeset status --output=release.json 2>/dev/null || echo '{"releases":[]}')
+          if [ -f release.json ]; then
+            RELEASES=$(cat release.json | jq -r '.releases | map(.name + "@" + .newVersion) | join(", ")')
+            rm release.json
+            if [ -n "$RELEASES" ] && [ "$RELEASES" != "" ]; then
+              echo "releases=$RELEASES" >> $GITHUB_OUTPUT
+              echo "has_releases=true" >> $GITHUB_OUTPUT
+            else
+              echo "has_releases=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "has_releases=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
           publish: pnpm release
-          commit: "chore(repo): release packages"
-          title: "chore(repo): release packages"
+          commit: "chore(repo): release packages${{ steps.version-info.outputs.has_releases == 'true' && format(' ({0})', steps.version-info.outputs.releases) || '' }}"
+          title: "chore(repo): release packages${{ steps.version-info.outputs.has_releases == 'true' && format(' ({0})', steps.version-info.outputs.releases) || '' }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
