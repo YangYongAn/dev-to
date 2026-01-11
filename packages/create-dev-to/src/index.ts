@@ -458,6 +458,10 @@ async function cloneViteTemplate(template: string, targetDir: string, packageMan
       }
     }
   }
+
+  // This should never be reached due to the error handling in the loop,
+  // but TypeScript needs an explicit return to satisfy the return type
+  throw new Error('Unexpected end of cloneViteTemplate function')
 }
 
 function getDegitCommandForPM(pm: PackageManager): { command: string, args: (cmd: string, cmdArgs: string[]) => string[] } {
