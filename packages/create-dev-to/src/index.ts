@@ -28,69 +28,100 @@ const __BUILD_INFO__ = {
   version: __PACKAGE_VERSION__,
 }
 
-const FRAMEWORKS = [
+type Framework = {
+  name: string
+  display: string
+  color: (str: string) => string
+  variants: FrameworkVariant[]
+}
+
+type FrameworkVariant = {
+  name: string
+  display: string
+  color: (str: string) => string
+}
+
+const FRAMEWORKS: Framework[] = [
   {
     name: 'react',
     display: 'React',
     color: cyan,
-    supported: true,
+    variants: [
+      {
+        name: 'react-ts',
+        display: 'TypeScript',
+        color: cyan,
+      },
+      {
+        name: 'react-compiler-ts',
+        display: 'TypeScript + React Compiler',
+        color: cyan,
+      },
+      {
+        name: 'react-swc-ts',
+        display: 'TypeScript + SWC',
+        color: cyan,
+      },
+      {
+        name: 'react',
+        display: 'JavaScript',
+        color: yellow,
+      },
+      {
+        name: 'react-compiler',
+        display: 'JavaScript + React Compiler',
+        color: yellow,
+      },
+      {
+        name: 'react-swc',
+        display: 'JavaScript + SWC',
+        color: yellow,
+      },
+    ],
   },
   {
     name: 'vue',
     display: 'Vue',
     color: green,
-    supported: false,
+    variants: [],
   },
   {
     name: 'svelte',
     display: 'Svelte',
     color: red,
-    supported: false,
+    variants: [],
   },
   {
     name: 'solid',
     display: 'Solid',
     color: cyan,
-    supported: false,
+    variants: [],
   },
   {
     name: 'preact',
     display: 'Preact',
     color: cyan,
-    supported: false,
+    variants: [],
   },
   {
     name: 'lit',
     display: 'Lit',
     color: yellow,
-    supported: false,
+    variants: [],
   },
   {
     name: 'qwik',
     display: 'Qwik',
     color: cyan,
-    supported: false,
+    variants: [],
   },
   {
     name: 'vanilla',
     display: 'Vanilla',
     color: yellow,
-    supported: false,
+    variants: [],
   },
-] as const
-
-const REACT_TEMPLATES = [
-  {
-    name: 'react-ts',
-    display: 'TypeScript',
-    color: cyan,
-  },
-  {
-    name: 'react',
-    display: 'JavaScript',
-    color: yellow,
-  },
-] as const
+]
 
 type TemplateSource = {
   name: string
@@ -1019,38 +1050,37 @@ async function init() {
   }
 
   // 框架选择
-  const framework = await clack.select({
+  const selectedFramework = await clack.select({
     message: 'Select a framework:',
     options: FRAMEWORKS.map(fw => ({
-      value: fw.name,
-      label: fw.supported ? fw.color(fw.display) : `${fw.color(fw.display)} ${dim('(Coming soon)')}`,
-      hint: fw.supported ? undefined : 'Not yet supported',
+      value: fw,
+      label: fw.variants.length > 0 ? fw.color(fw.display) : `${fw.color(fw.display)} ${dim('(Coming soon)')}`,
+      hint: fw.variants.length > 0 ? undefined : 'Not yet supported',
     })),
-    initialValue: 'react',
+    initialValue: FRAMEWORKS[0],
   })
 
-  if (clack.isCancel(framework)) {
+  if (clack.isCancel(selectedFramework)) {
     clack.cancel('Operation cancelled.')
     process.exit(0)
   }
 
   // 检查框架是否支持
-  const selectedFramework = FRAMEWORKS.find(fw => fw.name === framework)
-  if (!selectedFramework?.supported) {
-    clack.outro(yellow(`⚠️  ${selectedFramework?.display} support is coming soon!`))
+  if (selectedFramework.variants.length === 0) {
+    clack.outro(yellow(`⚠️  ${selectedFramework.display} support is coming soon!`))
     clack.note(
-      `We're working hard to add support for ${selectedFramework?.display}.\n\nFor now, please use React or stay tuned for updates!`,
+      `We're working hard to add support for ${selectedFramework.display}.\n\nFor now, please use React or stay tuned for updates!`,
       'Roadmap',
     )
     process.exit(0)
   }
 
-  // React 模板选择
+  // 变体选择（TypeScript/JavaScript/SWC/Compiler 等）
   const variant = await clack.select({
     message: 'Select a variant:',
-    options: REACT_TEMPLATES.map(template => ({
-      value: template.name,
-      label: template.color(template.display),
+    options: selectedFramework.variants.map(v => ({
+      value: v.name,
+      label: v.color(v.display),
     })),
   })
 
@@ -1059,45 +1089,24 @@ async function init() {
     process.exit(0)
   }
 
-  const template = variant as string
-
-  // 询问是否使用 SWC
-  const shouldUseSWC = await clack.confirm({
-    message: 'Use SWC for faster transpilation? (Optional)',
-    initialValue: false,
-  })
-
-  if (clack.isCancel(shouldUseSWC)) {
-    clack.cancel('Operation cancelled.')
-    process.exit(0)
-  }
-
-  // 询问是否使用 React Compiler
-  const shouldUseReactCompiler = await clack.confirm({
-    message: 'Use React Compiler? (Experimental)',
-    initialValue: false,
-  })
-
-  if (clack.isCancel(shouldUseReactCompiler)) {
-    clack.cancel('Operation cancelled.')
-    process.exit(0)
-  }
-
-  // 询问是否使用 Rolldown（实验性）
-  const shouldUseRolldown = await clack.confirm({
-    message: 'Use Rolldown for bundling? (Experimental)',
-    initialValue: false,
-  })
-
-  if (clack.isCancel(shouldUseRolldown)) {
-    clack.cancel('Operation cancelled.')
-    process.exit(0)
-  }
+  let template = variant as string
 
   const root = path.join(cwd, targetDir)
 
   const spinner = clack.spinner()
   spinner.start('Scaffolding project')
+
+  // 检测是否需要 SWC 或 React Compiler（从模板名称中提取）
+  let isReactSwc = false
+  if (template.includes('-swc')) {
+    isReactSwc = true
+    template = template.replace('-swc', '')
+  }
+  let isReactCompiler = false
+  if (template.includes('-compiler')) {
+    isReactCompiler = true
+    template = template.replace('-compiler', '')
+  }
 
   // 使用 degit 克隆模板
   const cloneResult = await cloneViteTemplate(template, root, packageManager, spinner)
@@ -1110,11 +1119,11 @@ async function init() {
 
   // 处理 SWC 和 React Compiler 配置
   const isTs = template.includes('ts')
-  if (shouldUseSWC) {
+  if (isReactSwc) {
     spinner.message('Setting up SWC...')
     setupReactSWC(root, isTs)
   }
-  if (shouldUseReactCompiler) {
+  if (isReactCompiler) {
     spinner.message('Setting up React Compiler...')
     setupReactCompiler(root, isTs)
   }
@@ -1159,7 +1168,8 @@ async function init() {
   })
 
   if (clack.isCancel(shouldInstall)) {
-    // 用户取消
+    clack.cancel('Operation cancelled.')
+    process.exit(0)
   }
 
   if (shouldInstall) {
