@@ -1,4 +1,10 @@
+import { initI18n } from './i18n.js'
+
+// Initialize i18n
+initI18n()
+
 // Copy command functionality
+
 function copyCommand() {
   const command = document.getElementById('command').textContent
   const btn = document.querySelector('.copy-btn')

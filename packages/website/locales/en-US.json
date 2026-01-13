@@ -1,0 +1,139 @@
+{
+    "nav": {
+        "features": "Features",
+        "architecture": "Architecture",
+        "scenarios": "Scenarios",
+        "quickstart": "Quick Start"
+    },
+    "hero": {
+        "badge": "🔧 React Component Dev Toolchain Cross-Environment",
+        "subtitle": "Enjoy <strong>Local-Level</strong> Development Experience in Agent Containers",
+        "copy": "Copy",
+        "copied": "Copied",
+        "start": "Quick Start"
+    },
+    "pain_points": {
+        "title": "<span class=\"gradient-text\">Pain Points</span> of Traditional Mode",
+        "subtitle": "Common problems when developing components in AI Agent containers",
+        "box": {
+            "title": "Host Black Box",
+            "desc": "Must deploy to container to debug, no visibility into host details, making debugging extremely difficult"
+        },
+        "slow": {
+            "title": "Slow Feedback",
+            "desc": "Rebuild and deploy for every change, no Hot Module Replacement (HMR), low efficiency"
+        },
+        "prod": {
+            "title": "Hard to Debug Prod",
+            "desc": "Cannot set breakpoints or view logs like local env, troubleshooting is like finding a needle in a haystack"
+        },
+        "conflict": {
+            "title": "Runtime Conflicts",
+            "desc": "Resource 404s, React instance conflicts between container and component, causing Hooks errors"
+        }
+    },
+    "solutions": {
+        "title": "dev-to <span class=\"gradient-text\">Solutions</span>",
+        "subtitle": "A complete toolchain to solve component development challenges in agent containers",
+        "hmr": {
+            "title": "Cross-Env HMR",
+            "desc": "Vite dev locally, real-time HMR in container, instant feedback"
+        },
+        "debug": {
+            "title": "Prod-Level Debug",
+            "desc": "Load local dev components in production containers temporarily, debug with breakpoints like local"
+        },
+        "standard": {
+            "title": "Standard Protocol",
+            "desc": "Unified component loading spec, decoupling container and component, supporting multi-team collaboration"
+        },
+        "tools": {
+            "title": "Full Toolchain",
+            "desc": "Built-in debug panel, UMD build, scaffolding. Out-of-the-box solution"
+        },
+        "assets": {
+            "title": "Auto Asset Handling",
+            "desc": "CSS, images, fonts automatically redirected to Vite Dev Server, no more 404s"
+        },
+        "transparent": {
+            "title": "Fully Transparent",
+            "desc": "Source maps, logs, and breakpoints work perfectly, just like local development"
+        }
+    },
+    "architecture": {
+        "title": "Architecture <span class=\"gradient-text\">Design</span>",
+        "subtitle": "Collaboration model between container and component providers",
+        "agent_container": "🏗️ AI Agent Container",
+        "platform_side": "Group/Platform Side",
+        "loader_desc": "Dynamic Loading of Remote Components",
+        "business_a": "📦 Business A",
+        "business_b": "📦 Business B",
+        "third_party": "🔌 3rd Party Dev",
+        "comps_a": "Support Card, Order Card",
+        "comps_b": "Report Card, Approval Card",
+        "comps_c": "Weather Plugin, Calendar Plugin",
+        "mode_dev": "Dev Mode",
+        "mode_dev_desc": "Container loads localhost components → Real-time HMR",
+        "mode_prod": "Prod Mode",
+        "mode_prod_desc": "Container loads CDN UMD bundles → Stable Run",
+        "mode_debug": "Prod Debug",
+        "mode_debug_desc": "Switch to localhost temporarily → Debug like local"
+    },
+    "scenarios": {
+        "title": "Usage <span class=\"gradient-text\">Scenarios</span>",
+        "subtitle": "Suitable for various scenarios requiring dynamic loading of third-party components",
+        "agent": {
+            "title": "AI Agent Platform",
+            "desc": "Unified agent platform where business lines or third parties provide agent cards (assistants, dashboards, etc.)"
+        },
+        "micro": {
+            "title": "Micro-Frontend",
+            "desc": "Dynamically load sub-application React components in main app, independent maintenance"
+        },
+        "lowcode": {
+            "title": "Low-Code Plugin",
+            "desc": "Platform provides capabilities, developers provide custom extensions"
+        },
+        "electron": {
+            "title": "Electron App",
+            "desc": "Load independently developed plugins in Electron main window"
+        }
+    },
+    "packages": {
+        "title": "Core <span class=\"gradient-text\">Packages</span>",
+        "subtitle": "Complete toolchain covering the entire component development lifecycle",
+        "cli_desc": "🚀 CLI - Quickly create projects integrated with dev-to",
+        "plugin_desc": "⚡ Vite Plugin - Expose stable bridge entry on Vite Dev Server",
+        "loader_desc": "🔌 Host Loader - Dynamically load remote React components in any page",
+        "shared_desc": "📡 Protocol - Communication protocol and type definitions"
+    },
+    "quickstart": {
+        "title": "Quick <span class=\"gradient-text\">Start</span>",
+        "subtitle": "Create cross-env HMR components in 30s, update in real-time in any container",
+        "step1": {
+            "title": "Create with CLI",
+            "comment1": "# One-click creation, auto config",
+            "comment2": "# Start dev server, visit http://localhost:5173",
+            "desc": "CLI installs dependencies, configures Vite, generating Hello World component"
+        },
+        "step2": {
+            "title": "Manual Config",
+            "optional": "Optional",
+            "comment": "// vite.config.ts - For existing projects",
+            "desc": "For existing projects, install @dev-to/react-plugin and configure manually"
+        },
+        "step3": {
+            "title": "Host Integration",
+            "host": "Container Side",
+            "comment": "// Host app code, maintained by container team",
+            "desc": "Component developers ignore this. It's for the container/host team"
+        },
+        "cta": "View Full Docs"
+    },
+    "footer": {
+        "desc": "React Component Dev Toolchain for AI Agent Platforms",
+        "resources": "Resources",
+        "docs": "Docs",
+        "community": "Community"
+    }
+}

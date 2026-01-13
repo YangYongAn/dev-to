@@ -22,16 +22,17 @@
         <span class="logo-text"><span class="logo-icon">Ɖ</span>ev-to</span>
       </a>
       <div class="nav-links">
-        <a href="#features">特性</a>
-        <a href="#architecture">架构</a>
-        <a href="#scenarios">场景</a>
-        <a href="#quickstart">快速开始</a>
+        <a href="#features" data-i18n="nav.features">特性</a>
+        <a href="#architecture" data-i18n="nav.architecture">架构</a>
+        <a href="#scenarios" data-i18n="nav.scenarios">场景</a>
+        <a href="#quickstart" data-i18n="nav.quickstart">快速开始</a>
         <a href="https://github.com/YangYongAn/dev-to" target="_blank" class="nav-github">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path
               d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
           </svg>
         </a>
+        <button class="lang-switch">中文</button>
       </div>
     </div>
   </nav>
@@ -43,11 +44,11 @@
       <div class="hero-grid"></div>
     </div>
     <div class="container hero-content">
-      <div class="hero-badge">🔧 React 组件跨环境开发工具链</div>
+      <div class="hero-badge" data-i18n="hero.badge">🔧 React 组件跨环境开发工具链</div>
       <h1 class="hero-title">
         <span class="gradient-text">dev-to</span>
       </h1>
-      <p class="hero-subtitle">
+      <p class="hero-subtitle" data-i18n="hero.subtitle">
         让第三方开发者在智能体容器中享受<strong>「本地级」</strong>的开发体验
       </p>
       <div class="hero-command">
@@ -57,11 +58,11 @@
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
-          <span>复制</span>
+          <span data-i18n="hero.copy">复制</span>
         </button>
       </div>
       <div class="hero-cta">
-        <a href="#quickstart" class="btn btn-primary">快速开始</a>
+        <a href="#quickstart" class="btn btn-primary" data-i18n="hero.start">快速开始</a>
         <a href="https://github.com/YangYongAn/dev-to" target="_blank" class="btn btn-secondary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path
@@ -77,29 +78,29 @@
   <section class="section pain-points" id="problems">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">传统开发模式的<span class="gradient-text">痛点</span></h2>
-        <p class="section-subtitle">在 AI Agent 智能体容器中开发组件时，开发者常常遇到这些问题</p>
+        <h2 class="section-title" data-i18n="pain_points.title">传统开发模式的<span class="gradient-text">痛点</span></h2>
+        <p class="section-subtitle" data-i18n="pain_points.subtitle">在 AI Agent 智能体容器中开发组件时，开发者常常遇到这些问题</p>
       </div>
       <div class="pain-grid">
         <div class="pain-card">
           <div class="pain-icon">🔒</div>
-          <h3>宿主环境黑盒</h3>
-          <p>组件必须部署到容器才能调试，开发者看不到宿主内部细节，开发调试极其困难</p>
+          <h3 data-i18n="pain_points.box.title">宿主环境黑盒</h3>
+          <p data-i18n="pain_points.box.desc">组件必须部署到容器才能调试，开发者看不到宿主内部细节，开发调试极其困难</p>
         </div>
         <div class="pain-card">
           <div class="pain-icon">🐢</div>
-          <h3>调试反馈慢</h3>
-          <p>每次修改都要重新构建、部署，无法享受热更新（HMR），开发效率低下</p>
+          <h3 data-i18n="pain_points.slow.title">调试反馈慢</h3>
+          <p data-i18n="pain_points.slow.desc">每次修改都要重新构建、部署，无法享受热更新（HMR），开发效率低下</p>
         </div>
         <div class="pain-card">
           <div class="pain-icon">🐛</div>
-          <h3>生产环境难调试</h3>
-          <p>线上问题无法像本地一样打断点、查看日志，排查问题如同大海捞针</p>
+          <h3 data-i18n="pain_points.prod.title">生产环境难调试</h3>
+          <p data-i18n="pain_points.prod.desc">线上问题无法像本地一样打断点、查看日志，排查问题如同大海捞针</p>
         </div>
         <div class="pain-card">
           <div class="pain-icon">💥</div>
-          <h3>运行时冲突</h3>
-          <p>资源路径 404、容器与组件的 React 实例冲突，导致 Hook 报错等问题</p>
+          <h3 data-i18n="pain_points.conflict.title">运行时冲突</h3>
+          <p data-i18n="pain_points.conflict.desc">资源路径 404、容器与组件的 React 实例冲突，导致 Hook 报错等问题</p>
         </div>
       </div>
     </div>
@@ -109,40 +110,40 @@
   <section class="section solutions" id="features">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">dev-to 的<span class="gradient-text">解决方案</span></h2>
-        <p class="section-subtitle">一套完整的工具链，彻底解决智能体容器的组件开发难题</p>
+        <h2 class="section-title" data-i18n="solutions.title">dev-to 的<span class="gradient-text">解决方案</span></h2>
+        <p class="section-subtitle" data-i18n="solutions.subtitle">一套完整的工具链，彻底解决智能体容器的组件开发难题</p>
       </div>
       <div class="features-grid">
         <div class="feature-card featured">
           <div class="feature-icon">⚡</div>
-          <h3>跨环境 HMR</h3>
-          <p>在本地 Vite 开发，容器中的组件实时热更新，秒级反馈，极致的开发体验</p>
+          <h3 data-i18n="solutions.hmr.title">跨环境 HMR</h3>
+          <p data-i18n="solutions.hmr.desc">在本地 Vite 开发，容器中的组件实时热更新，秒级反馈，极致的开发体验</p>
           <div class="feature-tag">核心能力</div>
         </div>
         <div class="feature-card">
           <div class="feature-icon">🐛</div>
-          <h3>生产级调试</h3>
-          <p>支持在生产环境容器中临时加载本地开发版组件，像本地一样打断点调试</p>
+          <h3 data-i18n="solutions.debug.title">生产级调试</h3>
+          <p data-i18n="solutions.debug.desc">支持在生产环境容器中临时加载本地开发版组件，像本地一样打断点调试</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">🔗</div>
-          <h3>标准化协议</h3>
-          <p>统一的组件加载规范，容器和组件完全解耦，支持多团队跨组织协作</p>
+          <h3 data-i18n="solutions.standard.title">标准化协议</h3>
+          <p data-i18n="solutions.standard.desc">统一的组件加载规范，容器和组件完全解耦，支持多团队跨组织协作</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">📦</div>
-          <h3>完整工具链</h3>
-          <p>内置调试面板、UMD 构建、快速脚手架，开箱即用的完整解决方案</p>
+          <h3 data-i18n="solutions.tools.title">完整工具链</h3>
+          <p data-i18n="solutions.tools.desc">内置调试面板、UMD 构建、快速脚手架，开箱即用的完整解决方案</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">🖼️</div>
-          <h3>资源自动处理</h3>
-          <p>CSS、图片、字体等资源自动重定向到 Vite Dev Server，告别 404</p>
+          <h3 data-i18n="solutions.assets.title">资源自动处理</h3>
+          <p data-i18n="solutions.assets.desc">CSS、图片、字体等资源自动重定向到 Vite Dev Server，告别 404</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">🔍</div>
-          <h3>完全透明</h3>
-          <p>组件内部断点、日志、源码映射完整可用，调试体验与本地无异</p>
+          <h3 data-i18n="solutions.transparent.title">完全透明</h3>
+          <p data-i18n="solutions.transparent.desc">组件内部断点、日志、源码映射完整可用，调试体验与本地无异</p>
         </div>
       </div>
     </div>
@@ -152,18 +153,18 @@
   <section class="section architecture" id="architecture">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">架构<span class="gradient-text">设计</span></h2>
-        <p class="section-subtitle">容器与组件提供方的协作模式</p>
+        <h2 class="section-title" data-i18n="architecture.title">架构<span class="gradient-text">设计</span></h2>
+        <p class="section-subtitle" data-i18n="architecture.subtitle">容器与组件提供方的协作模式</p>
       </div>
       <div class="arch-diagram">
         <div class="arch-container">
           <div class="arch-box container-box">
-            <div class="arch-label">🏗️ AI Agent 智能体容器</div>
-            <div class="arch-desc">集团/平台侧</div>
+            <div class="arch-label" data-i18n="architecture.agent_container">🏗️ AI Agent 智能体容器</div>
+            <div class="arch-desc" data-i18n="architecture.platform_side">集团/平台侧</div>
             <div class="arch-inner">
               <div class="arch-module">
                 <span class="module-name">@dev-to/react-loader</span>
-                <span class="module-desc">动态加载远程组件</span>
+                <span class="module-desc" data-i18n="architecture.loader_desc">动态加载远程组件</span>
               </div>
             </div>
           </div>
@@ -183,37 +184,37 @@
           </div>
           <div class="arch-providers">
             <div class="arch-box provider-box">
-              <div class="arch-label">📦 业务线 A</div>
+              <div class="arch-label" data-i18n="architecture.business_a">📦 业务线 A</div>
               <div class="arch-port">localhost:5173</div>
               <div class="arch-plugin">@dev-to/react-plugin</div>
-              <div class="arch-components">客服卡片、订单卡片</div>
+              <div class="arch-components" data-i18n="architecture.comps_a">客服卡片、订单卡片</div>
             </div>
             <div class="arch-box provider-box">
-              <div class="arch-label">📦 业务线 B</div>
+              <div class="arch-label" data-i18n="architecture.business_b">📦 业务线 B</div>
               <div class="arch-port">localhost:5174</div>
               <div class="arch-plugin">@dev-to/react-plugin</div>
-              <div class="arch-components">报表卡片、审批卡片</div>
+              <div class="arch-components" data-i18n="architecture.comps_b">报表卡片、审批卡片</div>
             </div>
             <div class="arch-box provider-box">
-              <div class="arch-label">🔌 第三方开发者</div>
+              <div class="arch-label" data-i18n="architecture.third_party">🔌 第三方开发者</div>
               <div class="arch-port">localhost:5175</div>
               <div class="arch-plugin">@dev-to/react-plugin</div>
-              <div class="arch-components">天气插件、日历插件</div>
+              <div class="arch-components" data-i18n="architecture.comps_c">天气插件、日历插件</div>
             </div>
           </div>
         </div>
         <div class="arch-modes">
           <div class="mode-item">
-            <span class="mode-badge dev">开发模式</span>
-            <span>容器加载 localhost 上的组件 → 实时 HMR</span>
+            <span class="mode-badge dev" data-i18n="architecture.mode_dev">开发模式</span>
+            <span data-i18n="architecture.mode_dev_desc">容器加载 localhost 上的组件 → 实时 HMR</span>
           </div>
           <div class="mode-item">
-            <span class="mode-badge prod">生产模式</span>
-            <span>容器加载 CDN 上的 UMD 包 → 稳定运行</span>
+            <span class="mode-badge prod" data-i18n="architecture.mode_prod">生产模式</span>
+            <span data-i18n="architecture.mode_prod_desc">容器加载 CDN 上的 UMD 包 → 稳定运行</span>
           </div>
           <div class="mode-item">
-            <span class="mode-badge debug">生产调试</span>
-            <span>临时切换到 localhost → 像本地一样调试</span>
+            <span class="mode-badge debug" data-i18n="architecture.mode_debug">生产调试</span>
+            <span data-i18n="architecture.mode_debug_desc">临时切换到 localhost → 像本地一样调试</span>
           </div>
         </div>
       </div>
@@ -224,29 +225,29 @@
   <section class="section scenarios" id="scenarios">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">使用<span class="gradient-text">场景</span></h2>
-        <p class="section-subtitle">适用于多种需要动态加载第三方组件的场景</p>
+        <h2 class="section-title" data-i18n="scenarios.title">使用<span class="gradient-text">场景</span></h2>
+        <p class="section-subtitle" data-i18n="scenarios.subtitle">适用于多种需要动态加载第三方组件的场景</p>
       </div>
       <div class="scenarios-grid">
         <div class="scenario-card">
           <div class="scenario-icon">🤖</div>
-          <h3>AI Agent 智能体平台</h3>
-          <p>集团构建统一的智能体平台，各业务线或第三方提供智能体卡片（客服助手、数据看板、工单处理等）</p>
+          <h3 data-i18n="scenarios.agent.title">AI Agent 智能体平台</h3>
+          <p data-i18n="scenarios.agent.desc">集团构建统一的智能体平台，各业务线或第三方提供智能体卡片（客服助手、数据看板、工单处理等）</p>
         </div>
         <div class="scenario-card">
           <div class="scenario-icon">🏢</div>
-          <h3>企业微前端平台</h3>
-          <p>在主应用中动态加载子应用的 React 组件，各团队独立维护，互不干扰</p>
+          <h3 data-i18n="scenarios.micro.title">企业微前端平台</h3>
+          <p data-i18n="scenarios.micro.desc">在主应用中动态加载子应用的 React 组件，各团队独立维护，互不干扰</p>
         </div>
         <div class="scenario-card">
           <div class="scenario-icon">🧩</div>
-          <h3>低代码平台插件</h3>
-          <p>平台提供基础能力，开发者提供自定义组件扩展，快速集成第三方功能</p>
+          <h3 data-i18n="scenarios.lowcode.title">低代码平台插件</h3>
+          <p data-i18n="scenarios.lowcode.desc">平台提供基础能力，开发者提供自定义组件扩展，快速集成第三方功能</p>
         </div>
         <div class="scenario-card">
           <div class="scenario-icon">💻</div>
-          <h3>Electron 桌面应用</h3>
-          <p>在 Electron 主窗口中加载独立开发的插件组件，构建可扩展的桌面应用</p>
+          <h3 data-i18n="scenarios.electron.title">Electron 桌面应用</h3>
+          <p data-i18n="scenarios.electron.desc">在 Electron 主窗口中加载独立开发的插件组件，构建可扩展的桌面应用</p>
         </div>
       </div>
     </div>
@@ -256,8 +257,8 @@
   <section class="section packages">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">核心<span class="gradient-text">包</span></h2>
-        <p class="section-subtitle">完整的工具链，覆盖组件开发全流程</p>
+        <h2 class="section-title" data-i18n="packages.title">核心<span class="gradient-text">包</span></h2>
+        <p class="section-subtitle" data-i18n="packages.subtitle">完整的工具链，覆盖组件开发全流程</p>
       </div>
       <div class="packages-grid">
         <a href="https://www.npmjs.com/package/create-dev-to" target="_blank" class="package-card">
@@ -265,28 +266,28 @@
             <span class="package-name">create-dev-to</span>
             <span class="package-badge">CLI</span>
           </div>
-          <p class="package-desc">🚀 脚手架工具 - 快速创建集成 dev-to 的前端项目</p>
+          <p class="package-desc" data-i18n="packages.cli_desc">🚀 脚手架工具 - 快速创建集成 dev-to 的前端项目</p>
         </a>
         <a href="https://www.npmjs.com/package/@dev-to/react-plugin" target="_blank" class="package-card">
           <div class="package-header">
             <span class="package-name">@dev-to/react-plugin</span>
             <span class="package-badge">Vite</span>
           </div>
-          <p class="package-desc">⚡ Vite 插件 - 在 Vite Dev Server 上暴露稳定的桥接入口</p>
+          <p class="package-desc" data-i18n="packages.plugin_desc">⚡ Vite 插件 - 在 Vite Dev Server 上暴露稳定的桥接入口</p>
         </a>
         <a href="https://www.npmjs.com/package/@dev-to/react-loader" target="_blank" class="package-card">
           <div class="package-header">
             <span class="package-name">@dev-to/react-loader</span>
             <span class="package-badge">React</span>
           </div>
-          <p class="package-desc">🔌 宿主侧加载器 - 在任意页面中动态加载远程 React 组件</p>
+          <p class="package-desc" data-i18n="packages.loader_desc">🔌 宿主侧加载器 - 在任意页面中动态加载远程 React 组件</p>
         </a>
         <a href="https://www.npmjs.com/package/@dev-to/react-shared" target="_blank" class="package-card">
           <div class="package-header">
             <span class="package-name">@dev-to/react-shared</span>
             <span class="package-badge">Core</span>
           </div>
-          <p class="package-desc">📡 共享协议 - Vite 侧与宿主侧的通信协议和类型定义</p>
+          <p class="package-desc" data-i18n="packages.shared_desc">📡 共享协议 - Vite 侧与宿主侧的通信协议和类型定义</p>
         </a>
       </div>
     </div>
@@ -296,31 +297,32 @@
   <section class="section quickstart" id="quickstart">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">快速<span class="gradient-text">开始</span></h2>
-        <p class="section-subtitle">30 秒创建跨环境 HMR 组件，在任意容器中实时热更新</p>
+        <h2 class="section-title" data-i18n="quickstart.title">快速<span class="gradient-text">开始</span></h2>
+        <p class="section-subtitle" data-i18n="quickstart.subtitle">30 秒创建跨环境 HMR 组件，在任意容器中实时热更新</p>
       </div>
       <div class="quickstart-content">
         <div class="step-cards">
           <div class="step-card">
             <div class="step-number">1</div>
             <div class="step-content">
-              <h4>使用脚手架创建项目</h4>
+              <h4 data-i18n="quickstart.step1.title">使用脚手架创建项目</h4>
               <div class="code-block">
-                <pre><code><span class="code-comment"># 一键创建项目，全自动配置</span>
+                <pre><code><span class="code-comment" data-i18n="quickstart.step1.comment1"># 一键创建项目，全自动配置</span>
 npm create dev-to
 
-<span class="code-comment"># 启动开发服务器，访问 http://localhost:5173</span>
+<span class="code-comment" data-i18n="quickstart.step1.comment2"># 启动开发服务器，访问 http://localhost:5173</span>
 cd my-project && npm run dev</code></pre>
               </div>
-              <p>脚手架会自动安装依赖、配置 Vite 插件、生成 HelloWorld 组件，开箱即用</p>
+              <p data-i18n="quickstart.step1.desc">脚手架会自动安装依赖、配置 Vite 插件、生成 HelloWorld 组件，开箱即用</p>
             </div>
           </div>
           <div class="step-card optional">
             <div class="step-number">2</div>
             <div class="step-content">
-              <h4>手动配置 <span class="step-tag">可选</span></h4>
+              <h4><span data-i18n="quickstart.step2.title">手动配置</span> <span class="step-tag"
+                  data-i18n="quickstart.step2.optional">可选</span></h4>
               <div class="code-block">
-                <pre><code><span class="code-comment">// vite.config.ts - 适合在已有项目中集成</span>
+                <pre><code><span class="code-comment" data-i18n="quickstart.step2.comment">// vite.config.ts - 适合在已有项目中集成</span>
 <span class="code-keyword">import</span> { devToReactPlugin } <span class="code-keyword">from</span> <span class="code-string">'@dev-to/react-plugin'</span>
 
 <span class="code-keyword">export default</span> defineConfig({
@@ -332,15 +334,16 @@ cd my-project && npm run dev</code></pre>
   ],
 })</code></pre>
               </div>
-              <p>如果你有现有项目，可以手动安装 @dev-to/react-plugin 并配置组件映射</p>
+              <p data-i18n="quickstart.step2.desc">如果你有现有项目，可以手动安装 @dev-to/react-plugin 并配置组件映射</p>
             </div>
           </div>
           <div class="step-card host">
             <div class="step-number">3</div>
             <div class="step-content">
-              <h4>宿主容器对接 <span class="step-tag secondary">容器侧</span></h4>
+              <h4><span data-i18n="quickstart.step3.title">宿主容器对接</span> <span class="step-tag secondary"
+                  data-i18n="quickstart.step3.host">容器侧</span></h4>
               <div class="code-block">
-                <pre><code><span class="code-comment">// 宿主应用代码，由容器团队维护</span>
+                <pre><code><span class="code-comment" data-i18n="quickstart.step3.comment">// 宿主应用代码，由容器团队维护</span>
 <span class="code-keyword">import</span> { ReactLoader } <span class="code-keyword">from</span> <span class="code-string">'@dev-to/react-loader'</span>
 
 <span class="code-tag">&lt;ReactLoader</span>
@@ -348,13 +351,13 @@ cd my-project && npm run dev</code></pre>
   <span class="code-attr">name</span>=<span class="code-string">"MyCard"</span>
 <span class="code-tag">/&gt;</span></code></pre>
               </div>
-              <p>组件开发者无需关心此步骤，这是容器/宿主团队的集成工作</p>
+              <p data-i18n="quickstart.step3.desc">组件开发者无需关心此步骤，这是容器/宿主团队的集成工作</p>
             </div>
           </div>
         </div>
         <div class="quickstart-cta">
           <a href="https://github.com/YangYongAn/dev-to#-快速上手" target="_blank" class="btn btn-primary">
-            查看完整文档
+            <span data-i18n="quickstart.cta">查看完整文档</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
@@ -370,17 +373,17 @@ cd my-project && npm run dev</code></pre>
       <div class="footer-content">
         <div class="footer-brand">
           <span class="logo-text"><span class="logo-icon">Ɖ</span>ev-to</span>
-          <p>面向 AI Agent 平台的 React 组件开发工具链</p>
+          <p data-i18n="footer.desc">面向 AI Agent 平台的 React 组件开发工具链</p>
         </div>
         <div class="footer-links">
           <div class="footer-col">
-            <h4>资源</h4>
+            <h4 data-i18n="footer.resources">资源</h4>
             <a href="https://github.com/YangYongAn/dev-to" target="_blank">GitHub</a>
             <a href="https://www.npmjs.com/package/@dev-to/react-plugin" target="_blank">npm</a>
-            <a href="https://github.com/YangYongAn/dev-to#-快速上手" target="_blank">文档</a>
+            <a href="https://github.com/YangYongAn/dev-to#-快速上手" target="_blank" data-i18n="footer.docs">文档</a>
           </div>
           <div class="footer-col">
-            <h4>社区</h4>
+            <h4 data-i18n="footer.community">社区</h4>
             <a href="https://github.com/YangYongAn/dev-to/issues" target="_blank">Issues</a>
             <a href="https://github.com/YangYongAn/dev-to/pulls" target="_blank">Pull Requests</a>
           </div>

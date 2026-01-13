@@ -1,0 +1,139 @@
+{
+    "nav": {
+        "features": "特性",
+        "architecture": "架构",
+        "scenarios": "场景",
+        "quickstart": "快速开始"
+    },
+    "hero": {
+        "badge": "🔧 React 组件跨环境开发工具链",
+        "subtitle": "让第三方开发者在智能体容器中享受<strong>「本地级」</strong>的开发体验",
+        "copy": "复制",
+        "copied": "已复制",
+        "start": "快速开始"
+    },
+    "pain_points": {
+        "title": "传统开发模式的<span class=\"gradient-text\">痛点</span>",
+        "subtitle": "在 AI Agent 智能体容器中开发组件时，开发者常常遇到这些问题",
+        "box": {
+            "title": "宿主环境黑盒",
+            "desc": "组件必须部署到容器才能调试，开发者看不到宿主内部细节，开发调试极其困难"
+        },
+        "slow": {
+            "title": "调试反馈慢",
+            "desc": "每次修改都要重新构建、部署，无法享受热更新（HMR），开发效率低下"
+        },
+        "prod": {
+            "title": "生产环境难调试",
+            "desc": "线上问题无法像本地一样打断点、查看日志，排查问题如同大海捞针"
+        },
+        "conflict": {
+            "title": "运行时冲突",
+            "desc": "资源路径 404、容器与组件的 React 实例冲突，导致 Hook 报错等问题"
+        }
+    },
+    "solutions": {
+        "title": "dev-to 的<span class=\"gradient-text\">解决方案</span>",
+        "subtitle": "一套完整的工具链，彻底解决智能体容器的组件开发难题",
+        "hmr": {
+            "title": "跨环境 HMR",
+            "desc": "在本地 Vite 开发，容器中的组件实时热更新，秒级反馈，极致的开发体验"
+        },
+        "debug": {
+            "title": "生产级调试",
+            "desc": "支持在生产环境容器中临时加载本地开发版组件，像本地一样打断点调试"
+        },
+        "standard": {
+            "title": "标准化协议",
+            "desc": "统一的组件加载规范，容器和组件完全解耦，支持多团队跨组织协作"
+        },
+        "tools": {
+            "title": "完整工具链",
+            "desc": "内置调试面板、UMD 构建、快速脚手架，开箱即用的完整解决方案"
+        },
+        "assets": {
+            "title": "资源自动处理",
+            "desc": "CSS、图片、字体等资源自动重定向到 Vite Dev Server，告别 404"
+        },
+        "transparent": {
+            "title": "完全透明",
+            "desc": "组件内部断点、日志、源码映射完整可用，调试体验与本地无异"
+        }
+    },
+    "architecture": {
+        "title": "架构<span class=\"gradient-text\">设计</span>",
+        "subtitle": "容器与组件提供方的协作模式",
+        "agent_container": "🏗️ AI Agent 智能体容器",
+        "platform_side": "集团/平台侧",
+        "loader_desc": "动态加载远程组件",
+        "business_a": "📦 业务线 A",
+        "business_b": "📦 业务线 B",
+        "third_party": "🔌 第三方开发者",
+        "comps_a": "客服卡片、订单卡片",
+        "comps_b": "报表卡片、审批卡片",
+        "comps_c": "天气插件、日历插件",
+        "mode_dev": "开发模式",
+        "mode_dev_desc": "容器加载 localhost 上的组件 → 实时 HMR",
+        "mode_prod": "生产模式",
+        "mode_prod_desc": "容器加载 CDN 上的 UMD 包 → 稳定运行",
+        "mode_debug": "生产调试",
+        "mode_debug_desc": "临时切换到 localhost → 像本地一样调试"
+    },
+    "scenarios": {
+        "title": "使用<span class=\"gradient-text\">场景</span>",
+        "subtitle": "适用于多种需要动态加载第三方组件的场景",
+        "agent": {
+            "title": "AI Agent 智能体平台",
+            "desc": "集团构建统一的智能体平台，各业务线或第三方提供智能体卡片（客服助手、数据看板、工单处理等）"
+        },
+        "micro": {
+            "title": "企业微前端平台",
+            "desc": "在主应用中动态加载子应用的 React 组件，各团队独立维护，互不干扰"
+        },
+        "lowcode": {
+            "title": "低代码平台插件",
+            "desc": "平台提供基础能力，开发者提供自定义组件扩展，快速集成第三方功能"
+        },
+        "electron": {
+            "title": "Electron 桌面应用",
+            "desc": "在 Electron 主窗口中加载独立开发的插件组件，构建可扩展的桌面应用"
+        }
+    },
+    "packages": {
+        "title": "核心<span class=\"gradient-text\">包</span>",
+        "subtitle": "完整的工具链，覆盖组件开发全流程",
+        "cli_desc": "🚀 脚手架工具 - 快速创建集成 dev-to 的前端项目",
+        "plugin_desc": "⚡ Vite 插件 - 在 Vite Dev Server 上暴露稳定的桥接入口",
+        "loader_desc": "🔌 宿主侧加载器 - 在任意页面中动态加载远程 React 组件",
+        "shared_desc": "📡 共享协议 - Vite 侧与宿主侧的通信协议和类型定义"
+    },
+    "quickstart": {
+        "title": "快速<span class=\"gradient-text\">开始</span>",
+        "subtitle": "30 秒创建跨环境 HMR 组件，在任意容器中实时热更新",
+        "step1": {
+            "title": "使用脚手架创建项目",
+            "comment1": "# 一键创建项目，全自动配置",
+            "comment2": "# 启动开发服务器，访问 http://localhost:5173",
+            "desc": "脚手架会自动安装依赖、配置 Vite 插件、生成 HelloWorld 组件，开箱即用"
+        },
+        "step2": {
+            "title": "手动配置",
+            "optional": "可选",
+            "comment": "// vite.config.ts - 适合在已有项目中集成",
+            "desc": "如果你有现有项目，可以手动安装 @dev-to/react-plugin 并配置组件映射"
+        },
+        "step3": {
+            "title": "宿主容器对接",
+            "host": "容器侧",
+            "comment": "// 宿主应用代码，由容器团队维护",
+            "desc": "组件开发者无需关心此步骤，这是容器/宿主团队的集成工作"
+        },
+        "cta": "查看完整文档"
+    },
+    "footer": {
+        "desc": "面向 AI Agent 平台的 React 组件开发工具链",
+        "resources": "资源",
+        "docs": "文档",
+        "community": "社区"
+    }
+}
