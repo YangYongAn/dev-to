@@ -20,6 +20,11 @@ function getInitialLanguage() {
 
 let currentLang = getInitialLanguage()
 
+export function getTranslation(key) {
+  const t = translations[currentLang]
+  return getNestedValue(t, key)
+}
+
 function getNestedValue(obj, path) {
   return path.split('.').reduce((acc, part) => acc && acc[part], obj)
 }

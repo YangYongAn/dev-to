@@ -218,6 +218,9 @@ a {
   line-height: 1;
   margin-bottom: 20px;
   animation: fadeInUp 0.5s ease 0.1s both;
+  min-height: 1.2em;
+  /* Reserve height for text line */
+  text-wrap: balance;
 }
 
 .hero-title .gradient-text {
@@ -230,6 +233,19 @@ a {
   max-width: 540px;
   margin: 0 auto 32px;
   animation: fadeInUp 0.5s ease 0.15s both;
+  min-height: 3.6em;
+  /* Increased to accommodate wrapped lines comfortably */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* Use flex-direction column to keep text block-like if possible, but actually standard block w/ vertical centering hack is better or just top aligned. 
+     Safe bet: remove flex, just use block flow. */
+  display: block;
+  /* Vertically align? If we want fixed height and vertically centered text, it's hard with variable lines without a wrapper.
+     Let's prioritize correct text flow over perfect vertical centering. 
+     The jitter was the main issue. Fixed height helps. Top alignment is acceptable styling. */
+  padding-top: 0.5em;
+  /* Optical adjustment */
 }
 
 .hero-subtitle strong {
@@ -1052,5 +1068,36 @@ a {
   .scenarios-grid,
   .packages-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Language Switcher */
+.lang-switch {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 4px 12px;
+  border-radius: 100px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  font-family: var(--font-family);
+}
+
+.lang-switch:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+@media (max-width: 768px) {
+  .lang-switch {
+    position: absolute;
+    top: 16px;
+    right: 60px;
   }
 }

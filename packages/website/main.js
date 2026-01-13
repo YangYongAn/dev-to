@@ -1,4 +1,4 @@
-import { initI18n } from './i18n.js'
+import { initI18n, getTranslation } from './i18n.js'
 
 // Initialize i18n
 initI18n()
@@ -11,11 +11,11 @@ function copyCommand() {
 
   navigator.clipboard.writeText(command).then(() => {
     btn.classList.add('copied')
-    btn.querySelector('span').textContent = '已复制'
+    btn.querySelector('span').textContent = getTranslation('hero.copied')
 
     setTimeout(() => {
       btn.classList.remove('copied')
-      btn.querySelector('span').textContent = '复制'
+      btn.querySelector('span').textContent = getTranslation('hero.copy')
     }, 2000)
   })
 }
