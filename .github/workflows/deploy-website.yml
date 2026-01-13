@@ -55,8 +55,87 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Deploy to Vercel
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        id: vercel-deploy
+        run: |
+          DEPLOYMENT=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
+          echo "$DEPLOYMENT"
+          PREVIEW_URL=$(echo "$DEPLOYMENT" | grep -oP 'https://[^\s]+' | head -1)
+          echo "preview-url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $PREVIEW_URL"
         working-directory: packages/website
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Get Git Info
+        id: git-info
+        run: |
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+          COMMIT_DATE=$(git log -1 --pretty=%ai)
+          echo "sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "author=$COMMIT_AUTHOR" >> $GITHUB_OUTPUT
+          echo "date=$COMMIT_DATE" >> $GITHUB_OUTPUT
+
+      - name: Update Preview PR with Deployment Info
+        env:
+          PREVIEW_URL: ${{ steps.vercel-deploy.outputs.preview-url }}
+          COMMIT_SHA: ${{ steps.git-info.outputs.sha }}
+          COMMIT_AUTHOR: ${{ steps.git-info.outputs.author }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = process.env.PREVIEW_URL;
+            const commitSha = process.env.COMMIT_SHA;
+            const commitAuthor = process.env.COMMIT_AUTHOR;
+            const prTitle = '🔍 Preview: Website Preview Deployment';
+            const prBranch = 'preview/website-staging';
+
+            // 查找现有 Preview PR
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:${prBranch}`
+            });
+
+            const body = `## 🚀 Website Preview Deployment\n\n**Preview URL**: ${previewUrl}\n**Commit**: ${commitSha}\n**Author**: ${commitAuthor}\n\n### 检查清单\n- [ ] 预览效果验证通过\n- [ ] 没有构建错误\n- [ ] 响应式设计正常\n\n更新时间: ${new Date().toISOString()}`;
+
+            if (prs.data.length > 0) {
+              console.log(`✓ 更新 Preview PR #${prs.data[0].number}`);
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prs.data[0].number,
+                body: body
+              });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prs.data[0].number,
+                body: `🔄 更新 - ${commitSha}`
+              });
+            } else {
+              console.log(`✓ 创建新 Preview PR`);
+              try {
+                await github.rest.git.createRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `refs/heads/${prBranch}`,
+                  sha: context.sha
+                });
+              } catch (e) {}
+              const pr = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: prTitle,
+                body: body,
+                head: prBranch,
+                base: 'main'
+              });
+              console.log(`✓ Created PR #${pr.data.number}`);
+            }
