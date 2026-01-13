@@ -3,6 +3,48 @@ import { initI18n, getTranslation } from './i18n.js'
 // Initialize i18n
 initI18n()
 
+// Display version info in console and footer
+/* global __VERSION_INFO__ */
+function displayVersionInfo() {
+  const versionInfo = __VERSION_INFO__
+
+  // Display in console
+  console.log(
+    `%cdev-to %c${versionInfo.version}`,
+    'color: #3fb950; font-weight: bold; font-size: 14px;',
+    'color: #8b949e; font-size: 14px;',
+  )
+  console.log(
+    `%cGit: %c${versionInfo.gitBranch}@${versionInfo.gitHash}`,
+    'color: #58a6ff;',
+    'color: #8b949e;',
+  )
+  console.log(
+    `%cBuild: %c${versionInfo.buildDate}`,
+    'color: #79c0ff;',
+    'color: #8b949e;',
+  )
+  console.log('')
+
+  // Display in HTML
+  const footer = document.querySelector('.footer-bottom')
+  if (footer && footer.firstChild) {
+    const versionElement = document.createElement('div')
+    versionElement.style.cssText = `
+      font-size: 0.7rem;
+      color: #6e7681;
+      margin-top: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    `
+    versionElement.innerHTML = `
+      <span style="color: #3fb950; margin-right: 8px;">v${versionInfo.version}</span>
+      <span style="color: #58a6ff; margin-right: 8px;">${versionInfo.gitBranch}@${versionInfo.gitHash}</span>
+      <span style="color: #8b949e;">${versionInfo.buildDate}</span>
+    `
+    footer.appendChild(versionElement)
+  }
+}
+
 // Copy command functionality
 
 function copyCommand() {
@@ -25,6 +67,9 @@ window.copyCommand = copyCommand
 
 // Scroll animations
 document.addEventListener('DOMContentLoaded', () => {
+  // Display version info
+  displayVersionInfo()
+
   // Add fade-in class to animated elements
   const animatedElements = document.querySelectorAll(
     '.pain-card, .feature-card, .scenario-card, .package-card, .step-card',
