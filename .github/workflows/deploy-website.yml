@@ -57,11 +57,18 @@ jobs:
       - name: Deploy to Vercel
         id: vercel-deploy
         run: |
+          set +e
           DEPLOYMENT=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
+          EXIT_CODE=$?
           echo "$DEPLOYMENT"
-          PREVIEW_URL=$(echo "$DEPLOYMENT" | grep -oP 'https://[^\s]+' | head -1)
-          echo "preview-url=$PREVIEW_URL" >> $GITHUB_OUTPUT
-          echo "Deployed to: $PREVIEW_URL"
+          if [ $EXIT_CODE -eq 0 ]; then
+            PREVIEW_URL=$(echo "$DEPLOYMENT" | tail -1)
+            echo "preview-url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+            echo "✓ Deployed to: $PREVIEW_URL"
+          else
+            echo "✗ Deployment failed with exit code $EXIT_CODE"
+            exit $EXIT_CODE
+          fi
         working-directory: packages/website
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
