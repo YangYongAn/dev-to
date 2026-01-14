@@ -24,14 +24,20 @@ jobs:
       - name: Check for public package changes
         id: check
         run: |
-          # 检查是否只有 private packages 改动
-          git diff HEAD~1..HEAD --name-only | grep -v "packages/website" | grep "packages/" && {
+          # 获取改动的文件列表
+          CHANGED_FILES=$(git diff HEAD~1..HEAD --name-only)
+          echo "Changed files: $CHANGED_FILES"
+
+          # 检查是否有非 website 的 packages 改动
+          if echo "$CHANGED_FILES" | grep -q "^packages/" && ! echo "$CHANGED_FILES" | grep -q "^packages/website/"; then
             # 有非 website 的包改动
             echo "has-public-changes=true" >> $GITHUB_OUTPUT
-          } || {
-            # 只有 website 或其他私有包改动
+            echo "Public packages changed"
+          else
+            # 只有 website 或其他私有包改动，没有 public 包改动
             echo "has-public-changes=false" >> $GITHUB_OUTPUT
-          }
+            echo "Only private packages or website changed"
+          fi
 
   release:
     name: Publish to NPM
