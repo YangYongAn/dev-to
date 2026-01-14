@@ -1,5 +1,11 @@
 # create-dev-to
 
+## 1.5.1
+
+### Patch Changes
+
+- 4b9221c: Unify CLI theme colors with website branding for consistent visual identity
+
 ## 1.5.0
 
 ### Minor Changes
