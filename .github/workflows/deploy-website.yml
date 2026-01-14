@@ -129,13 +129,77 @@ jobs:
             } else {
               console.log(`✓ 创建新 Preview PR`);
               try {
+                // 创建 preview/website-staging 分支，指向当前 main
                 await github.rest.git.createRef({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   ref: `refs/heads/${prBranch}`,
                   sha: context.sha
                 });
-              } catch (e) {}
+              } catch (e) {
+                // 分支可能已存在，忽略错误
+              }
+
+              try {
+                // 获取主分支的最新树对象
+                const mainRef = await github.rest.git.getRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: 'heads/main'
+                });
+
+                const mainCommit = await github.rest.git.getCommit({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  commit_sha: mainRef.data.object.sha
+                });
+
+                // 创建一个 .preview-info 文件
+                const previewInfo = `# Preview Deployment Info\nURL: ${previewUrl}\nCommit: ${commitSha}\n`;
+
+                const blob = await github.rest.git.createBlob({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  content: Buffer.from(previewInfo).toString('base64'),
+                  encoding: 'base64'
+                });
+
+                // 创建新的树（包含 .preview-info 文件）
+                const tree = await github.rest.git.createTree({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  base_tree: mainCommit.data.tree.sha,
+                  tree: [
+                    {
+                      path: '.preview-info',
+                      mode: '100644',
+                      type: 'blob',
+                      sha: blob.data.sha
+                    }
+                  ]
+                });
+
+                // 创建一个提交
+                const commit = await github.rest.git.createCommit({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  message: `chore: preview deployment ${commitSha}`,
+                  tree: tree.data.sha,
+                  parents: [mainRef.data.object.sha]
+                });
+
+                // 更新 preview/website-staging 分支指向新提交
+                await github.rest.git.updateRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `heads/${prBranch}`,
+                  sha: commit.data.sha
+                });
+              } catch (e) {
+                console.log('Failed to create preview commit:', e.message);
+              }
+
+              // 创建 PR
               const pr = await github.rest.pulls.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
