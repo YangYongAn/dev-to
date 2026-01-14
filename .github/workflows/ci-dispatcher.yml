@@ -1,0 +1,154 @@
+name: CI Dispatcher
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  detect-changes:
+    name: Detect Change Type
+    runs-on: ubuntu-latest
+    outputs:
+      has-website-changes: ${{ steps.detect.outputs.has-website-changes }}
+      has-public-package-changes: ${{ steps.detect.outputs.has-public-package-changes }}
+      change-type: ${{ steps.detect.outputs.change-type }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changes
+        id: detect
+        run: |
+          # 获取改动的文件列表
+          CHANGED_FILES=$(git diff HEAD~1..HEAD --name-only)
+          echo "📋 Changed files:"
+          echo "$CHANGED_FILES"
+          echo ""
+
+          # 初始化标志
+          HAS_WEBSITE=false
+          HAS_PUBLIC_PKG=false
+
+          # 检查 website 改动
+          if echo "$CHANGED_FILES" | grep -q "^packages/website/"; then
+            HAS_WEBSITE=true
+            echo "✅ Website changes detected"
+          fi
+
+          # 检查公开包改动（排除 website）
+          if echo "$CHANGED_FILES" | grep -q "^packages/" && ! echo "$CHANGED_FILES" | grep -q "^packages/website/"; then
+            HAS_PUBLIC_PKG=true
+            echo "✅ Public package changes detected"
+          fi
+
+          # 检查 PR 改动（version/changeset）
+          HAS_RELEASE_PR=false
+          if echo "$CHANGED_FILES" | grep -qE "(\.changeset|package\.json)"; then
+            HAS_RELEASE_PR=true
+            echo "✅ Release-related changes detected"
+          fi
+
+          # 判断变更类型
+          if [ "$HAS_PUBLIC_PKG" = true ]; then
+            CHANGE_TYPE="npm-package"
+            echo "📦 Change type: NPM Package"
+          elif [ "$HAS_WEBSITE" = true ]; then
+            CHANGE_TYPE="website"
+            echo "🌐 Change type: Website"
+          elif [ "$HAS_RELEASE_PR" = true ]; then
+            CHANGE_TYPE="release-pr"
+            echo "🚀 Change type: Release PR"
+          else
+            CHANGE_TYPE="other"
+            echo "📄 Change type: Other (docs, chore, etc)"
+          fi
+
+          # 输出结果
+          echo "has-website-changes=$HAS_WEBSITE" >> $GITHUB_OUTPUT
+          echo "has-public-package-changes=$HAS_PUBLIC_PKG" >> $GITHUB_OUTPUT
+          echo "change-type=$CHANGE_TYPE" >> $GITHUB_OUTPUT
+
+          echo ""
+          echo "🎯 Summary:"
+          echo "  Website changes: $HAS_WEBSITE"
+          echo "  Public package changes: $HAS_PUBLIC_PKG"
+          echo "  Change type: $CHANGE_TYPE"
+
+  report-website-preview:
+    name: Website Preview Deploy
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has-website-changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: ✅ Website changes detected
+        run: |
+          echo "🌐 Website Preview Deploy will be triggered"
+          echo "   - Detected website changes in packages/website/"
+          echo "   - Will deploy preview to Vercel"
+          echo "   - Will create/update Release PR to website-release branch"
+
+  report-npm-release:
+    name: NPM Release
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has-public-package-changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: ✅ Public package changes detected
+        run: |
+          echo "📦 NPM Release will be triggered"
+          echo "   - Detected public package changes"
+          echo "   - Will check changeset and publish to NPM"
+
+  report-skip:
+    name: CI Summary
+    needs: detect-changes
+    if: needs.detect-changes.outputs.change-type == 'other' || needs.detect-changes.outputs.change-type == 'release-pr'
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⏭️ No CI workflows triggered
+        run: |
+          echo "Change type: ${{ needs.detect-changes.outputs.change-type }}"
+          echo ""
+          echo "This is OK for:"
+          echo "  ✓ Documentation only changes"
+          echo "  ✓ Chore updates"
+          echo "  ✓ Release PR updates"
+          echo "  ✓ CI config updates"
+
+  final-summary:
+    name: CI Dispatch Summary
+    needs: detect-changes
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Summary
+        run: |
+          echo "════════════════════════════════════════════════════════════"
+          echo "📊 CI Dispatcher Summary"
+          echo "════════════════════════════════════════════════════════════"
+          echo ""
+          echo "Detected Changes:"
+          echo "  • Website changes: ${{ needs.detect-changes.outputs.has-website-changes }}"
+          echo "  • Public package changes: ${{ needs.detect-changes.outputs.has-public-package-changes }}"
+          echo "  • Change type: ${{ needs.detect-changes.outputs.change-type }}"
+          echo ""
+          echo "CI Decisions:"
+          if [ "${{ needs.detect-changes.outputs.has-website-changes }}" = "true" ]; then
+            echo "  ✅ Website Preview Deploy WILL run"
+          else
+            echo "  ❌ Website Preview Deploy SKIPPED"
+          fi
+          if [ "${{ needs.detect-changes.outputs.has-public-package-changes }}" = "true" ]; then
+            echo "  ✅ NPM Release WILL run"
+          else
+            echo "  ❌ NPM Release SKIPPED"
+          fi
+          echo ""
+          echo "════════════════════════════════════════════════════════════"
