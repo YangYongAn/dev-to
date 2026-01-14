@@ -1,4 +1,8 @@
-import { green, yellow, red, dim, bold } from 'kolorist'
+import { yellow, red, dim, bold } from 'kolorist'
+
+// 与 website 一致的主题色函数
+// 主绿色 (#3fb950) RGB(63, 185, 80)
+const primaryGreen = (str: string) => `\x1b[38;2;63;185;80m${str}\x1b[0m`
 
 export interface InstallPhase {
   name: 'resolving' | 'downloading' | 'installing' | 'building'
@@ -119,25 +123,28 @@ function getPhaseIcon(phase: string): string {
 }
 
 function getPhaseColors(phase: string): RGB[] {
+  // 使用与 website 一致的主题色
+  // 主绿色 (#3fb950) RGB(63, 185, 80)
+  // 浅绿色 (#56d364) RGB(86, 211, 100)
   const colorSets: Record<string, RGB[]> = {
     resolving: [
-      { r: 59, g: 130, b: 246 },
-      { r: 37, g: 99, b: 235 },
+      { r: 63, g: 185, b: 80 },
+      { r: 86, g: 211, b: 100 },
     ],
     downloading: [
-      { r: 34, g: 197, b: 94 },
-      { r: 22, g: 163, b: 74 },
+      { r: 63, g: 185, b: 80 },
+      { r: 86, g: 211, b: 100 },
     ],
     installing: [
-      { r: 168, g: 85, b: 247 },
-      { r: 147, g: 51, b: 234 },
+      { r: 63, g: 185, b: 80 },
+      { r: 86, g: 211, b: 100 },
     ],
     building: [
-      { r: 251, g: 146, b: 60 },
-      { r: 249, g: 115, b: 22 },
+      { r: 63, g: 185, b: 80 },
+      { r: 86, g: 211, b: 100 },
     ],
   }
-  return colorSets[phase] || [{ r: 156, g: 163, b: 175 }]
+  return colorSets[phase] || [{ r: 63, g: 185, b: 80 }]
 }
 
 function formatSpeed(bytesPerSecond: number): string {
@@ -200,8 +207,8 @@ export class InstallRenderer {
     if (this.supportsColor) {
       const title = createGradient(
         '◆ Installing Dependencies',
-        { r: 99, g: 102, b: 241 },
-        { r: 236, g: 72, b: 153 },
+        { r: 63, g: 185, b: 80 },
+        { r: 86, g: 211, b: 100 },
       )
       lines.push(bold(title))
     }
@@ -248,7 +255,7 @@ export class InstallRenderer {
     const parts: string[] = []
 
     if (stats.packagesAdded) {
-      parts.push(`Packages: ${green(`+${stats.packagesAdded}`)}`)
+      parts.push(`Packages: ${primaryGreen(`+${stats.packagesAdded}`)}`)
     }
     if (stats.packagesUpdated) {
       parts.push(`Updated: ${yellow(stats.packagesUpdated.toString())}`)
@@ -304,12 +311,12 @@ export function displayInstallSummary(stats: InstallStats): void {
   const lines: string[] = []
 
   lines.push('')
-  lines.push(green('✨ Installation Complete!'))
+  lines.push(primaryGreen('✨ Installation Complete!'))
   lines.push('')
 
   const pkgStats: string[] = []
   if (stats.packagesAdded > 0)
-    pkgStats.push(`${green(`+${stats.packagesAdded}`)} added`)
+    pkgStats.push(`${primaryGreen(`+${stats.packagesAdded}`)} added`)
   if (stats.packagesUpdated > 0)
     pkgStats.push(`${yellow(`~${stats.packagesUpdated}`)} updated`)
   if (stats.packagesRemoved > 0)

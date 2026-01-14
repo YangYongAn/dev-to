@@ -8,7 +8,13 @@ import { randomUUID } from 'node:crypto'
 import readline from 'node:readline'
 import os from 'node:os'
 import * as clack from '@clack/prompts'
-import { red, cyan, yellow, green, dim } from 'kolorist'
+import { red, cyan, yellow, dim } from 'kolorist'
+
+// 与 website 一致的主题色函数
+// 主绿色 (#3fb950) RGB(63, 185, 80)
+// 白色 (#e6edf3) RGB(230, 237, 243)
+const primaryGreen = (str: string) => `\x1b[38;2;63;185;80m${str}\x1b[0m`
+const white = (str: string) => `\x1b[38;2;230;237;243m${str}\x1b[0m`
 import { InstallLogger } from './installLogger.js'
 import { displayInstallSummary, type InstallStats } from './visualComponents.js'
 
@@ -82,7 +88,7 @@ const FRAMEWORKS: Framework[] = [
   {
     name: 'vue',
     display: 'Vue',
-    color: green,
+    color: primaryGreen,
     variants: [],
   },
   {
@@ -941,13 +947,14 @@ function printBanner() {
   const minutes = String(utcDateTime.getMinutes()).padStart(2, '0')
   const localTime = `${year}-${month}-${day} ${hours}:${minutes}`
 
+  // 使用主题色的 logo：DEV 用绿色，TO 用白色
   const logo = `
-${cyan('  ██████╗ ███████╗██╗   ██╗')}${yellow('    ████████╗ ██████╗')}   ${green(`v${version}`)}
-${cyan('  ██╔══██╗██╔════╝██║   ██║')}${yellow('    ╚══██╔══╝██╔═══██╗')}  ${dim(`${commit === 'unknown' ? '' : `${commit} on ${branch}`}`)}
-${cyan('  ██║  ██║█████╗  ██║   ██║')}${yellow('       ██║   ██║   ██║')}  ${dim(`${localTime}`)}
-${cyan('  ██║  ██║██╔══╝  ╚██╗ ██╔╝')}${yellow('       ██║   ██║   ██║')}
-${cyan('  ██████╔╝███████╗ ╚████╔╝')}${yellow('        ██║   ╚██████╔╝')}
-${cyan('  ╚═════╝ ╚══════╝  ╚═══╝')}${yellow('         ╚═╝    ╚═════╝')}
+${primaryGreen('  ██████╗ ███████╗██╗   ██╗')}    ${white('████████╗ ██████╗')}    ${primaryGreen(`Ɖev`)}${white(`-to v${version}`)}
+${primaryGreen('  ██╔══██╗██╔════╝██║   ██║')}    ${white('╚══██╔══╝██╔═══██╗')}   ${dim(`${commit === 'unknown' ? '' : `${commit} on ${branch}`}`)}
+${primaryGreen('  ╬Ɖ╬  ██║█████╗  ██║   ██║')}       ${white('██║   ██║   ██║')}   ${dim(`${localTime}`)}
+${primaryGreen('  ██║  ██║██╔══╝  ╚██╗ ██╔╝')}       ${white('██║   ██║   ██║')}
+${primaryGreen('  ██████╔╝███████╗ ╚████╔╝')}        ${white('██║   ╚██████╔╝')}
+${primaryGreen('  ╚═════╝ ╚══════╝  ╚═══╝')}         ${white('╚═╝    ╚═════╝')}
   `
   console.log(logo)
 }
