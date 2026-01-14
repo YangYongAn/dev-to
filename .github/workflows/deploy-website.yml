@@ -58,7 +58,7 @@ jobs:
         id: vercel-deploy
         run: |
           set +e
-          DEPLOYMENT=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
+          DEPLOYMENT=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
           EXIT_CODE=$?
           echo "$DEPLOYMENT"
           if [ $EXIT_CODE -eq 0 ]; then
