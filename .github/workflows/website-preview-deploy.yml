@@ -222,8 +222,8 @@ jobs:
         with:
           script: |
             const prTitle = '🚀 Website Release: v${{ needs.deploy-preview.outputs.new-version }}';
-            const prHead = 'website-release';
-            const prBase = 'main';
+            const prHead = 'main';  // 从 main 创建 PR
+            const prBase = 'website-release';  // 合并到 website-release
 
             // 获取当前提交信息
             const currentVersion = '${{ needs.deploy-preview.outputs.current-version }}';
