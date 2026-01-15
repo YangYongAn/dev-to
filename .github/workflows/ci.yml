@@ -34,6 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       website: ${{ steps.filter.outputs.website || steps.fallback.outputs.website }}
+      changeset: ${{ steps.filter.outputs.changeset || steps.fallback.outputs.changeset }}
+      publishable: ${{ steps.filter.outputs.publishable || steps.fallback.outputs.publishable }}
     steps:
       - name: Checkout
         if: github.event_name == 'push'
@@ -51,15 +53,29 @@ jobs:
           filters: |
             website:
               - 'packages/website/**'
+            changeset:
+              - '.changeset/**'
+            publishable:
+              - 'packages/react-shared/package.json'
+              - 'packages/react-shared/CHANGELOG.md'
+              - 'packages/react-plugin/package.json'
+              - 'packages/react-plugin/CHANGELOG.md'
+              - 'packages/react-loader/package.json'
+              - 'packages/react-loader/CHANGELOG.md'
+              - 'packages/create-dev-to/package.json'
+              - 'packages/create-dev-to/CHANGELOG.md'
 
       - name: Default outputs
         if: github.event_name != 'push'
         id: fallback
         run: |
           echo "website=false" >> "$GITHUB_OUTPUT"
+          echo "changeset=false" >> "$GITHUB_OUTPUT"
+          echo "publishable=false" >> "$GITHUB_OUTPUT"
 
   release-packages:
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.run_release_packages == 'true')
+    needs: changes
+    if: (github.event_name == 'push' && (needs.changes.outputs.changeset == 'true' || needs.changes.outputs.publishable == 'true')) || (github.event_name == 'workflow_dispatch' && inputs.run_release_packages == 'true')
     uses: ./.github/workflows/release-packages.yml
     secrets: inherit
 
