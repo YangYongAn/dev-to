@@ -1,18 +1,18 @@
 {
-    "name": "@dev-to/website",
-    "version": "1.0.2",
-    "private": true,
-    "type": "module",
-    "packageManager": "pnpm@9.0.0",
-    "engines": {
-        "node": "20.x"
-    },
-    "scripts": {
-        "dev": "vite",
-        "build": "vite build",
-        "preview": "vite preview"
-    },
-    "devDependencies": {
-        "vite": "^5.4.11"
-    }
+  "name": "@dev-to/website",
+  "version": "1.0.3",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": "20.x"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.11"
+  }
 }
