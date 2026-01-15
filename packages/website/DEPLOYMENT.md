@@ -92,7 +92,7 @@ Production      Release Tag
 pnpm build  # 在 packages/website
 
 # 3. 部署到 Vercel preview 环境
-vercel deploy --prebuilt --token=$VERCEL_TOKEN
+vercel deploy --yes --token=$VERCEL_TOKEN
 ```
 
 #### B. 智能版本号计算
@@ -163,7 +163,7 @@ else:
 # 2. 安装依赖
 # 3. 构建项目
 # 4. 部署到生产环境
-vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+vercel deploy --prod --yes --token=$VERCEL_TOKEN
 ```
 
 #### B. 创建 GitHub Release
