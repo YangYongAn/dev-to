@@ -94,6 +94,7 @@ pnpm build  # 在 packages/website
 # 3. 部署到 Vercel preview 环境
 vercel deploy --yes --token=$VERCEL_TOKEN
 ```
+> 说明：使用 Vercel 远程构建，不需要本地执行 `vercel build`。
 
 #### B. 智能版本号计算
 根据自上一个发布以来的提交类型自动递增版本：
