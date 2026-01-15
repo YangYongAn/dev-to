@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   preview:
-    if: github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message || '', 'release website')
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && !contains(github.event.head_commit.message, 'release website'))
     runs-on: ubuntu-latest
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
