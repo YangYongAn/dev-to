@@ -1,0 +1,97 @@
+name: Website Preview Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - packages/website/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: website-preview
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    if: github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message || '', 'release website')
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build website
+        run: pnpm --filter @dev-to/website build
+
+      - name: Deploy preview
+        id: deploy
+        working-directory: packages/website
+        run: |
+          deploy_output=$(pnpm dlx vercel@latest deploy --prebuilt --confirm --token "$VERCEL_TOKEN")
+          echo "$deploy_output"
+          preview_url=$(echo "$deploy_output" | grep -Eo 'https?://[^ ]+' | tail -n 1)
+          echo "url=$preview_url" >> "$GITHUB_OUTPUT"
+
+      - name: Compute release info
+        id: release
+        run: node scripts/website-release.mjs --output "$GITHUB_OUTPUT" --write
+
+      - name: Prepare release PR body
+        if: steps.release.outputs.should_release == 'true'
+        env:
+          CURRENT_VERSION: ${{ steps.release.outputs.current_version }}
+          NEXT_VERSION: ${{ steps.release.outputs.next_version }}
+          BUMP_TYPE: ${{ steps.release.outputs.bump_type }}
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+          CHANGE_LOG: ${{ steps.release.outputs.change_log }}
+        run: |
+          {
+            echo "## Website Release"
+            echo ""
+            echo "- Current: ${CURRENT_VERSION}"
+            echo "- Next: ${NEXT_VERSION} (${BUMP_TYPE})"
+            echo "- Preview: ${PREVIEW_URL}"
+            echo ""
+            echo "### Changes"
+            if [ -n "${CHANGE_LOG}" ]; then
+              echo "${CHANGE_LOG}"
+            else
+              echo "- No conventional commits found."
+            fi
+          } > /tmp/website-release-body.md
+
+      - name: Create release PR
+        if: steps.release.outputs.should_release == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: website-release
+          base: main
+          title: "chore(repo): release website v${{ steps.release.outputs.next_version }}"
+          commit-message: "chore(repo): release website v${{ steps.release.outputs.next_version }}"
+          body-path: /tmp/website-release-body.md
+          delete-branch: true

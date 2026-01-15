@@ -114,7 +114,6 @@ else:
 #### C. 创建/更新 Release PR
 - 在 `website-release` 分支上
 - 更新 `packages/website/package.json` 版本号
-- 创建 changeset 文件
 - PR 标题：`🚀 Website Release: v{version}`
 - PR 内容包含：
   - 当前版本和新版本
@@ -302,7 +301,7 @@ git commit -m "docs(website): update README"
 - **CI/CD**：GitHub Actions
 - **构建工具**：Vercel CLI
 - **部署平台**：Vercel
-- **版本管理**：Git 标签 + changeset
+- **版本管理**：Git 标签 + 语义化版本
 - **脚本语言**：Bash + JavaScript (GitHub Script)
 
 ## 相关文件
@@ -310,4 +309,4 @@ git commit -m "docs(website): update README"
 - `.github/workflows/website-preview-deploy.yml` - Preview 部署工作流
 - `.github/workflows/website-release-deploy.yml` - Production 部署工作流
 - `packages/website/package.json` - 网站版本配置
-- `.changeset/` - 版本变更记录目录
+- `scripts/website-release.mjs` - 版本计算与 PR 信息生成脚本

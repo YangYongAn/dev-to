@@ -7,5 +7,9 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": []
+  "ignore": [
+    "@dev-to/react-template",
+    "@dev-to/react-playground",
+    "@dev-to/website"
+  ]
 }

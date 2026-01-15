@@ -504,21 +504,45 @@ pnpm dev  # http://localhost:8080
 
 ### 发布流程
 
-本项目使用 [Changesets](https://github.com/changesets/changesets) 管理版本和发布：
+#### 1) 包发布（Changesets + CI）
 
+**适用范围**：`private: false` 的包（`@dev-to/react-shared`、`@dev-to/react-plugin`、`@dev-to/react-loader`、`create-dev-to`）。
+
+**协作流程**：
+1. 完成功能/修复并自测。
+2. 创建 changeset：`pnpm changeset`，选择受影响包与版本类型。
+3. 提交 PR 并合并到 `main`。
+4. `Release Packages` 工作流会自动创建/更新发布 PR（标题 `chore(repo): release packages`）。
+5. 审核并合并发布 PR 后，CI 自动发布到 npm 并推送 tags。
+6. 对应工作流：`.github/workflows/release-packages.yml`。
+
+**手动发布（仅在 CI 不可用时）**：
 ```bash
-# 1. 创建 changeset (记录变更)
-pnpm changeset
-
-# 2. 更新版本号和 CHANGELOG
-pnpm changeset version
-
-# 3. 发布到 npm
-pnpm changeset publish
-
-# 4. 推送 tags
+pnpm version
+pnpm release
 git push --follow-tags
 ```
+
+#### 2) 网站发布（Preview -> Release PR -> Production）
+
+**适用范围**：`packages/website`（网站不走 changeset）。
+
+**版本策略**：基于最近一次 `website-v*` tag 之后的提交信息：
+- `feat` -> minor
+- `fix`/`perf` -> patch
+- `BREAKING CHANGE` 或 `type!` -> major
+
+**提交建议**：使用 `feat(website): ...` / `fix(website): ...` 等 Conventional Commits，确保版本计算准确。
+
+**协作流程**：
+1. 提交网站变更并合并到 `main`（常规 PR 流程）。
+2. `Website Preview Deploy` 自动部署预览，并创建/更新 `website-release` PR（包含预览链接与版本）。
+3. 审核预览效果，合并 `website-release` PR。
+4. `Website Release Deploy` 自动部署生产环境并创建 `website-vX` Release。
+5. 对应工作流：`.github/workflows/website-preview-deploy.yml`、`.github/workflows/website-release-deploy.yml`。
+
+**提示**：若没有 `feat/fix/perf/BREAKING` 类型提交，仅部署 Preview，不会创建发布 PR。  
+**详见**：`packages/website/DEPLOYMENT.md`。
 
 ### Commit 规范
 

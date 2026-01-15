@@ -1,0 +1,74 @@
+name: Website Release Deploy
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+    paths:
+      - packages/website/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: website-production
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'website-release')
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build website
+        run: pnpm --filter @dev-to/website build
+
+      - name: Deploy production
+        id: deploy
+        working-directory: packages/website
+        run: |
+          deploy_output=$(pnpm dlx vercel@latest deploy --prebuilt --prod --confirm --token "$VERCEL_TOKEN")
+          echo "$deploy_output"
+          prod_url=$(echo "$deploy_output" | grep -Eo 'https?://[^ ]+' | tail -n 1)
+          echo "url=$prod_url" >> "$GITHUB_OUTPUT"
+
+      - name: Read website version
+        id: version
+        run: |
+          version=$(node --input-type=module -e "import fs from 'fs'; const pkg = JSON.parse(fs.readFileSync('packages/website/package.json', 'utf8')); console.log(pkg.version);")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: website-v${{ steps.version.outputs.version }}
+          name: Website v${{ steps.version.outputs.version }}
+          body: |
+            Production: ${{ steps.deploy.outputs.url }}
+            Version: ${{ steps.version.outputs.version }}
