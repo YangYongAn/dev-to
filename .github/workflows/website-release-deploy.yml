@@ -53,7 +53,7 @@ jobs:
         id: deploy
         working-directory: packages/website
         run: |
-          deploy_output=$(pnpm dlx vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN")
+          deploy_output=$(pnpm dlx vercel@latest deploy --prod --yes --public --token "$VERCEL_TOKEN")
           echo "$deploy_output"
           prod_url=$(echo "$deploy_output" | grep -Eo 'https?://[^ ]+' | tail -n 1)
           echo "url=$prod_url" >> "$GITHUB_OUTPUT"

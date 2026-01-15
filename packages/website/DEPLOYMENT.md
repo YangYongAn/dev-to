@@ -92,7 +92,8 @@ Production      Release Tag
 pnpm build  # 在 packages/website
 
 # 3. 部署到 Vercel preview 环境
-vercel deploy --yes --token=$VERCEL_TOKEN
+vercel deploy --yes --public --token=$VERCEL_TOKEN
+> 如果预览仍需登录，请在 Vercel 项目设置中关闭 Preview 的 Deployment Protection。
 ```
 > 说明：使用 Vercel 远程构建，不需要本地执行 `vercel build`。
 
@@ -164,7 +165,7 @@ else:
 # 2. 安装依赖
 # 3. 构建项目
 # 4. 部署到生产环境
-vercel deploy --prod --yes --token=$VERCEL_TOKEN
+vercel deploy --prod --yes --public --token=$VERCEL_TOKEN
 ```
 
 #### B. 创建 GitHub Release
