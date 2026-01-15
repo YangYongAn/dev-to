@@ -36,6 +36,7 @@ jobs:
       website: ${{ steps.filter.outputs.website || steps.fallback.outputs.website }}
       changeset: ${{ steps.filter.outputs.changeset || steps.fallback.outputs.changeset }}
       publishable: ${{ steps.filter.outputs.publishable || steps.fallback.outputs.publishable }}
+      pending: ${{ steps.pending.outputs.pending || steps.fallback.outputs.pending }}
     steps:
       - name: Checkout
         if: github.event_name == 'push'
@@ -64,6 +65,16 @@ jobs:
               - 'packages/react-loader/CHANGELOG.md'
               - 'packages/create-dev-to/package.json'
               - 'packages/create-dev-to/CHANGELOG.md'
+      - name: Check pending changesets
+        if: github.event_name == 'push'
+        id: pending
+        run: |
+          count=$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' | wc -l | tr -d ' ')
+          if [ "$count" -gt 0 ]; then
+            echo "pending=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pending=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Default outputs
         if: github.event_name != 'push'
@@ -72,10 +83,11 @@ jobs:
           echo "website=false" >> "$GITHUB_OUTPUT"
           echo "changeset=false" >> "$GITHUB_OUTPUT"
           echo "publishable=false" >> "$GITHUB_OUTPUT"
+          echo "pending=false" >> "$GITHUB_OUTPUT"
 
   release-packages:
     needs: changes
-    if: (github.event_name == 'push' && (needs.changes.outputs.changeset == 'true' || needs.changes.outputs.publishable == 'true')) || (github.event_name == 'workflow_dispatch' && inputs.run_release_packages == 'true')
+    if: (github.event_name == 'push' && (needs.changes.outputs.changeset == 'true' || needs.changes.outputs.publishable == 'true' || needs.changes.outputs.pending == 'true')) || (github.event_name == 'workflow_dispatch' && inputs.run_release_packages == 'true')
     uses: ./.github/workflows/release-packages.yml
     secrets: inherit
 
