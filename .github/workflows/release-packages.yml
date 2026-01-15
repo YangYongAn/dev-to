@@ -1,10 +1,10 @@
 name: Release Packages
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  workflow_call:
+    secrets:
+      NPM_TOKEN:
+        required: true
 
 permissions:
   contents: write
