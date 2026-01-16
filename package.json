@@ -9,13 +9,14 @@
   "scripts": {
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
+    "build:release": "pnpm -r --filter @dev-to/react-shared --filter @dev-to/react-plugin --filter @dev-to/react-loader --filter create-dev-to build",
     "lint": "eslint . --cache --cache-location .cache/eslint/ --max-warnings=0",
     "lint:staged": "lint-staged",
     "test": "pnpm -r test",
     "prepare": "husky",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "pnpm build && changeset publish"
+    "release": "pnpm build:release && changeset publish"
   },
   "lint-staged": {
     "*.{js,mjs,ts,tsx}": [
