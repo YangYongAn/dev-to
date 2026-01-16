@@ -756,11 +756,9 @@ function editFile(file: string, callback: (content: string) => string) {
   fs.writeFileSync(file, callback(content), 'utf-8')
 }
 
-const DEVTO_LOGO_SVG = `<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="96" height="96" rx="20" fill="#0F172A"/>
-  <path d="M28 28h18c13 0 22 9 22 22s-9 22-22 22H28V28zm11 11v34h7c7 0 11-5 11-12s-4-12-11-12h-7z" fill="#F8FAFC"/>
-  <path d="M48 54h9c1 0 2 1 2 2s-1 2-2 2h-9v-4z" fill="#F8FAFC" opacity="0.8"/>
-  <circle cx="70" cy="30" r="6" fill="#7C3AED"/>
+const DEVTO_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="24" fill="#0d1117"/>
+  <text x="64" y="75" text-anchor="middle" dominant-baseline="middle" fill="#3fb950" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="125">Ɖ</text>
 </svg>
 `
 
