@@ -309,13 +309,20 @@ http://localhost:5173/__dev_to__/discovery.json
 ## Production build (library mode)
 
 ```bash
-vite build --mode lib
+dev-to build
+# or: vite build --mode lib
 ```
 
-If you used `create-dev-to`, the scaffold includes a `build:lib` script:
+If you used `create-dev-to`, the scaffold includes a `build:lib` script (it runs `dev-to build`):
 
 ```bash
 pnpm build:lib
+```
+
+You can forward any Vite build flags, for example:
+
+```bash
+dev-to build --sourcemap --outDir dist-lib
 ```
 
 Output example:
@@ -490,7 +497,7 @@ The host app and Vite Dev Server usually run on different ports, so you must ena
 <summary><b>How do I use it in production?</b></summary>
 
 Two options:
-1. Build UMD bundles with `vite build --mode lib` and distribute via CDN or static hosting.
+1. Build UMD bundles with `dev-to build` (equivalent to `vite build --mode lib`) and distribute via CDN or static hosting.
 2. Run Vite Dev Server in production (not recommended, only for internal tools).
 
 </details>

@@ -385,7 +385,8 @@ http://localhost:5173/__dev_to__/discovery.json
 
 ```bash
 # 构建 UMD 包
-vite build --mode lib
+dev-to build
+# 或：vite build --mode lib
 
 # 输出结构:
 # dist/
@@ -398,10 +399,16 @@ vite build --mode lib
 #     ...
 ```
 
-如果使用 `create-dev-to` 创建项目，模板内置 `build:lib` 脚本：
+如果使用 `create-dev-to` 创建项目，模板内置 `build:lib` 脚本（执行 `dev-to build`）：
 
 ```bash
 pnpm build:lib
+```
+
+支持透传 Vite 的 build 参数，例如：
+
+```bash
+dev-to build --sourcemap --outDir dist-lib
 ```
 
 UMD 包可以在任何环境中使用：
@@ -677,7 +684,7 @@ MIT © [YangYongAn](https://github.com/YangYongAn)
 <summary><b>Q: 生产环境如何使用？</b></summary>
 
 生产环境有两种方式：
-1. 使用 `vite build --mode lib` 产出的 UMD 包，通过 CDN 或静态服务器分发
+1. 使用 `dev-to build`（等价于 `vite build --mode lib`）产出的 UMD 包，通过 CDN 或静态服务器分发
 2. 部署 Vite Dev Server 到生产环境（不推荐，仅适合内部工具）
 
 </details>
