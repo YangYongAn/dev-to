@@ -1128,7 +1128,7 @@ async function init() {
   pkg.name = toValidPackageName(getProjectName())
   pkg.scripts = pkg.scripts ?? {}
   if (!pkg.scripts['build:lib']) {
-    pkg.scripts['build:lib'] = 'vite build --mode lib'
+    pkg.scripts['build:lib'] = 'dev-to build'
   }
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
 
