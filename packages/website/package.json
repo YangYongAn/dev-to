@@ -1,6 +1,6 @@
 {
   "name": "@dev-to/website",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@9.0.0",
