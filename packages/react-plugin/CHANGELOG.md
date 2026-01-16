@@ -1,5 +1,11 @@
 # @dev-to/react-plugin
 
+## 1.1.3
+
+### Patch Changes
+
+- 02b8bd6: fix: resolve Vite CLI when package exports block bin path
+
 ## 1.1.2
 
 ### Patch Changes
