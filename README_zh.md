@@ -398,6 +398,12 @@ vite build --mode lib
 #     ...
 ```
 
+如果使用 `create-dev-to` 创建项目，模板内置 `build:lib` 脚本：
+
+```bash
+pnpm build:lib
+```
+
 UMD 包可以在任何环境中使用：
 
 ```html

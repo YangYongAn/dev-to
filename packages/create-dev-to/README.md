@@ -78,7 +78,7 @@ bunx create-dev-to
 - **JavaScript** - 使用 JavaScript 的 React 项目
 - **JavaScript + SWC** - 使用 SWC 编译的 JavaScript React 项目
 
-创建完成后会自动在 `vite.config.*` 中注入 `@dev-to/react-plugin`（`devToReactPlugin()`）。
+创建完成后会自动在 `vite.config.*` 中注入 `@dev-to/react-plugin`（`devToReactPlugin()`），并在 `package.json` 中加入 `build:lib`（`vite build --mode lib`）。
 
 ## 安装进度展示
 

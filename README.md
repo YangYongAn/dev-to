@@ -312,6 +312,12 @@ http://localhost:5173/__dev_to__/discovery.json
 vite build --mode lib
 ```
 
+If you used `create-dev-to`, the scaffold includes a `build:lib` script:
+
+```bash
+pnpm build:lib
+```
+
 Output example:
 
 ```

@@ -1126,6 +1126,10 @@ async function init() {
   const pkgPath = path.join(root, 'package.json')
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
   pkg.name = toValidPackageName(getProjectName())
+  pkg.scripts = pkg.scripts ?? {}
+  if (!pkg.scripts['build:lib']) {
+    pkg.scripts['build:lib'] = 'vite build --mode lib'
+  }
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
 
   // 处理 SWC 和 React Compiler 配置
