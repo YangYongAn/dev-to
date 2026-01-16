@@ -1,5 +1,11 @@
 # create-dev-to
 
+## 1.6.2
+
+### Patch Changes
+
+- 6e107ef: feat: refresh the default template preview
+
 ## 1.6.1
 
 ### Patch Changes
