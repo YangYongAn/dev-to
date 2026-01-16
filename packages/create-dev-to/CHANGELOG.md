@@ -1,5 +1,11 @@
 # create-dev-to
 
+## 1.5.2
+
+### Patch Changes
+
+- cd37be2: chore: add release marker for CI publish test
+
 ## 1.5.1
 
 ### Patch Changes
