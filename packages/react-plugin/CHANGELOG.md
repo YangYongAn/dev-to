@@ -1,5 +1,11 @@
 # @dev-to/react-plugin
 
+## 1.1.1
+
+### Patch Changes
+
+- f138c7d: fix: ship dev-to bin without requiring build outputs
+
 ## 1.1.0
 
 ### Minor Changes
