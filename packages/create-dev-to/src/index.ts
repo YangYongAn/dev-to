@@ -875,6 +875,26 @@ code {
     monospace;
 }
 
+@media (prefers-color-scheme: dark) {
+  .app-header h1 {
+    color: #f8fafc;
+  }
+
+  .preview-inner {
+    background: #0b1220;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    box-shadow: 0 18px 50px rgba(2, 6, 23, 0.65);
+  }
+
+  .subtitle {
+    color: rgba(226, 232, 240, 0.78);
+  }
+
+  code {
+    background: rgba(148, 163, 184, 0.16);
+  }
+}
+
 @media (prefers-color-scheme: light) {
   .eyebrow {
     color: #6b7280;
@@ -1133,22 +1153,22 @@ export default function ${componentName}(props) {
 }
 
 .${rootClass} .counter-card button {
-  border: 1px solid rgba(56, 189, 248, 0.4);
+  border: 1px solid rgba(63, 185, 80, 0.45);
   border-radius: 999px;
   padding: 9px 24px;
   font-size: 14px;
   font-weight: 600;
-  color: #0b1220;
-  background: linear-gradient(135deg, #4ade80, #38bdf8);
-  box-shadow: 0 9px 18px rgba(56, 189, 248, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+  background: linear-gradient(135deg, #3fb950, #22c55e 55%, #16a34a);
+  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .${rootClass} .counter-card button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 26px rgba(56, 189, 248, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  filter: brightness(1.02);
+  box-shadow: 0 14px 28px rgba(22, 163, 74, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  filter: brightness(1.03);
 }
 
 .${rootClass} .counter-card button:active {
@@ -1190,6 +1210,38 @@ export default function ${componentName}(props) {
   }
 }
 
+@media (prefers-color-scheme: dark) {
+  .${rootClass} h1 {
+    color: #f8fafc;
+  }
+
+  .${rootClass} .logo.devto {
+    border: 1px solid rgba(63, 185, 80, 0.35);
+    box-shadow: 0 10px 26px rgba(2, 6, 23, 0.55);
+  }
+
+  .${rootClass} .subtitle {
+    color: rgba(226, 232, 240, 0.8);
+  }
+
+  .${rootClass} .counter-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(148, 163, 184, 0.25);
+  }
+
+  .${rootClass} .counter-card p {
+    color: rgba(226, 232, 240, 0.82);
+  }
+
+  .${rootClass} .read-the-docs {
+    color: rgba(148, 163, 184, 0.75);
+  }
+
+  .${rootClass} code {
+    background: rgba(148, 163, 184, 0.18);
+  }
+}
+
 @media (prefers-color-scheme: light) {
   .${rootClass} .subtitle {
     color: #4b5563;
@@ -1201,8 +1253,8 @@ export default function ${componentName}(props) {
   }
 
   .${rootClass} .counter-card button {
-    color: #0f172a;
-    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    color: #ffffff;
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
   .${rootClass} .read-the-docs {
