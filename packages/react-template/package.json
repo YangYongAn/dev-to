@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --mode lib",
+    "build": "dev-to build",
     "lint": "pnpm -w lint",
     "test": "echo 'test @dev-to/react-template'"
   },
