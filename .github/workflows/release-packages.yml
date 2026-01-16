@@ -49,7 +49,7 @@ jobs:
           fi
 
           pnpm changeset status --output .changeset/status.json
-          node -e "const fs=require('fs');const data=JSON.parse(fs.readFileSync('.changeset/status.json','utf8'));const list=(data.releases||[]).map(r=>r.name+'@'+r.newVersion);const suffix=list.length?' ('+list.join(', ')+')':'';const title='chore(repo): release packages'+suffix;console.log('title='+title);console.log('commit='+title);" >> "$GITHUB_OUTPUT"
+          node -e "const fs=require('fs');const data=JSON.parse(fs.readFileSync('.changeset/status.json','utf8'));const list=(data.releases||[]).filter(r=>r.type&&r.type!=='none').map(r=>r.name+'@'+r.newVersion);const suffix=list.length?' ('+list.join(', ')+')':'';const title='chore(repo): release packages'+suffix;console.log('title='+title);console.log('commit='+title);" >> "$GITHUB_OUTPUT"
           rm .changeset/status.json
 
       - name: Create Release PR or Publish
