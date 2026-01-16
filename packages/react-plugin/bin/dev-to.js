@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process'
+import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import process from 'node:process'
@@ -70,9 +71,30 @@ function resolveViteBin() {
   const require = createRequire(import.meta.url)
   const searchPaths = [process.cwd(), path.join(process.cwd(), 'node_modules')]
 
+  const resolved = resolvePath(require, 'vite/bin/vite.js', searchPaths)
+  if (resolved) {
+    return resolved
+  }
+
+  const viteEntry = resolvePath(require, 'vite', searchPaths)
+  if (viteEntry) {
+    const viteRoot = findPackageRoot(viteEntry)
+    if (viteRoot) {
+      const binPath = resolveBinFromPackage(viteRoot)
+      if (binPath) {
+        return binPath
+      }
+    }
+  }
+
+  console.error('Vite is not installed or could not be resolved. Please add it to devDependencies.')
+  process.exit(1)
+}
+
+function resolvePath(require, specifier, searchPaths) {
   for (const base of searchPaths) {
     try {
-      return require.resolve('vite/bin/vite.js', { paths: [base] })
+      return require.resolve(specifier, { paths: [base] })
     }
     catch {
       // Try next path.
@@ -80,12 +102,65 @@ function resolveViteBin() {
   }
 
   try {
-    return require.resolve('vite/bin/vite.js')
+    return require.resolve(specifier)
   }
   catch {
-    console.error('Vite is not installed. Please add it to devDependencies.')
-    process.exit(1)
+    return null
   }
+}
+
+function findPackageRoot(startPath) {
+  let current = path.dirname(startPath)
+  while (true) {
+    const pkgPath = path.join(current, 'package.json')
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+        if (pkg && pkg.name === 'vite') {
+          return current
+        }
+      }
+      catch {
+        // Keep walking up.
+      }
+    }
+
+    const parent = path.dirname(current)
+    if (parent === current) {
+      break
+    }
+    current = parent
+  }
+
+  return null
+}
+
+function resolveBinFromPackage(pkgRoot) {
+  const pkgPath = path.join(pkgRoot, 'package.json')
+  if (!fs.existsSync(pkgPath)) {
+    return null
+  }
+
+  try {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+    if (pkg && pkg.bin) {
+      const binEntry = typeof pkg.bin === 'string'
+        ? pkg.bin
+        : pkg.bin.vite || pkg.bin['vite']
+      if (binEntry) {
+        const binPath = path.resolve(pkgRoot, binEntry)
+        if (fs.existsSync(binPath)) {
+          return binPath
+        }
+      }
+    }
+  }
+  catch {
+    // Fall back to default path.
+  }
+
+  const fallback = path.resolve(pkgRoot, 'bin', 'vite.js')
+  return fs.existsSync(fallback) ? fallback : null
 }
 
 function printHelp() {
