@@ -11,6 +11,9 @@
       "import": "./dist/index.js"
     }
   },
+  "bin": {
+    "dev-to": "./dist/cli.js"
+  },
   "files": [
     "dist"
   ],

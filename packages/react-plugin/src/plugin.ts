@@ -289,7 +289,7 @@ export function devToReactPlugin(
         const warn = server.config.logger?.warn?.bind(server.config.logger) ?? console.warn
         warn('')
         warn(
-          `⚠️  ${PLUGIN_LOG_PREFIX} No componentName configured. This works in dev mode but will fail in library build (--mode lib).`,
+          `⚠️  ${PLUGIN_LOG_PREFIX} No componentName configured. This works in dev mode but will fail in library build (dev-to build / --mode lib).`,
         )
         warn(
           `   Please use devToReactPlugin({ ComponentName: "src/ComponentName.tsx" }) or devToReactPlugin({ ComponentName: "/" }) to specify components.`,
@@ -337,7 +337,7 @@ export function devToReactPlugin(
         const actualNames = Object.keys(contract.dev.componentMap).filter(n => n !== '*')
         if (actualNames.length === 0 && !process.env.DEV_TO_REACT_LIB_SECTION) {
           throw new Error(
-            ` ${PLUGIN_LOG_PREFIX} Library build (--mode lib) requires at least one explicit componentName for identification and distribution.\n`
+            ` ${PLUGIN_LOG_PREFIX} Library build (dev-to build / --mode lib) requires at least one explicit componentName for identification and distribution.\n`
             + `Current configuration is in "global fallback mode", which cannot determine build targets.\n\n`
             + `Please use one of the following to specify components:\n`
             + `  - devToReactPlugin('ComponentName')\n`

@@ -452,7 +452,7 @@ root.render(React.createElement(window.ComponentName, { prop1: <span class="str"
 
         <div class="card">
             <h3>📦 构建与部署</h3>
-            <p class="muted">执行 <code>vite build --mode lib</code> 将组件打包为 UMD 格式以供发布。</p>
+            <p class="muted">执行 <code>dev-to build</code>（等价于 <code>vite build --mode lib</code>）将组件打包为 UMD 格式以供发布。</p>
 
             <div class="build-grid">
                 <div class="build-card">

@@ -33,7 +33,7 @@ export interface DevToReactPluginOptions {
   css?: CSSOptions | false
 
   /**
-   * Build configuration passed to Vite (only applies when running `vite build --mode lib`).
+   * Build configuration passed to Vite (only applies when running `dev-to build` / `vite build --mode lib`).
    *
    * Typical use cases:
    * - Adjust asset inlining: `assetsInlineLimit`

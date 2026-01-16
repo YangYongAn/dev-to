@@ -370,7 +370,7 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
               suggested: requestOrigin,
               snippet: `localStorage.setItem('VITE_DEV_SERVER_ORIGIN', '${requestOrigin}'); location.reload();`,
               libBuild: {
-                command: 'vite build --mode lib',
+                command: 'dev-to build',
                 env: {
                   // 逗号分隔；用于在仅构建子集时指定目标 componentName
                   DEV_TO_REACT_LIB_SECTION: libComponentExample,
@@ -395,7 +395,7 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
               '宿主侧需设置 localStorage.VITE_DEV_SERVER_ORIGIN（可从 originCandidates 里选择一个可访问的 origin）。',
               'components 参数的 key 必须与后端返回的 componentName 完全一致（严格匹配）。',
               'Fast Refresh 关键：必须先 import init.js（安装 react-refresh preamble），再 import react-dom/client。',
-              '如需产出可分发 UMD 包：使用 `vite build --mode lib`（仅构建 components 指定的组件，输出到 dist/<component>/）。',
+              '如需产出可分发 UMD 包：使用 `dev-to build`（等价于 `vite build --mode lib`，仅构建 components 指定的组件，输出到 dist/<component>/）。',
             ],
           },
           null,
