@@ -48,8 +48,13 @@ function displayVersionInfo() {
 // Copy command functionality
 
 function copyCommand() {
-  const command = document.getElementById('command').textContent
+  const commandEl = document.getElementById('command')
+  const command = commandEl ? commandEl.textContent : ''
   const btn = document.querySelector('.copy-btn')
+
+  if (!command || !navigator.clipboard) {
+    return
+  }
 
   navigator.clipboard.writeText(command).then(() => {
     btn.classList.add('copied')
@@ -59,6 +64,8 @@ function copyCommand() {
       btn.classList.remove('copied')
       btn.querySelector('span').textContent = getTranslation('hero.copy')
     }, 2000)
+  }).catch(() => {
+    btn.classList.remove('copied')
   })
 }
 
