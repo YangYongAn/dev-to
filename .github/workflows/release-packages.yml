@@ -38,13 +38,27 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Compute release title
+        id: release_title
+        run: |
+          count=$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' | wc -l | tr -d ' ')
+          if [ "$count" -eq 0 ]; then
+            echo "title=chore(repo): release packages" >> "$GITHUB_OUTPUT"
+            echo "commit=chore(repo): release packages" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          pnpm changeset status --output .changeset/status.json
+          node -e "const fs=require('fs');const data=JSON.parse(fs.readFileSync('.changeset/status.json','utf8'));const list=(data.releases||[]).map(r=>r.name+'@'+r.newVersion);const suffix=list.length?' ('+list.join(', ')+')':'';const title='chore(repo): release packages'+suffix;console.log('title='+title);console.log('commit='+title);" >> "$GITHUB_OUTPUT"
+          rm .changeset/status.json
+
       - name: Create Release PR or Publish
         uses: changesets/action@v1
         with:
           version: pnpm changeset version
           publish: pnpm release
-          commit: "chore(repo): release packages"
-          title: "chore(repo): release packages"
+          commit: ${{ steps.release_title.outputs.commit }}
+          title: ${{ steps.release_title.outputs.title }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
