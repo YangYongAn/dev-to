@@ -1,5 +1,14 @@
 # @dev-to/react-plugin
 
+## 1.1.0
+
+### Minor Changes
+
+- f3f0717: feat: add dev-to CLI for library builds
+
+  - Add `dev-to build` wrapper for `vite build --mode lib`
+  - Forward extra Vite build flags
+
 ## 1.0.2
 
 ### Patch Changes

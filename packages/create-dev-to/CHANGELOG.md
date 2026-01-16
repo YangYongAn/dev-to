@@ -1,5 +1,11 @@
 # create-dev-to
 
+## 1.6.0
+
+### Minor Changes
+
+- 864e111: feat: add build:lib script (dev-to build) to scaffolded projects
+
 ## 1.5.2
 
 ### Patch Changes
