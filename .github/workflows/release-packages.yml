@@ -60,5 +60,7 @@ jobs:
           commit: ${{ steps.release_title.outputs.commit }}
           title: ${{ steps.release_title.outputs.title }}
         env:
+          HUSKY: 0
+          HUSKY_SKIP_HOOKS: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
