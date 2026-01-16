@@ -1,5 +1,11 @@
 # create-dev-to
 
+## 1.6.1
+
+### Patch Changes
+
+- chore: bump patch versions for public packages
+
 ## 1.6.0
 
 ### Minor Changes

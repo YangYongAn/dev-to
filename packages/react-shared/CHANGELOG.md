@@ -1,5 +1,11 @@
 # @dev-to/react-shared
 
+## 1.0.1
+
+### Patch Changes
+
+- chore: bump patch versions for public packages
+
 ## 1.0.0
 
 ### Major Changes

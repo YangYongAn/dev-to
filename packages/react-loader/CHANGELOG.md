@@ -1,5 +1,13 @@
 # @dev-to/react-loader
 
+## 1.0.1
+
+### Patch Changes
+
+- chore: bump patch versions for public packages
+- Updated dependencies
+  - @dev-to/react-shared@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
