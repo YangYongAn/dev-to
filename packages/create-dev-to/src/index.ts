@@ -756,6 +756,202 @@ function editFile(file: string, callback: (content: string) => string) {
   fs.writeFileSync(file, callback(content), 'utf-8')
 }
 
+const DEVTO_LOGO_SVG = `<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="96" height="96" rx="20" fill="#0F172A"/>
+  <path d="M28 28h18c13 0 22 9 22 22s-9 22-22 22H28V28zm11 11v34h7c7 0 11-5 11-12s-4-12-11-12h-7z" fill="#F8FAFC"/>
+  <path d="M48 54h9c1 0 2 1 2 2s-1 2-2 2h-9v-4z" fill="#F8FAFC" opacity="0.8"/>
+  <circle cx="70" cy="30" r="6" fill="#7C3AED"/>
+</svg>
+`
+
+function ensureDevtoLogo(root: string) {
+  const assetsDir = path.join(root, 'src', 'assets')
+  if (!fs.existsSync(assetsDir)) {
+    fs.mkdirSync(assetsDir, { recursive: true })
+  }
+  const logoPath = path.join(assetsDir, 'devto.svg')
+  fs.writeFileSync(logoPath, DEVTO_LOGO_SVG, 'utf-8')
+}
+
+function updateAppTemplate(root: string, componentName: string, isTs: boolean) {
+  const appPath = path.join(root, 'src', `App.${isTs ? 'tsx' : 'jsx'}`)
+  if (!fs.existsSync(appPath)) {
+    return
+  }
+
+  const appContent = `import './App.css'
+import ${componentName} from './${componentName}/index'
+
+export default function App() {
+  return (
+    <div className="app">
+      <header className="app-header">
+        <span className="eyebrow">dev-to template</span>
+        <h1>Component preview</h1>
+        <p className="subtitle">
+          Vite dev server with <code>@dev-to/react-plugin</code>
+        </p>
+      </header>
+
+      <section className="preview">
+        <div className="preview-inner">
+          <${componentName} />
+        </div>
+      </section>
+
+    </div>
+  )
+}
+`
+  fs.writeFileSync(appPath, appContent, 'utf-8')
+
+  const appCssPath = path.join(root, 'src', 'App.css')
+  const appCssContent = `#root {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 20px 40px;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  text-align: center;
+}
+
+.app-header {
+  max-width: 720px;
+}
+
+.app-header h1 {
+  margin: 4px 0 6px;
+  font-size: 34px;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  text-wrap: balance;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.preview {
+  width: min(960px, 100%);
+  padding: 1px;
+  border-radius: 26px;
+  background: linear-gradient(130deg, #22d3ee, #38bdf8 35%, #34d399 70%, #fbbf24);
+}
+
+.preview-inner {
+  border-radius: 25px;
+  padding: 28px 20px;
+  background: rgba(15, 23, 42, 0.85);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.35);
+}
+
+.app-footer {
+  margin: 0;
+  font-size: 12px;
+  text-wrap: balance;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+code {
+  background: rgba(255, 255, 255, 0.12);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+}
+
+@media (prefers-color-scheme: light) {
+  .eyebrow {
+    color: #6b7280;
+  }
+
+  .subtitle {
+    color: #4b5563;
+  }
+
+  .preview-inner {
+    background: #ffffff;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  }
+
+  .app-footer {
+    color: #6b7280;
+  }
+
+  code {
+    background: #e2e8f0;
+  }
+}
+
+@media (max-width: 640px) {
+  #root {
+    padding: 28px 16px 36px;
+  }
+
+  .preview-inner {
+    padding: 24px 16px;
+  }
+
+  .app-header h1 {
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 360px) {
+  #root {
+    padding: 24px 12px 32px;
+  }
+
+  .app {
+    gap: 24px;
+  }
+
+  .app-header h1 {
+    font-size: 26px;
+  }
+
+  .eyebrow {
+    font-size: 9px;
+    letter-spacing: 1.4px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
+
+  .preview-inner {
+    padding: 20px 12px;
+  }
+
+  .app-footer {
+    font-size: 11px;
+  }
+
+  code {
+    font-size: 10px;
+  }
+}
+`
+  fs.writeFileSync(appCssPath, appCssContent, 'utf-8')
+}
+
 function createComponentFile(root: string, componentName: string, isTs: boolean) {
   const componentDir = path.join(root, 'src', componentName)
   const componentFile = path.join(componentDir, `index.${isTs ? 'tsx' : 'jsx'}`)
@@ -766,8 +962,12 @@ function createComponentFile(root: string, componentName: string, isTs: boolean)
   }
 
   // 生成组件内容
+  const componentFileName = `index.${isTs ? 'tsx' : 'jsx'}`
   const componentContent = isTs
     ? `import { useState } from 'react'
+import devtoLogo from '../assets/devto.svg'
+import reactLogo from '../assets/react.svg'
+import viteLogo from '/vite.svg'
 import './index.css'
 
 export interface ${componentName}Props {
@@ -776,44 +976,79 @@ export interface ${componentName}Props {
 
 export default function ${componentName}(props: ${componentName}Props) {
   const [count, setCount] = useState(0)
+  const title = props.title || 'ƉevTo + Vite + React'
 
   return (
-    <div className="${componentName.toLowerCase()}-container">
-      <h1>{props.title || 'Hello from ${componentName}'}</h1>
-      <div className="card">
+    <div className="${componentName.toLowerCase()}-component">
+      <div className="logo-row">
+        <a href="https://github.com/YangYongAn/dev-to" target="_blank" rel="noreferrer">
+          <img src={devtoLogo} className="logo devto" alt="dev-to logo" />
+        </a>
+        <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank" rel="noreferrer">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>{title}</h1>
+      <p className="subtitle">
+        <span>Remote component served by</span>
+        <code>@dev-to/react-plugin</code>
+      </p>
+      <div className="counter-card">
         <button onClick={() => setCount(count => count + 1)}>
           count is {count}
         </button>
         <p>
-          Edit <code>src/${componentName}/index.tsx</code> to test HMR
+          Edit <code>src/${componentName}/${componentFileName}</code> to test HMR
         </p>
       </div>
-      <p className="info">
-        This component is loaded remotely via <code>@dev-to/react-loader</code>
+      <p className="read-the-docs">
+        Click on the ƉevTo, Vite, and React logos to learn more
       </p>
     </div>
   )
 }
 `
     : `import { useState } from 'react'
+import devtoLogo from '../assets/devto.svg'
+import reactLogo from '../assets/react.svg'
+import viteLogo from '/vite.svg'
 import './index.css'
 
 export default function ${componentName}(props) {
   const [count, setCount] = useState(0)
+  const title = props.title || 'ƉevTo + Vite + React'
 
   return (
-    <div className="${componentName.toLowerCase()}-container">
-      <h1>{props.title || 'Hello from ${componentName}'}</h1>
-      <div className="card">
+    <div className="${componentName.toLowerCase()}-component">
+      <div className="logo-row">
+        <a href="https://github.com/YangYongAn/dev-to" target="_blank" rel="noreferrer">
+          <img src={devtoLogo} className="logo devto" alt="dev-to logo" />
+        </a>
+        <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank" rel="noreferrer">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>{title}</h1>
+      <p className="subtitle">
+        <span>Remote component served by</span>
+        <code>@dev-to/react-plugin</code>
+      </p>
+      <div className="counter-card">
         <button onClick={() => setCount(count => count + 1)}>
           count is {count}
         </button>
         <p>
-          Edit <code>src/${componentName}/index.jsx</code> to test HMR
+          Edit <code>src/${componentName}/${componentFileName}</code> to test HMR
         </p>
       </div>
-      <p className="info">
-        This component is loaded remotely via <code>@dev-to/react-loader</code>
+      <p className="read-the-docs">
+        Click on the ƉevTo, Vite, and React logos to learn more
       </p>
     </div>
   )
@@ -821,68 +1056,199 @@ export default function ${componentName}(props) {
 `
 
   // 生成样式文件
-  const styleContent = `.${componentName.toLowerCase()}-container {
-  max-width: 800px;
+  const rootClass = `${componentName.toLowerCase()}-component`
+  const styleContent = `.${rootClass} {
+  max-width: 720px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 20px 12px 28px;
   text-align: center;
 }
 
-.${componentName.toLowerCase()}-container h1 {
-  font-size: 3.2em;
+.${rootClass} .logo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.${rootClass} .logo {
+  height: 48px;
+  padding: 0;
+  will-change: filter, transform;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.${rootClass} .logo.devto {
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.35);
+}
+
+.${rootClass} .logo:hover {
+  filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.6));
+}
+
+.${rootClass} .logo.react:hover {
+  filter: drop-shadow(0 0 18px rgba(97, 218, 251, 0.65));
+}
+
+.${rootClass} h1 {
+  margin: 12px 0 6px;
+  font-size: 28px;
   line-height: 1.1;
-  margin-bottom: 2rem;
+  white-space: nowrap;
 }
 
-.card {
-  padding: 2em;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  margin: 2rem 0;
+.${rootClass} .subtitle {
+  margin: 0 auto 18px;
+  max-width: 500px;
+  font-size: 13px;
+  line-height: 1.5;
+  text-wrap: balance;
+  color: rgba(255, 255, 255, 0.72);
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  color: white;
+.${rootClass} .subtitle span {
+  display: block;
+}
+
+.${rootClass} .subtitle code {
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.${rootClass} .counter-card {
+  margin: 18px auto;
+  padding: 20px 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+}
+
+.${rootClass} .counter-card p {
+  margin: 18px 0;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.${rootClass} .counter-card button {
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 999px;
+  padding: 9px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0b1220;
+  background: linear-gradient(135deg, #4ade80, #38bdf8);
+  box-shadow: 0 9px 18px rgba(56, 189, 248, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.55);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
-button:hover {
-  border-color: #646cff;
+.${rootClass} .counter-card button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(56, 189, 248, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  filter: brightness(1.02);
 }
 
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+.${rootClass} .counter-card button:active {
+  transform: translateY(0);
 }
 
-.info {
-  color: #888;
-  font-size: 0.9em;
-  margin-top: 2rem;
+.${rootClass} .counter-card button:focus-visible {
+  outline: 3px solid rgba(63, 185, 80, 0.35);
+  outline-offset: 3px;
 }
 
-code {
-  background-color: #f0f0f0;
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  font-family: 'Courier New', monospace;
+.${rootClass} .read-the-docs {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 12px;
+  text-wrap: balance;
 }
 
-@media (prefers-color-scheme: dark) {
-  .card {
-    background-color: #2a2a2a;
+.${rootClass} code {
+  background: rgba(255, 255, 255, 0.12);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .${rootClass} .logo.react {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .${rootClass} .subtitle {
+    color: #4b5563;
   }
 
-  code {
-    background-color: #3a3a3a;
+  .${rootClass} .counter-card {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  .${rootClass} .counter-card button {
+    color: #0f172a;
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .${rootClass} .read-the-docs {
+    color: #6b7280;
+  }
+
+  .${rootClass} code {
+    background: #e2e8f0;
+  }
+}
+
+@media (max-width: 360px) {
+  .${rootClass} {
+    padding: 18px 10px 24px;
+  }
+
+  .${rootClass} .logo-row {
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .${rootClass} .logo {
+    height: 40px;
+  }
+
+  .${rootClass} h1 {
+    font-size: 28px;
+  }
+
+  .${rootClass} .subtitle {
+    font-size: 12px;
+  }
+
+  .${rootClass} .counter-card {
+    padding: 18px 16px;
+  }
+
+  .${rootClass} .counter-card button {
+    padding: 8px 20px;
+    font-size: 13px;
+  }
+
+  .${rootClass} .read-the-docs {
+    font-size: 11px;
   }
 }
 `
@@ -1158,6 +1524,10 @@ async function init() {
     patched = updatePluginComponentName(patched, pluginName, componentName as string, projectName as string)
     fs.writeFileSync(viteConfigPath, patched)
   }
+
+  spinner.message('Updating template files...')
+  ensureDevtoLogo(root)
+  updateAppTemplate(root, componentName as string, isTs)
 
   // 创建组件文件
   spinner.message(`Creating component ${componentName}...`)
