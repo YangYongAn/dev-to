@@ -12,10 +12,11 @@
     }
   },
   "bin": {
-    "dev-to": "./dist/cli.js"
+    "dev-to": "./bin/dev-to.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "bin"
   ],
   "scripts": {
     "build": "rslib build",
