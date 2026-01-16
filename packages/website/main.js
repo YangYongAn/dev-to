@@ -62,6 +62,49 @@ function copyCommand() {
   })
 }
 
+function setupHeroCommandTabs() {
+  const tabs = Array.from(document.querySelectorAll('.hero-command-tab'))
+  const commandEl = document.getElementById('command')
+  const copyBtn = document.querySelector('.copy-btn')
+
+  if (!tabs.length || !commandEl) {
+    return
+  }
+
+  const resetCopyState = () => {
+    if (!copyBtn) return
+    copyBtn.classList.remove('copied')
+    const label = copyBtn.querySelector('span')
+    if (label) {
+      label.textContent = getTranslation('hero.copy')
+    }
+  }
+
+  const activateTab = (tab) => {
+    tabs.forEach((item) => {
+      const active = item === tab
+      item.classList.toggle('is-active', active)
+      item.setAttribute('aria-selected', active ? 'true' : 'false')
+      item.tabIndex = active ? 0 : -1
+    })
+    commandEl.textContent = tab.dataset.command || commandEl.textContent
+    resetCopyState()
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => activateTab(tab))
+    tab.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        activateTab(tab)
+      }
+    })
+  })
+
+  const defaultTab = tabs.find(tab => tab.classList.contains('is-active')) || tabs[0]
+  activateTab(defaultTab)
+}
+
 // Make copyCommand available globally
 window.copyCommand = copyCommand
 
@@ -69,6 +112,9 @@ window.copyCommand = copyCommand
 document.addEventListener('DOMContentLoaded', () => {
   // Display version info
   displayVersionInfo()
+
+  // Hero command tabs
+  setupHeroCommandTabs()
 
   // Add fade-in class to animated elements
   const animatedElements = document.querySelectorAll(

@@ -60,14 +60,25 @@
         让第三方开发者在智能体容器中享受<strong>「本地级」</strong>的开发体验
       </p>
       <div class="hero-command">
-        <code id="command">npm create dev-to</code>
-        <button class="copy-btn" onclick="copyCommand()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          <span data-i18n="hero.copy">复制</span>
-        </button>
+        <div class="hero-command-tabs" role="tablist" aria-label="Package manager">
+          <button class="hero-command-tab is-active" role="tab" aria-selected="true"
+            data-command="npm create dev-to">npm</button>
+          <button class="hero-command-tab" role="tab" aria-selected="false"
+            data-command="yarn create dev-to">Yarn</button>
+          <button class="hero-command-tab" role="tab" aria-selected="false"
+            data-command="pnpm create dev-to">pnpm</button>
+          <button class="hero-command-tab" role="tab" aria-selected="false" data-command="bun create dev-to">Bun</button>
+        </div>
+        <div class="hero-command-line">
+          <code id="command">npm create dev-to</code>
+          <button class="copy-btn" onclick="copyCommand()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span data-i18n="hero.copy">复制</span>
+          </button>
+        </div>
       </div>
       <div class="hero-cta">
         <a href="#quickstart" class="btn btn-primary" data-i18n="hero.start">快速开始</a>
@@ -319,7 +330,10 @@
 npm create dev-to
 
 <span class="code-comment" data-i18n="quickstart.step1.comment2"># 启动开发服务器，访问 http://localhost:5173</span>
-cd my-project && npm run dev</code></pre>
+cd my-project && npm run dev
+
+<span class="code-comment" data-i18n="quickstart.step1.comment3"># 构建 UMD 包（lib 模式）</span>
+npm run build:lib</code></pre>
               </div>
               <p data-i18n="quickstart.step1.desc">脚手架会自动安装依赖、配置 Vite 插件、生成 HelloWorld 组件，开箱即用</p>
             </div>

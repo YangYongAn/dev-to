@@ -262,7 +262,8 @@ a {
 
 .hero-command {
   display: inline-flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 12px;
   padding: 12px 20px;
   background: var(--bg-secondary);
@@ -272,6 +273,45 @@ a {
   font-size: 1rem;
   margin-bottom: 32px;
   animation: fadeInUp 0.5s ease 0.2s both;
+}
+
+.hero-command-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+}
+
+.hero-command-tab {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.hero-command-tab:hover {
+  color: var(--text-primary);
+}
+
+.hero-command-tab.is-active {
+  color: #0d1117;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.hero-command-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .hero-command code {

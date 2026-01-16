@@ -49,7 +49,7 @@
         },
         "tools": {
             "title": "完整工具链",
-            "desc": "内置调试面板、UMD 构建、快速脚手架，开箱即用的完整解决方案"
+            "desc": "内置调试面板、dev-to build（UMD 构建）、快速脚手架，开箱即用的完整解决方案"
         },
         "assets": {
             "title": "资源自动处理",
@@ -114,6 +114,7 @@
             "title": "使用脚手架创建项目",
             "comment1": "# 一键创建项目，全自动配置",
             "comment2": "# 启动开发服务器，访问 http://localhost:5173",
+            "comment3": "# 构建 UMD 包（lib 模式）",
             "desc": "脚手架会自动安装依赖、配置 Vite 插件、生成 HelloWorld 组件，开箱即用"
         },
         "step2": {
