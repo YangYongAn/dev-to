@@ -4,39 +4,36 @@ import { execSync } from 'child_process'
 import fs from 'fs'
 
 function getGitInfo() {
-  try {
-    // Try multiple cwd options to handle different execution contexts
-    const cwdOptions = ['.', '../../', process.env.GITHUB_WORKSPACE || '']
+  // Priority 1: GitHub Actions environment variables
+  if (process.env.GITHUB_SHA && process.env.GITHUB_REF_NAME) {
+    return {
+      hash: process.env.GITHUB_SHA.substring(0, 7),
+      branch: process.env.GITHUB_REF_NAME,
+    }
+  }
 
-    for (const cwd of cwdOptions) {
-      try {
-        const hash = execSync('git rev-parse --short HEAD', { encoding: 'utf-8', cwd: cwd || undefined }).trim()
-        const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8', cwd: cwd || undefined }).trim()
+  // Priority 2: Try git commands from multiple locations
+  const cwdOptions = [
+    process.env.GITHUB_WORKSPACE,
+    '../../',
+    '.',
+  ].filter(Boolean)
 
-        // If we got valid results (not empty and not 'unknown'), return them
-        if (hash && hash !== 'unknown' && branch && branch !== 'unknown') {
-          return { hash, branch }
-        }
-      }
-      catch {
-        // Continue to next cwd option
-        continue
+  for (const cwd of cwdOptions) {
+    try {
+      const hash = execSync('git rev-parse --short HEAD', { encoding: 'utf-8', cwd }).trim()
+      const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8', cwd }).trim()
+
+      if (hash && branch) {
+        return { hash, branch }
       }
     }
-
-    // Fallback to env variables if git commands fail
-    if (process.env.GITHUB_SHA) {
-      return {
-        hash: process.env.GITHUB_SHA.substring(0, 7),
-        branch: process.env.GITHUB_REF_NAME || 'unknown',
-      }
+    catch {
+      // Continue to next location
     }
+  }
 
-    return { hash: 'unknown', branch: 'unknown' }
-  }
-  catch {
-    return { hash: 'unknown', branch: 'unknown' }
-  }
+  return { hash: 'unknown', branch: 'unknown' }
 }
 
 function getVersion() {
