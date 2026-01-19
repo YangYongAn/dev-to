@@ -756,10 +756,8 @@ function editFile(file: string, callback: (content: string) => string) {
   fs.writeFileSync(file, callback(content), 'utf-8')
 }
 
-const DEVTO_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="24" fill="#0d1117"/>
-  <text x="64" y="75" text-anchor="middle" dominant-baseline="middle" fill="#3fb950" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="125">Ɖ</text>
-</svg>
+const DEVTO_LOGO_SVG = `
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg"><rect width="128" height="128" rx="24" fill="#0D1117"/><text x="64" y="64" fill="#3FB950" font-family="Arial,sans-serif" font-size="104" font-weight="700" text-anchor="middle" dominant-baseline="central">Ɖ</text></svg>
 `
 
 function ensureDevtoLogo(root: string) {
@@ -777,22 +775,22 @@ function updateAppTemplate(root: string, componentName: string, isTs: boolean) {
     return
   }
 
-  const appContent = `import './App.css'
+  const appContent = `import styles from './App.module.css'
 import ${componentName} from './${componentName}/index'
 
 export default function App() {
   return (
-    <div className="app">
-      <header className="app-header">
-        <span className="eyebrow">dev-to template</span>
+    <div className={styles.app}>
+      <header className={styles.appHeader}>
+        <span className={styles.eyebrow}>dev-to template</span>
         <h1>Component preview</h1>
-        <p className="subtitle">
-          Vite dev server with <code>@dev-to/react-plugin</code>
+        <p className={styles.subtitle}>
+          Vite dev server with <code className={styles.appCode}>@dev-to/react-plugin</code>
         </p>
       </header>
 
-      <section className="preview">
-        <div className="preview-inner">
+      <section className={styles.preview}>
+        <div className={styles.previewInner}>
           <${componentName} />
         </div>
       </section>
@@ -803,14 +801,8 @@ export default function App() {
 `
   fs.writeFileSync(appPath, appContent, 'utf-8')
 
-  const appCssPath = path.join(root, 'src', 'App.css')
-  const appCssContent = `#root {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 32px 20px 40px;
-}
-
-.app {
+  const appCssPath = path.join(root, 'src', 'App.module.css')
+  const appCssContent = `.app {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -818,11 +810,11 @@ export default function App() {
   text-align: center;
 }
 
-.app-header {
+.appHeader {
   max-width: 720px;
 }
 
-.app-header h1 {
+.appHeader h1 {
   margin: 4px 0 6px;
   font-size: 34px;
   line-height: 1.15;
@@ -848,25 +840,25 @@ export default function App() {
 .preview {
   width: min(960px, 100%);
   padding: 1px;
-  border-radius: 26px;
+  border-radius: calc(var(--border-radius, 25px) + 1px);
   background: linear-gradient(130deg, #22d3ee, #38bdf8 35%, #34d399 70%, #fbbf24);
 }
 
-.preview-inner {
-  border-radius: 25px;
+.previewInner {
+  border-radius: var(--border-radius, 25px);
   padding: 28px 20px;
   background: rgba(15, 23, 42, 0.85);
   box-shadow: 0 20px 60px rgba(15, 23, 42, 0.35);
 }
 
-.app-footer {
+.appFooter {
   margin: 0;
   font-size: 12px;
   text-wrap: balance;
   color: rgba(255, 255, 255, 0.6);
 }
 
-code {
+.appCode {
   background: rgba(255, 255, 255, 0.12);
   padding: 2px 6px;
   border-radius: 6px;
@@ -876,11 +868,11 @@ code {
 }
 
 @media (prefers-color-scheme: dark) {
-  .app-header h1 {
+  .appHeader h1 {
     color: #f8fafc;
   }
 
-  .preview-inner {
+  .previewInner {
     background: #0b1220;
     border: 1px solid rgba(148, 163, 184, 0.18);
     box-shadow: 0 18px 50px rgba(2, 6, 23, 0.65);
@@ -890,7 +882,7 @@ code {
     color: rgba(226, 232, 240, 0.78);
   }
 
-  code {
+  .appCode {
     background: rgba(148, 163, 184, 0.16);
   }
 }
@@ -904,44 +896,36 @@ code {
     color: #4b5563;
   }
 
-  .preview-inner {
+  .previewInner {
     background: #ffffff;
     box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
   }
 
-  .app-footer {
+  .appFooter {
     color: #6b7280;
   }
 
-  code {
+  .appCode {
     background: #e2e8f0;
   }
 }
 
 @media (max-width: 640px) {
-  #root {
-    padding: 28px 16px 36px;
-  }
-
-  .preview-inner {
+  .previewInner {
     padding: 24px 16px;
   }
 
-  .app-header h1 {
+  .appHeader h1 {
     font-size: 30px;
   }
 }
 
 @media (max-width: 360px) {
-  #root {
-    padding: 24px 12px 32px;
-  }
-
   .app {
     gap: 24px;
   }
 
-  .app-header h1 {
+  .appHeader h1 {
     font-size: 26px;
   }
 
@@ -954,15 +938,15 @@ code {
     font-size: 12px;
   }
 
-  .preview-inner {
+  .previewInner {
     padding: 20px 12px;
   }
 
-  .app-footer {
+  .appFooter {
     font-size: 11px;
   }
 
-  code {
+  .appCode {
     font-size: 10px;
   }
 }
@@ -986,7 +970,7 @@ function createComponentFile(root: string, componentName: string, isTs: boolean)
 import devtoLogo from '../assets/devto.svg'
 import reactLogo from '../assets/react.svg'
 import viteLogo from '/vite.svg'
-import './index.css'
+import styles from './index.module.css'
 
 export interface ${componentName}Props {
   title?: string
@@ -997,32 +981,32 @@ export default function ${componentName}(props: ${componentName}Props) {
   const title = props.title || 'ƉevTo + Vite + React'
 
   return (
-    <div className="${componentName.toLowerCase()}-component">
-      <div className="logo-row">
+    <div className={styles.component}>
+      <div className={styles.logoRow}>
         <a href="https://github.com/YangYongAn/dev-to" target="_blank" rel="noreferrer">
-          <img src={devtoLogo} className="logo devto" alt="dev-to logo" />
+          <img src={devtoLogo} className={styles.logoDevto} alt="dev-to logo" />
         </a>
         <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
+          <img src={viteLogo} className={styles.logo} alt="Vite logo" />
         </a>
         <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
+          <img src={reactLogo} className={styles.logoReact} alt="React logo" />
         </a>
       </div>
       <h1>{title}</h1>
-      <p className="subtitle">
+      <p className={styles.subtitle}>
         <span>Remote component served by</span>
-        <code>@dev-to/react-plugin</code>
+        <code className={styles.code}>@dev-to/react-plugin</code>
       </p>
-      <div className="counter-card">
+      <div className={styles.counterCard}>
         <button onClick={() => setCount(count => count + 1)}>
           count is {count}
         </button>
         <p>
-          Edit <code>src/${componentName}/${componentFileName}</code> to test HMR
+          Edit <code className={styles.code}>src/${componentName}/${componentFileName}</code> to test HMR
         </p>
       </div>
-      <p className="read-the-docs">
+      <p className={styles.readTheDocs}>
         Click on the ƉevTo, Vite, and React logos to learn more
       </p>
     </div>
@@ -1033,39 +1017,39 @@ export default function ${componentName}(props: ${componentName}Props) {
 import devtoLogo from '../assets/devto.svg'
 import reactLogo from '../assets/react.svg'
 import viteLogo from '/vite.svg'
-import './index.css'
+import styles from './index.module.css'
 
 export default function ${componentName}(props) {
   const [count, setCount] = useState(0)
   const title = props.title || 'ƉevTo + Vite + React'
 
   return (
-    <div className="${componentName.toLowerCase()}-component">
-      <div className="logo-row">
+    <div className={styles.component}>
+      <div className={styles.logoRow}>
         <a href="https://github.com/YangYongAn/dev-to" target="_blank" rel="noreferrer">
-          <img src={devtoLogo} className="logo devto" alt="dev-to logo" />
+          <img src={devtoLogo} className={styles.logoDevto} alt="dev-to logo" />
         </a>
         <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
+          <img src={viteLogo} className={styles.logo} alt="Vite logo" />
         </a>
         <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
+          <img src={reactLogo} className={styles.logoReact} alt="React logo" />
         </a>
       </div>
       <h1>{title}</h1>
-      <p className="subtitle">
+      <p className={styles.subtitle}>
         <span>Remote component served by</span>
-        <code>@dev-to/react-plugin</code>
+        <code className={styles.code}>@dev-to/react-plugin</code>
       </p>
-      <div className="counter-card">
+      <div className={styles.counterCard}>
         <button onClick={() => setCount(count => count + 1)}>
           count is {count}
         </button>
         <p>
-          Edit <code>src/${componentName}/${componentFileName}</code> to test HMR
+          Edit <code className={styles.code}>src/${componentName}/${componentFileName}</code> to test HMR
         </p>
       </div>
-      <p className="read-the-docs">
+      <p className={styles.readTheDocs}>
         Click on the ƉevTo, Vite, and React logos to learn more
       </p>
     </div>
@@ -1074,52 +1058,66 @@ export default function ${componentName}(props) {
 `
 
   // 生成样式文件
-  const rootClass = `${componentName.toLowerCase()}-component`
-  const styleContent = `.${rootClass} {
+  const styleContent = `.component {
   max-width: 720px;
   margin: 0 auto;
   padding: 20px 12px 28px;
   text-align: center;
 }
 
-.${rootClass} .logo-row {
+.logoRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 24px;
   margin-bottom: 18px;
 }
 
-.${rootClass} .logo {
+.logo {
   height: 48px;
   padding: 0;
   will-change: filter, transform;
   transition: transform 0.25s ease, filter 0.25s ease;
 }
 
-.${rootClass} .logo.devto {
+.logoDevto {
+  height: 48px;
+  padding: 0;
+  will-change: filter, transform;
+  transition: transform 0.25s ease, filter 0.25s ease;
   border-radius: 14px;
   background: rgba(15, 23, 42, 0.9);
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.35);
 }
 
-.${rootClass} .logo:hover {
+.logoReact {
+  height: 48px;
+  padding: 0;
+  will-change: filter, transform;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.logo:hover {
   filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.6));
 }
 
-.${rootClass} .logo.react:hover {
+.logoDevto:hover {
+  filter: drop-shadow(0 0 18px rgba(63, 185, 80, 0.6));
+}
+
+.logoReact:hover {
   filter: drop-shadow(0 0 18px rgba(97, 218, 251, 0.65));
 }
 
-.${rootClass} h1 {
+.component h1 {
   margin: 12px 0 6px;
   font-size: 28px;
   line-height: 1.1;
   white-space: nowrap;
 }
 
-.${rootClass} .subtitle {
+.subtitle {
   margin: 0 auto 18px;
   max-width: 500px;
   font-size: 13px;
@@ -1128,16 +1126,16 @@ export default function ${componentName}(props) {
   color: rgba(255, 255, 255, 0.72);
 }
 
-.${rootClass} .subtitle span {
+.subtitle span {
   display: block;
 }
 
-.${rootClass} .subtitle code {
+.subtitle code {
   display: inline-block;
   margin-top: 4px;
 }
 
-.${rootClass} .counter-card {
+.counterCard {
   margin: 18px auto;
   padding: 20px 18px;
   border-radius: 16px;
@@ -1146,13 +1144,13 @@ export default function ${componentName}(props) {
   backdrop-filter: blur(6px);
 }
 
-.${rootClass} .counter-card p {
+.counterCard p {
   margin: 18px 0;
   font-size: 10px;
   white-space: nowrap;
 }
 
-.${rootClass} .counter-card button {
+.counterCard button {
   border: 1px solid rgba(63, 185, 80, 0.45);
   border-radius: 999px;
   padding: 9px 24px;
@@ -1165,28 +1163,28 @@ export default function ${componentName}(props) {
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
-.${rootClass} .counter-card button:hover {
+.counterCard button:hover {
   transform: translateY(-1px);
   box-shadow: 0 14px 28px rgba(22, 163, 74, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   filter: brightness(1.03);
 }
 
-.${rootClass} .counter-card button:active {
+.counterCard button:active {
   transform: translateY(0);
 }
 
-.${rootClass} .counter-card button:focus-visible {
+.counterCard button:focus-visible {
   outline: 3px solid rgba(63, 185, 80, 0.35);
   outline-offset: 3px;
 }
 
-.${rootClass} .read-the-docs {
+.readTheDocs {
   color: rgba(255, 255, 255, 0.58);
   font-size: 12px;
   text-wrap: balance;
 }
 
-.${rootClass} code {
+.code {
   background: rgba(255, 255, 255, 0.12);
   padding: 2px 6px;
   border-radius: 6px;
@@ -1195,7 +1193,7 @@ export default function ${componentName}(props) {
     monospace;
 }
 
-@keyframes logo-spin {
+@keyframes logoSpin {
   from {
     transform: rotate(0deg);
   }
@@ -1205,99 +1203,107 @@ export default function ${componentName}(props) {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .${rootClass} .logo.react {
-    animation: logo-spin infinite 20s linear;
+  .logoReact {
+    animation: logoSpin infinite 20s linear;
   }
 }
 
 @media (prefers-color-scheme: dark) {
-  .${rootClass} h1 {
+  .component h1 {
     color: #f8fafc;
   }
 
-  .${rootClass} .logo.devto {
+  .logoDevto {
     border: 1px solid rgba(63, 185, 80, 0.35);
     box-shadow: 0 10px 26px rgba(2, 6, 23, 0.55);
   }
 
-  .${rootClass} .subtitle {
+  .subtitle {
     color: rgba(226, 232, 240, 0.8);
   }
 
-  .${rootClass} .counter-card {
+  .counterCard {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(148, 163, 184, 0.25);
   }
 
-  .${rootClass} .counter-card p {
+  .counterCard p {
     color: rgba(226, 232, 240, 0.82);
   }
 
-  .${rootClass} .read-the-docs {
+  .readTheDocs {
     color: rgba(148, 163, 184, 0.75);
   }
 
-  .${rootClass} code {
+  .code {
     background: rgba(148, 163, 184, 0.18);
   }
 }
 
 @media (prefers-color-scheme: light) {
-  .${rootClass} .subtitle {
+  .subtitle {
     color: #4b5563;
   }
 
-  .${rootClass} .counter-card {
+  .counterCard {
     background: #f8fafc;
     border-color: #e2e8f0;
   }
 
-  .${rootClass} .counter-card button {
+  .counterCard button {
     color: #ffffff;
     box-shadow: 0 10px 18px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
-  .${rootClass} .read-the-docs {
+  .readTheDocs {
     color: #6b7280;
   }
 
-  .${rootClass} code {
+  .code {
     background: #e2e8f0;
   }
 }
 
 @media (max-width: 360px) {
-  .${rootClass} {
+  .component {
     padding: 18px 10px 24px;
   }
 
-  .${rootClass} .logo-row {
+  .logoRow {
     gap: 8px;
     margin-bottom: 14px;
   }
 
-  .${rootClass} .logo {
+  .logo {
     height: 40px;
   }
 
-  .${rootClass} h1 {
+  .logoDevto {
+    height: 40px;
+  }
+
+  .logoReact {
+    height: 40px;
+  }
+
+  .component h1 {
     font-size: 28px;
   }
 
-  .${rootClass} .subtitle {
+  .subtitle {
     font-size: 12px;
   }
 
-  .${rootClass} .counter-card {
+  .counterCard {
     padding: 18px 16px;
   }
 
-  .${rootClass} .counter-card button {
+  .counterCard button {
     padding: 8px 20px;
     font-size: 13px;
   }
 
-  .${rootClass} .read-the-docs {
+  .readTheDocs {
     font-size: 11px;
   }
 }
@@ -1305,7 +1311,7 @@ export default function ${componentName}(props) {
 
   // 写入文件
   fs.writeFileSync(componentFile, componentContent, 'utf-8')
-  fs.writeFileSync(path.join(componentDir, 'index.css'), styleContent, 'utf-8')
+  fs.writeFileSync(path.join(componentDir, 'index.module.css'), styleContent, 'utf-8')
 }
 
 function setupReactSWC(root: string, isTs: boolean) {
