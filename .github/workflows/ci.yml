@@ -87,17 +87,17 @@ jobs:
 
   release-packages:
     needs: changes
-    if: (github.event_name == 'push' && (needs.changes.outputs.changeset == 'true' || needs.changes.outputs.publishable == 'true' || needs.changes.outputs.pending == 'true')) || (github.event_name == 'workflow_dispatch' && inputs.run_release_packages == 'true')
+    if: (github.event_name == 'push' && (needs.changes.outputs.changeset == 'true' || needs.changes.outputs.publishable == 'true' || needs.changes.outputs.pending == 'true')) || (github.event_name == 'workflow_dispatch' && (inputs.run_release_packages == true || inputs.run_release_packages == 'true'))
     uses: ./.github/workflows/release-packages.yml
     secrets: inherit
 
   website-preview:
     needs: changes
-    if: (github.event_name == 'push' && needs.changes.outputs.website == 'true' && !contains(github.event.head_commit.message, 'release website')) || (github.event_name == 'workflow_dispatch' && inputs.run_website_preview == 'true')
+    if: (github.event_name == 'push' && needs.changes.outputs.website == 'true' && !contains(github.event.head_commit.message, 'release website')) || (github.event_name == 'workflow_dispatch' && (inputs.run_website_preview == true || inputs.run_website_preview == 'true'))
     uses: ./.github/workflows/website-preview-deploy.yml
     secrets: inherit
 
   website-release:
-    if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'website-release') || (github.event_name == 'workflow_dispatch' && inputs.run_website_release == 'true')
+    if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'website-release') || (github.event_name == 'workflow_dispatch' && (inputs.run_website_release == true || inputs.run_website_release == 'true'))
     uses: ./.github/workflows/website-release-deploy.yml
     secrets: inherit
