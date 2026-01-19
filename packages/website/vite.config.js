@@ -4,7 +4,15 @@ import { execSync } from 'child_process'
 import fs from 'fs'
 
 function getGitInfo() {
-  // Priority 1: GitHub Actions environment variables
+  // Priority 1: Vercel environment variables
+  if (process.env.VERCEL_GIT_COMMIT_SHA && process.env.VERCEL_GIT_COMMIT_REF) {
+    return {
+      hash: process.env.VERCEL_GIT_COMMIT_SHA.substring(0, 7),
+      branch: process.env.VERCEL_GIT_COMMIT_REF,
+    }
+  }
+
+  // Priority 2: GitHub Actions environment variables
   if (process.env.GITHUB_SHA && process.env.GITHUB_REF_NAME) {
     return {
       hash: process.env.GITHUB_SHA.substring(0, 7),
@@ -12,7 +20,7 @@ function getGitInfo() {
     }
   }
 
-  // Priority 2: Try git commands from multiple locations
+  // Priority 3: Try git commands from multiple locations
   const cwdOptions = [
     process.env.GITHUB_WORKSPACE,
     '../../',
