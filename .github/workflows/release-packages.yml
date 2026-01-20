@@ -2,9 +2,7 @@ name: Release Packages
 
 on:
   workflow_call:
-    secrets:
-      NPM_TOKEN:
-        required: true
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,6 +15,7 @@ concurrency:
 
 jobs:
   release:
+    name: Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,33 +33,48 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+          registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Compute release title
-        id: release_title
+        id: title
         run: |
-          count=$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' | wc -l | tr -d ' ')
+          count=$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' 2>/dev/null | wc -l | tr -d ' ')
+
           if [ "$count" -eq 0 ]; then
             echo "title=chore(repo): release packages" >> "$GITHUB_OUTPUT"
-            echo "commit=chore(repo): release packages" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          pnpm changeset status --output .changeset/status.json
-          node -e "const fs=require('fs');const data=JSON.parse(fs.readFileSync('.changeset/status.json','utf8'));const list=(data.releases||[]).filter(r=>r.type&&r.type!=='none').map(r=>r.name+'@'+r.newVersion);const suffix=list.length?' ('+list.join(', ')+')':'';const title='chore(repo): release packages'+suffix;console.log('title='+title);console.log('commit='+title);" >> "$GITHUB_OUTPUT"
-          rm .changeset/status.json
+          # Generate title with package versions
+          pnpm changeset status --output /tmp/changeset-status.json 2>/dev/null || true
+
+          if [ -f /tmp/changeset-status.json ]; then
+            title=$(node -e "
+              const fs = require('fs');
+              const data = JSON.parse(fs.readFileSync('/tmp/changeset-status.json', 'utf8'));
+              const releases = (data.releases || [])
+                .filter(r => r.type && r.type !== 'none')
+                .map(r => r.name + '@' + r.newVersion);
+              const suffix = releases.length ? ' (' + releases.join(', ') + ')' : '';
+              console.log('chore(repo): release packages' + suffix);
+            ")
+            echo "title=$title" >> "$GITHUB_OUTPUT"
+          else
+            echo "title=chore(repo): release packages" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Create Release PR or Publish
         uses: changesets/action@v1
         with:
           version: pnpm changeset version
           publish: pnpm release
-          commit: ${{ steps.release_title.outputs.commit }}
-          title: ${{ steps.release_title.outputs.title }}
+          commit: ${{ steps.title.outputs.title }}
+          title: ${{ steps.title.outputs.title }}
         env:
           HUSKY: 0
-          HUSKY_SKIP_HOOKS: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

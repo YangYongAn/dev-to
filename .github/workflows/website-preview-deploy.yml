@@ -2,13 +2,7 @@ name: Website Preview Deploy
 
 on:
   workflow_call:
-    secrets:
-      VERCEL_TOKEN:
-        required: true
-      VERCEL_ORG_ID:
-        required: true
-      VERCEL_PROJECT_ID:
-        required: true
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -20,6 +14,7 @@ concurrency:
 
 jobs:
   preview:
+    name: Deploy Preview
     runs-on: ubuntu-latest
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -48,42 +43,18 @@ jobs:
       - name: Build website
         run: pnpm --filter @dev-to/website build
 
-      - name: Deploy preview
+      - name: Deploy to Vercel (Preview)
         id: deploy
         working-directory: packages/website
         run: |
-          deploy_output=$(pnpm dlx vercel@latest deploy --yes --public --token "$VERCEL_TOKEN")
-          echo "$deploy_output"
-          preview_url=$(echo "$deploy_output" | grep -Eo 'https?://[^ ]+' | tail -n 1)
-          echo "url=$preview_url" >> "$GITHUB_OUTPUT"
+          output=$(pnpm dlx vercel@latest deploy --yes --token "$VERCEL_TOKEN" 2>&1)
+          echo "$output"
+          url=$(echo "$output" | grep -Eo 'https://[^ ]+\.vercel\.app' | head -n 1)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
 
       - name: Compute release info
         id: release
         run: node scripts/website-release.mjs --output "$GITHUB_OUTPUT" --write
-
-      - name: Prepare release PR body
-        if: steps.release.outputs.should_release == 'true'
-        env:
-          CURRENT_VERSION: ${{ steps.release.outputs.current_version }}
-          NEXT_VERSION: ${{ steps.release.outputs.next_version }}
-          BUMP_TYPE: ${{ steps.release.outputs.bump_type }}
-          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
-          CHANGE_LOG: ${{ steps.release.outputs.change_log }}
-        run: |
-          {
-            echo "## Website Release"
-            echo ""
-            echo "- Current: ${CURRENT_VERSION}"
-            echo "- Next: ${NEXT_VERSION} (${BUMP_TYPE})"
-            echo "- Preview: ${PREVIEW_URL}"
-            echo ""
-            echo "### Changes"
-            if [ -n "${CHANGE_LOG}" ]; then
-              echo "${CHANGE_LOG}"
-            else
-              echo "- No conventional commits found."
-            fi
-          } > /tmp/website-release-body.md
 
       - name: Create release PR
         if: steps.release.outputs.should_release == 'true'
@@ -92,7 +63,19 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: website-release
           base: main
-          title: "chore(repo): release website v${{ steps.release.outputs.next_version }}"
-          commit-message: "chore(repo): release website v${{ steps.release.outputs.next_version }}"
-          body-path: /tmp/website-release-body.md
           delete-branch: true
+          title: "chore(repo): release website v${{ steps.release.outputs.next_version }}"
+          commit-message: "chore(repo): release website v${{ steps.release.outputs.next_version }} [skip preview]"
+          body: |
+            ## Website Release
+
+            | Field | Value |
+            |-------|-------|
+            | Current | `${{ steps.release.outputs.current_version }}` |
+            | Next | `${{ steps.release.outputs.next_version }}` |
+            | Bump | `${{ steps.release.outputs.bump_type }}` |
+            | Preview | ${{ steps.deploy.outputs.url }} |
+
+            ### Changes
+
+            ${{ steps.release.outputs.change_log || 'No conventional commits found.' }}

@@ -1,14 +1,10 @@
 name: Website Release Deploy
 
 on:
-  workflow_call:
-    secrets:
-      VERCEL_TOKEN:
-        required: true
-      VERCEL_ORG_ID:
-        required: true
-      VERCEL_PROJECT_ID:
-        required: true
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -19,7 +15,14 @@ concurrency:
 
 jobs:
   release:
+    name: Deploy Production
     runs-on: ubuntu-latest
+    # Only run when:
+    # 1. PR from website-release branch is merged, OR
+    # 2. Manually triggered
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'website-release')
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -48,26 +51,32 @@ jobs:
       - name: Build website
         run: pnpm --filter @dev-to/website build
 
-      - name: Deploy production
+      - name: Deploy to Vercel (Production)
         id: deploy
         working-directory: packages/website
         run: |
-          deploy_output=$(pnpm dlx vercel@latest deploy --prod --yes --public --token "$VERCEL_TOKEN")
-          echo "$deploy_output"
-          prod_url=$(echo "$deploy_output" | grep -Eo 'https?://[^ ]+' | tail -n 1)
-          echo "url=$prod_url" >> "$GITHUB_OUTPUT"
+          output=$(pnpm dlx vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN" 2>&1)
+          echo "$output"
+          url=$(echo "$output" | grep -Eo 'https://[^ ]+' | tail -n 1)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
 
-      - name: Read website version
+      - name: Get version
         id: version
         run: |
-          version=$(node --input-type=module -e "import fs from 'fs'; const pkg = JSON.parse(fs.readFileSync('packages/website/package.json', 'utf8')); console.log(pkg.version);")
+          version=$(node -e "console.log(require('./packages/website/package.json').version)")
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Create GitHub release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: website-v${{ steps.version.outputs.version }}
           name: Website v${{ steps.version.outputs.version }}
+          generate_release_notes: false
           body: |
-            Production: ${{ steps.deploy.outputs.url }}
-            Version: ${{ steps.version.outputs.version }}
+            ## Website Release
+
+            - **Version**: ${{ steps.version.outputs.version }}
+            - **Production URL**: ${{ steps.deploy.outputs.url }}
+
+            ---
+            Deployed automatically via GitHub Actions.

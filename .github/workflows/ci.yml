@@ -2,102 +2,129 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    types:
-      - closed
-    branches:
-      - main
-  workflow_dispatch:
-    inputs:
-      run_release_packages:
-        description: Run package release job
-        type: boolean
-        default: true
-      run_website_preview:
-        description: Run website preview deploy
-        type: boolean
-        default: false
-      run_website_release:
-        description: Run website production deploy
-        type: boolean
-        default: false
+    branches: [main]
 
 permissions:
-  contents: write
-  pull-requests: write
-  packages: write
+  contents: read
 
 jobs:
-  changes:
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
-    outputs:
-      website: ${{ steps.filter.outputs.website || steps.fallback.outputs.website }}
-      changeset: ${{ steps.filter.outputs.changeset || steps.fallback.outputs.changeset }}
-      publishable: ${{ steps.filter.outputs.publishable || steps.fallback.outputs.publishable }}
-      pending: ${{ steps.pending.outputs.pending || steps.fallback.outputs.pending }}
     steps:
       - name: Checkout
-        if: github.event_name == 'push'
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run lint
+        run: pnpm lint
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all packages
+        run: pnpm build
+
+  # Dispatch workflows only on push to main (after lint and build pass)
+  dispatch:
+    name: Dispatch Workflows
+    needs: [lint, build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      has_changeset: ${{ steps.check.outputs.has_changeset }}
+      has_pending: ${{ steps.check.outputs.has_pending }}
+      website_changed: ${{ steps.check.outputs.website_changed }}
+    steps:
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Detect website changes
-        if: github.event_name == 'push'
-        id: filter
-        uses: dorny/paths-filter@v3
-        with:
-          base: ${{ github.event.before }}
-          ref: ${{ github.sha }}
-          filters: |
-            website:
-              - 'packages/website/**'
-            changeset:
-              - '.changeset/**'
-            publishable:
-              - 'packages/react-shared/package.json'
-              - 'packages/react-shared/CHANGELOG.md'
-              - 'packages/react-plugin/package.json'
-              - 'packages/react-plugin/CHANGELOG.md'
-              - 'packages/react-loader/package.json'
-              - 'packages/react-loader/CHANGELOG.md'
-              - 'packages/create-dev-to/package.json'
-              - 'packages/create-dev-to/CHANGELOG.md'
-      - name: Check pending changesets
-        if: github.event_name == 'push'
-        id: pending
+      - name: Check changes
+        id: check
         run: |
-          count=$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' | wc -l | tr -d ' ')
+          # Check for pending changesets
+          count=$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' 2>/dev/null | wc -l | tr -d ' ')
           if [ "$count" -gt 0 ]; then
-            echo "pending=true" >> "$GITHUB_OUTPUT"
+            echo "has_pending=true" >> "$GITHUB_OUTPUT"
           else
-            echo "pending=false" >> "$GITHUB_OUTPUT"
+            echo "has_pending=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Default outputs
-        if: github.event_name != 'push'
-        id: fallback
-        run: |
-          echo "website=false" >> "$GITHUB_OUTPUT"
-          echo "changeset=false" >> "$GITHUB_OUTPUT"
-          echo "publishable=false" >> "$GITHUB_OUTPUT"
-          echo "pending=false" >> "$GITHUB_OUTPUT"
+          # Check if changeset files changed in this push
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null | grep -q '^\.changeset/'; then
+            echo "has_changeset=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changeset=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Check if website files changed
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null | grep -q '^packages/website/'; then
+            echo "website_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "website_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Debug output
+          echo "::group::Debug Info"
+          echo "Pending changesets: $count"
+          echo "Changed files:"
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null || echo "Could not get diff"
+          echo "::endgroup::"
 
   release-packages:
-    needs: changes
-    if: (github.event_name == 'push' && (needs.changes.outputs.changeset == 'true' || needs.changes.outputs.publishable == 'true' || needs.changes.outputs.pending == 'true')) || (github.event_name == 'workflow_dispatch' && (inputs.run_release_packages == true || inputs.run_release_packages == 'true'))
+    name: Release Packages
+    needs: dispatch
+    if: needs.dispatch.outputs.has_changeset == 'true' || needs.dispatch.outputs.has_pending == 'true'
     uses: ./.github/workflows/release-packages.yml
     secrets: inherit
+    permissions:
+      contents: write
+      pull-requests: write
+      packages: write
 
   website-preview:
-    needs: changes
-    if: (github.event_name == 'push' && needs.changes.outputs.website == 'true' && !contains(github.event.head_commit.message, 'release website')) || (github.event_name == 'workflow_dispatch' && (inputs.run_website_preview == true || inputs.run_website_preview == 'true'))
+    name: Website Preview
+    needs: dispatch
+    if: |
+      needs.dispatch.outputs.website_changed == 'true' &&
+      !contains(github.event.head_commit.message, '[skip preview]')
     uses: ./.github/workflows/website-preview-deploy.yml
     secrets: inherit
-
-  website-release:
-    if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'website-release') || (github.event_name == 'workflow_dispatch' && (inputs.run_website_release == true || inputs.run_website_release == 'true'))
-    uses: ./.github/workflows/website-release-deploy.yml
-    secrets: inherit
+    permissions:
+      contents: write
+      pull-requests: write
