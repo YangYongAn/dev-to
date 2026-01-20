@@ -66,6 +66,20 @@ jobs:
           version=$(node -e "console.log(require('./packages/website/package.json').version)")
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
+      - name: Get changelog
+        id: changelog
+        run: |
+          last_tag=$(git tag --list 'website-v*' --sort=-v:refname | head -n 2 | tail -n 1)
+          if [ -n "$last_tag" ]; then
+            changelog=$(git log ${last_tag}..HEAD --pretty=format:"- %s" -- packages/website 2>/dev/null || echo "No changes")
+          else
+            changelog=$(git log --pretty=format:"- %s" -- packages/website 2>/dev/null | head -10 || echo "Initial release")
+          fi
+          # Escape for GitHub Actions output
+          echo "changelog<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$changelog" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -73,10 +87,18 @@ jobs:
           name: Website v${{ steps.version.outputs.version }}
           generate_release_notes: false
           body: |
-            ## Website Release
+            ## 🌐 Website Production Release
 
-            - **Version**: ${{ steps.version.outputs.version }}
-            - **Production URL**: ${{ steps.deploy.outputs.url }}
+            ### 📦 版本信息
+
+            - **版本**: `v${{ steps.version.outputs.version }}`
+            - **生产环境**: [${{ steps.deploy.outputs.url }}](${{ steps.deploy.outputs.url }})
+            - **部署时间**: ${{ github.event.head_commit.timestamp || github.event.repository.updated_at }}
+
+            ### 📝 更新内容
+
+            ${{ steps.changelog.outputs.changelog }}
 
             ---
-            Deployed automatically via GitHub Actions.
+
+            <sub>🤖 此 Release 由 GitHub Actions 自动创建</sub>

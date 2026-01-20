@@ -67,15 +67,39 @@ jobs:
           title: "chore(repo): release website v${{ steps.release.outputs.next_version }}"
           commit-message: "chore(repo): release website v${{ steps.release.outputs.next_version }} [skip preview]"
           body: |
-            ## Website Release
+            ## 🚀 Website Release
 
             | Field | Value |
             |-------|-------|
-            | Current | `${{ steps.release.outputs.current_version }}` |
-            | Next | `${{ steps.release.outputs.next_version }}` |
-            | Bump | `${{ steps.release.outputs.bump_type }}` |
-            | Preview | ${{ steps.deploy.outputs.url }} |
+            | Current Version | `v${{ steps.release.outputs.current_version }}` |
+            | Next Version | `v${{ steps.release.outputs.next_version }}` |
+            | Bump Type | `${{ steps.release.outputs.bump_type }}` |
 
-            ### Changes
+            ### 🔗 Preview
+
+            👉 **[${{ steps.deploy.outputs.url }}](${{ steps.deploy.outputs.url }})**
+
+            请在预览环境中验证变更是否符合预期。
+
+            ### 📝 Changes
 
             ${{ steps.release.outputs.change_log || 'No conventional commits found.' }}
+
+            ---
+
+            ### 📋 发布流程
+
+            ```
+            当前状态: 🟡 Preview 已部署，等待审核
+
+            1. ✅ 代码变更已合并到 main
+            2. ✅ Preview 版本已部署到 Vercel
+            3. ⏳ 等待此 PR 合并
+            4. ⏳ 合并后自动部署到 Production
+            5. ⏳ 自动创建 GitHub Release (website-v${{ steps.release.outputs.next_version }})
+            ```
+
+            **合并此 PR 将触发:**
+            - 🌐 部署到生产环境
+            - 🏷️ 创建 Git Tag: `website-v${{ steps.release.outputs.next_version }}`
+            - 📦 创建 GitHub Release
