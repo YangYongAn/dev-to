@@ -373,7 +373,7 @@ npm run build:lib</code></pre>
                 <td><span class="feature-yes" data-i18n="comparison.value.yes">是</span></td>
                 <td><span class="feature-yes" data-i18n="comparison.value.yes">是</span></td>
                 <td><span class="feature-yes" data-i18n="comparison.value.yes">是</span></td>
-                <td><span class="feature-partial" data-i18n="comparison.value.react_only">仅 React</span></td>
+                <td><span class="feature-partial" data-i18n="comparison.value.react_only">React（未来可拓展兼容其他）</span></td>
               </tr>
               <tr>
                 <td data-i18n="comparison.feature.ts_types">TypeScript 类型共享</td>
@@ -456,46 +456,101 @@ npm run build:lib</code></pre>
       <!-- Decision Tree -->
       <div class="comparison-block">
         <h3 class="comparison-heading" data-i18n="comparison.decision">如何选择</h3>
-        <div class="decision-tree">
-          <div class="decision-node">
-            <div class="decision-question" data-i18n="comparison.decision.q1">需要开发时跨环境 HMR？</div>
-            <div class="decision-branches">
-              <div class="decision-branch yes">
-                <span class="branch-label" data-i18n="comparison.decision.yes">是</span>
-                <span class="branch-answer"><strong>dev-to</strong> <span data-i18n="comparison.decision.a1">（目前唯一原生支持）</span></span>
-              </div>
-              <div class="decision-branch no">
-                <span class="branch-label" data-i18n="comparison.decision.no">否</span>
-                <span class="branch-arrow">↓</span>
-              </div>
-            </div>
-          </div>
-          <div class="decision-node">
-            <div class="decision-question" data-i18n="comparison.decision.q2">需要 JS/CSS 沙箱隔离？</div>
-            <div class="decision-branches">
-              <div class="decision-branch yes">
-                <span class="branch-label" data-i18n="comparison.decision.yes">是</span>
-                <span class="branch-answer"><strong>qiankun / micro-app</strong></span>
-              </div>
-              <div class="decision-branch no">
-                <span class="branch-label" data-i18n="comparison.decision.no">否</span>
-                <span class="branch-arrow">↓</span>
-              </div>
-            </div>
-          </div>
-          <div class="decision-node">
-            <div class="decision-question" data-i18n="comparison.decision.q3">需要模块级共享？</div>
-            <div class="decision-branches">
-              <div class="decision-branch yes">
-                <span class="branch-label" data-i18n="comparison.decision.yes">是</span>
-                <span class="branch-answer"><strong>Module Federation</strong></span>
-              </div>
-              <div class="decision-branch no">
-                <span class="branch-label" data-i18n="comparison.decision.no">否</span>
-                <span class="branch-answer" data-i18n="comparison.decision.evaluate">根据具体场景评估</span>
-              </div>
-            </div>
-          </div>
+        <div class="decision-diagram">
+          <svg class="decision-svg" viewBox="0 0 960 440" role="img" aria-labelledby="decisionDiagramTitle">
+            <title id="decisionDiagramTitle" data-i18n="comparison.decision">如何选择</title>
+            <defs>
+              <marker id="decision-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <path d="M0 0L8 4L0 8Z" fill="var(--border-color-hover)" />
+              </marker>
+            </defs>
+
+            <path class="decision-edge" d="M400 60 L520 60" />
+            <path class="decision-edge" d="M400 180 L520 180" />
+            <path class="decision-edge" d="M400 300 L520 300" />
+            <path class="decision-edge" d="M220 100 L220 140" />
+            <path class="decision-edge" d="M220 220 L220 260" />
+            <path class="decision-edge" d="M220 340 L220 390 L520 390" />
+
+            <g class="decision-pill yes" transform="translate(437 50)">
+              <rect width="46" height="20" rx="10" ry="10"></rect>
+              <text x="23" y="14" data-i18n="comparison.decision.yes">是</text>
+            </g>
+            <g class="decision-pill yes" transform="translate(437 170)">
+              <rect width="46" height="20" rx="10" ry="10"></rect>
+              <text x="23" y="14" data-i18n="comparison.decision.yes">是</text>
+            </g>
+            <g class="decision-pill yes" transform="translate(437 290)">
+              <rect width="46" height="20" rx="10" ry="10"></rect>
+              <text x="23" y="14" data-i18n="comparison.decision.yes">是</text>
+            </g>
+
+            <g class="decision-pill no" transform="translate(197 110)">
+              <rect width="46" height="20" rx="10" ry="10"></rect>
+              <text x="23" y="14" data-i18n="comparison.decision.no">否</text>
+            </g>
+            <g class="decision-pill no" transform="translate(197 230)">
+              <rect width="46" height="20" rx="10" ry="10"></rect>
+              <text x="23" y="14" data-i18n="comparison.decision.no">否</text>
+            </g>
+            <g class="decision-pill no" transform="translate(197 355)">
+              <rect width="46" height="20" rx="10" ry="10"></rect>
+              <text x="23" y="14" data-i18n="comparison.decision.no">否</text>
+            </g>
+
+            <g class="decision-node question" transform="translate(40 20)">
+              <rect class="decision-node-shape question" width="360" height="80" rx="12" ry="12"></rect>
+              <foreignObject x="16" y="16" width="328" height="48">
+                <div xmlns="http://www.w3.org/1999/xhtml" class="decision-node-text question"
+                  data-i18n="comparison.decision.q1">需要开发时跨环境 HMR？</div>
+              </foreignObject>
+            </g>
+            <g class="decision-node answer highlight" transform="translate(520 20)">
+              <rect class="decision-node-shape highlight" width="360" height="80" rx="12" ry="12"></rect>
+              <foreignObject x="16" y="16" width="328" height="48">
+                <div xmlns="http://www.w3.org/1999/xhtml" class="decision-node-text answer highlight">
+                  <strong>dev-to</strong> <span data-i18n="comparison.decision.a1">（目前唯一原生支持）</span>
+                </div>
+              </foreignObject>
+            </g>
+
+            <g class="decision-node question" transform="translate(40 140)">
+              <rect class="decision-node-shape question" width="360" height="80" rx="12" ry="12"></rect>
+              <foreignObject x="16" y="16" width="328" height="48">
+                <div xmlns="http://www.w3.org/1999/xhtml" class="decision-node-text question"
+                  data-i18n="comparison.decision.q2">需要 JS/CSS 沙箱隔离？</div>
+              </foreignObject>
+            </g>
+            <g class="decision-node answer" transform="translate(520 140)">
+              <rect class="decision-node-shape answer" width="360" height="80" rx="12" ry="12"></rect>
+              <foreignObject x="16" y="16" width="328" height="48">
+                <div xmlns="http://www.w3.org/1999/xhtml" class="decision-node-text answer"><strong>qiankun /
+                    micro-app</strong></div>
+              </foreignObject>
+            </g>
+
+            <g class="decision-node question" transform="translate(40 260)">
+              <rect class="decision-node-shape question" width="360" height="80" rx="12" ry="12"></rect>
+              <foreignObject x="16" y="16" width="328" height="48">
+                <div xmlns="http://www.w3.org/1999/xhtml" class="decision-node-text question"
+                  data-i18n="comparison.decision.q3">需要模块级共享？</div>
+              </foreignObject>
+            </g>
+            <g class="decision-node answer" transform="translate(520 260)">
+              <rect class="decision-node-shape answer" width="360" height="80" rx="12" ry="12"></rect>
+              <foreignObject x="16" y="16" width="328" height="48">
+                <div xmlns="http://www.w3.org/1999/xhtml" class="decision-node-text answer"><strong>Module
+                    Federation</strong></div>
+              </foreignObject>
+            </g>
+            <g class="decision-node answer" transform="translate(520 350)">
+              <rect class="decision-node-shape answer" width="360" height="80" rx="12" ry="12"></rect>
+              <foreignObject x="16" y="16" width="328" height="48">
+                <div xmlns="http://www.w3.org/1999/xhtml" class="decision-node-text answer"
+                  data-i18n="comparison.decision.evaluate">根据具体场景评估</div>
+              </foreignObject>
+            </g>
+          </svg>
         </div>
       </div>
 

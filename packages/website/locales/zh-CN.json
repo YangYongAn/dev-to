@@ -114,7 +114,7 @@
             "yes": "支持",
             "core": "核心特性",
             "plugin": "需插件",
-            "react_only": "仅 React"
+            "react_only": "React（未来可拓展兼容其他）"
         },
         "dx": "开发体验对比",
         "dx.setup": "首次配置",

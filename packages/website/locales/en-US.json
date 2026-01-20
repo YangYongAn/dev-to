@@ -114,7 +114,7 @@
             "yes": "Yes",
             "core": "Core Feature",
             "plugin": "Plugin Required",
-            "react_only": "React Only"
+            "react_only": "React now (extensible later)"
         },
         "dx": "Developer Experience",
         "dx.setup": "Initial Setup",
