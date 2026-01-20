@@ -1,6 +1,7 @@
 {
     "nav": {
         "features": "Features",
+        "comparison": "Comparison",
         "architecture": "Architecture",
         "scenarios": "Scenarios",
         "quickstart": "Quick Start"
@@ -59,6 +60,75 @@
             "title": "Fully Transparent",
             "desc": "Source maps, logs, and breakpoints work perfectly, just like local development"
         }
+    },
+    "comparison": {
+        "title": "<span class=\"gradient-text\">Comparison</span> with Alternatives",
+        "subtitle": "Understand how dev-to differs from mainstream micro-frontend and module federation solutions",
+        "overview": "Overview",
+        "features": "Feature Comparison",
+        "table": {
+            "solution": "Solution",
+            "focus": "Core Focus",
+            "maturity": "Maturity",
+            "feature": "Feature"
+        },
+        "mf": {
+            "focus": "Build-time module federation (Webpack/Vite native)"
+        },
+        "qiankun": {
+            "focus": "Runtime application isolation (micro-frontend)"
+        },
+        "microapp": {
+            "focus": "WebComponent-like micro-frontend"
+        },
+        "singlespa": {
+            "focus": "Micro-frontend routing orchestration"
+        },
+        "devto": {
+            "focus": "Cross-environment component HMR"
+        },
+        "maturity": {
+            "ready": "Production Ready",
+            "early": "Early Stage"
+        },
+        "feature": {
+            "module_sharing": "Runtime Module Sharing",
+            "cross_hmr": "Cross-App HMR",
+            "js_sandbox": "JS Sandbox",
+            "css_isolation": "CSS Isolation",
+            "routing": "Route Management",
+            "multi_framework": "Multi-Framework",
+            "ts_types": "TypeScript Type Sharing"
+        },
+        "value": {
+            "native": "Native",
+            "config": "Config Required",
+            "partial": "Partial",
+            "no": "No",
+            "yes": "Yes",
+            "core": "Core Feature",
+            "plugin": "Plugin Required",
+            "react_only": "React Only"
+        },
+        "dx": "Developer Experience",
+        "dx.setup": "Initial Setup",
+        "dx.hmr": "Cross-App HMR",
+        "dx.debug": "Debug Tools",
+        "dx.refresh_host": "Host Refresh Required",
+        "dx.full_refresh": "Full Refresh Required",
+        "dx.none": "None Built-in",
+        "dx.best": "Best DX",
+        "dx.realtime": "Real-time HMR",
+        "dx.builtin": "Built-in Panel",
+        "decision": "How to Choose",
+        "decision.q1": "Need cross-environment HMR during development?",
+        "decision.q2": "Need JS/CSS sandbox isolation?",
+        "decision.q3": "Need module-level sharing?",
+        "decision.yes": "Yes",
+        "decision.no": "No",
+        "decision.a1": "(only native solution currently)",
+        "decision.evaluate": "Evaluate specific requirements",
+        "summary": "<strong>dev-to's unique value:</strong> Currently the only solution focused on \"real-time HMR inside a host container\". If your core pain point is \"third-party developers code locally while the host environment previews in real-time\", dev-to is the most direct choice. However, if you need sandbox isolation, route management, or other enterprise features, consider qiankun or Module Federation."
     },
     "architecture": {
         "title": "Architecture <span class=\"gradient-text\">Design</span>",

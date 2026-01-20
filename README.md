@@ -33,6 +33,72 @@ dev-to solves this by:
 - Built-in debug panel and UMD packaging.
 - Shared React runtime to avoid multi-instance conflicts.
 
+## Comparison with alternatives
+
+### Overview
+
+| Solution | Core focus | Maturity |
+|----------|-----------|----------|
+| **Module Federation** | Build-time module sharing (Webpack/Vite native) | Production-ready |
+| **qiankun** | Runtime application isolation (micro-frontend) | Production-ready |
+| **micro-app** | WebComponent-like micro-frontend | Production-ready |
+| **single-spa** | Micro-frontend routing orchestration | Production-ready |
+| **dev-to** | Cross-environment component HMR | Early stage |
+
+### Feature comparison
+
+| Feature | Module Federation | qiankun | micro-app | single-spa | dev-to |
+|---------|-------------------|---------|-----------|------------|--------|
+| **Runtime module sharing** | Native | Config required | Config required | Config required | Native |
+| **Cross-app HMR** | Partial | No | No | No | Core feature |
+| **JS sandbox** | No | Proxy sandbox | iframe/Proxy | No | No |
+| **CSS isolation** | No | Shadow DOM/Scoped | Shadow DOM | No | CSS Modules |
+| **Route management** | No | Yes | Yes | Core feature | No |
+| **Preloading** | Yes | Yes | Yes | Yes | No |
+| **Multi-framework** | Yes | Yes | Yes | Yes | React only |
+| **TypeScript type sharing** | Plugin required | No | No | No | Native |
+
+### Developer experience
+
+| Metric | Module Federation | qiankun | dev-to |
+|--------|-------------------|---------|--------|
+| **Initial setup time** | 30-60 min | 15-30 min | ~5 min |
+| **Cross-app HMR** | Host refresh needed | Full refresh needed | Real-time hot reload |
+| **Debug tools** | None built-in | None built-in | Built-in debug panel |
+| **Type hints** | Requires @mf-types | None | Native support |
+
+### When to use what
+
+```
+Need cross-environment HMR during development?
+├── Yes → dev-to (only native solution currently)
+└── No ↓
+
+Need JS/CSS sandbox isolation?
+├── Yes → qiankun / micro-app
+└── No ↓
+
+Need module-level sharing (not app-level)?
+├── Yes → Module Federation
+└── No ↓
+
+Need multi-framework support?
+├── Yes → single-spa + framework adapters
+└── No → Evaluate specific requirements
+```
+
+### Summary
+
+| Solution | Best for |
+|----------|----------|
+| **Module Federation** | Large-scale component/module sharing across apps |
+| **qiankun** | Enterprise micro-frontend with team isolation |
+| **micro-app** | Quick integration with legacy systems |
+| **single-spa** | Multi-framework progressive migration |
+| **dev-to** | AI agent plugin platforms, best-in-class DX for component hot-reload |
+
+**dev-to's unique value:** It is currently the only solution focused on "real-time HMR inside a host container". If your core pain point is "third-party developers code locally while the host environment previews in real-time", dev-to is the most direct choice. However, if you need sandbox isolation, route management, or other enterprise features, consider qiankun or Module Federation.
+
 ## Packages
 
 | Package | Version | Description |

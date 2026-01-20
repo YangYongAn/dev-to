@@ -1,6 +1,7 @@
 {
     "nav": {
         "features": "特性",
+        "comparison": "对比",
         "architecture": "架构",
         "scenarios": "场景",
         "quickstart": "快速开始"
@@ -59,6 +60,75 @@
             "title": "完全透明",
             "desc": "组件内部断点、日志、源码映射完整可用，调试体验与本地无异"
         }
+    },
+    "comparison": {
+        "title": "与其他方案<span class=\"gradient-text\">对比</span>",
+        "subtitle": "了解 dev-to 与主流微前端/模块联邦方案的差异",
+        "overview": "方案概览",
+        "features": "功能对比",
+        "table": {
+            "solution": "方案",
+            "focus": "核心定位",
+            "maturity": "成熟度",
+            "feature": "功能"
+        },
+        "mf": {
+            "focus": "构建时模块联邦（Webpack/Vite 原生）"
+        },
+        "qiankun": {
+            "focus": "运行时应用隔离（微前端）"
+        },
+        "microapp": {
+            "focus": "类 WebComponent 微前端"
+        },
+        "singlespa": {
+            "focus": "微前端路由编排"
+        },
+        "devto": {
+            "focus": "跨环境组件热更新"
+        },
+        "maturity": {
+            "ready": "生产就绪",
+            "early": "早期阶段"
+        },
+        "feature": {
+            "module_sharing": "运行时模块共享",
+            "cross_hmr": "跨应用 HMR",
+            "js_sandbox": "JS 沙箱",
+            "css_isolation": "CSS 隔离",
+            "routing": "路由管理",
+            "multi_framework": "多框架支持",
+            "ts_types": "TypeScript 类型共享"
+        },
+        "value": {
+            "native": "原生支持",
+            "config": "需配置",
+            "partial": "部分支持",
+            "no": "无",
+            "yes": "支持",
+            "core": "核心特性",
+            "plugin": "需插件",
+            "react_only": "仅 React"
+        },
+        "dx": "开发体验对比",
+        "dx.setup": "首次配置",
+        "dx.hmr": "跨应用 HMR",
+        "dx.debug": "调试工具",
+        "dx.refresh_host": "需刷新宿主",
+        "dx.full_refresh": "需完全刷新",
+        "dx.none": "无内置",
+        "dx.best": "最佳 DX",
+        "dx.realtime": "实时热更新",
+        "dx.builtin": "内置面板",
+        "decision": "如何选择",
+        "decision.q1": "需要开发时跨环境 HMR？",
+        "decision.q2": "需要 JS/CSS 沙箱隔离？",
+        "decision.q3": "需要模块级共享？",
+        "decision.yes": "是",
+        "decision.no": "否",
+        "decision.a1": "（目前唯一原生支持）",
+        "decision.evaluate": "根据具体场景评估",
+        "summary": "<strong>dev-to 的独特价值：</strong>目前唯一专注于「宿主容器内实时 HMR」的方案。如果你的核心痛点是「第三方开发者在本地开发，宿主环境实时预览」，dev-to 是最直接的选择。但如果需要沙箱隔离、路由管理等企业级能力，应考虑 qiankun 或 Module Federation。"
     },
     "architecture": {
         "title": "架构<span class=\"gradient-text\">设计</span>",
