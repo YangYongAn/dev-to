@@ -411,18 +411,42 @@ a {
 }
 
 /* =====================================================
-   Pain Points Section
+   Pain + Solutions Section
    ===================================================== */
-.pain-points {
+.pain-solutions {
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
 }
 
-.pain-grid {
+.pain-solution-rows {
   display: grid;
+  gap: 20px;
+}
+
+.pain-solution-row {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(0, 1.4fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.solution-stack {
+  display: grid;
+  gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
+}
+
+.pair-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 10px;
+  border: 1px solid transparent;
 }
 
 .pain-card {
@@ -431,6 +455,10 @@ a {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   transition: all var(--transition-normal);
+}
+
+.pain-solutions .pain-card {
+  background: var(--bg-tertiary);
 }
 
 .pain-card:hover {
@@ -455,23 +483,9 @@ a {
   line-height: 1.6;
 }
 
-/* =====================================================
-   Solutions / Features Section
-   ===================================================== */
-.solutions {
-  background: var(--bg-primary);
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-@media (max-width: 900px) {
-  .features-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.pain-card .pair-label {
+  color: var(--accent-2);
+  background: var(--accent-2-dim);
 }
 
 .feature-card {
@@ -483,6 +497,10 @@ a {
   transition: all var(--transition-normal);
 }
 
+.pain-solutions .feature-card {
+  background: var(--bg-primary);
+}
+
 .feature-card:hover {
   border-color: var(--accent);
 }
@@ -490,12 +508,6 @@ a {
 .feature-card.featured {
   background: var(--accent-dim);
   border-color: rgba(63, 185, 80, 0.3);
-}
-
-@media (max-width: 768px) {
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .feature-icon {
@@ -516,6 +528,11 @@ a {
   line-height: 1.6;
 }
 
+.feature-card .pair-label {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
 .feature-tag {
   position: absolute;
   top: 12px;
@@ -526,6 +543,12 @@ a {
   color: var(--accent);
   background: var(--accent-dim);
   border-radius: 100px;
+}
+
+@media (max-width: 900px) {
+  .pain-solution-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* =====================================================
@@ -1385,8 +1408,7 @@ a {
     font-size: 2.5rem;
   }
 
-  .pain-grid,
-  .features-grid,
+  .solution-stack,
   .scenarios-grid,
   .packages-grid {
     grid-template-columns: 1fr;

@@ -13,6 +13,12 @@
         "copied": "已复制",
         "start": "快速开始"
     },
+    "pain_solutions": {
+        "title": "痛点 × <span class=\"gradient-text\">解决方案</span>",
+        "subtitle": "每个痛点对应一组 dev-to 能力，问题与方案一目了然",
+        "pain": "痛点",
+        "solution": "解决方案"
+    },
     "pain_points": {
         "title": "传统开发模式的<span class=\"gradient-text\">痛点</span>",
         "subtitle": "在 AI Agent 智能体容器中开发组件时，开发者常常遇到这些问题",

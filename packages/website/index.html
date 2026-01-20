@@ -94,76 +94,90 @@
     </div>
   </section>
 
-  <!-- Pain Points Section -->
-  <section class="section pain-points" id="problems">
+  <!-- Pain + Solutions Section -->
+  <section class="section pain-solutions" id="features">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title" data-i18n="pain_points.title">传统开发模式的<span class="gradient-text">痛点</span></h2>
-        <p class="section-subtitle" data-i18n="pain_points.subtitle">在 AI Agent 智能体容器中开发组件时，开发者常常遇到这些问题</p>
+        <h2 class="section-title" data-i18n="pain_solutions.title">痛点 × <span class="gradient-text">解决方案</span></h2>
+        <p class="section-subtitle" data-i18n="pain_solutions.subtitle">每个痛点对应一组 dev-to 能力，问题与方案一目了然</p>
       </div>
-      <div class="pain-grid">
-        <div class="pain-card">
-          <div class="pain-icon">🔒</div>
-          <h3 data-i18n="pain_points.box.title">宿主环境黑盒</h3>
-          <p data-i18n="pain_points.box.desc">组件必须部署到容器才能调试，开发者看不到宿主内部细节，开发调试极其困难</p>
+      <div class="pain-solution-rows">
+        <div class="pain-solution-row">
+          <div class="pain-card">
+            <span class="pair-label" data-i18n="pain_solutions.pain">痛点</span>
+            <div class="pain-icon">🔒</div>
+            <h3 data-i18n="pain_points.box.title">宿主环境黑盒</h3>
+            <p data-i18n="pain_points.box.desc">组件必须部署到容器才能调试，开发者看不到宿主内部细节，开发调试极其困难</p>
+          </div>
+          <div class="solution-stack">
+            <div class="feature-card">
+              <span class="pair-label" data-i18n="pain_solutions.solution">解决方案</span>
+              <div class="feature-icon">🔍</div>
+              <h3 data-i18n="solutions.transparent.title">完全透明</h3>
+              <p data-i18n="solutions.transparent.desc">组件内部断点、日志、源码映射完整可用，调试体验与本地无异</p>
+            </div>
+          </div>
         </div>
-        <div class="pain-card">
-          <div class="pain-icon">🐢</div>
-          <h3 data-i18n="pain_points.slow.title">调试反馈慢</h3>
-          <p data-i18n="pain_points.slow.desc">每次修改都要重新构建、部署，无法享受热更新（HMR），开发效率低下</p>
+        <div class="pain-solution-row">
+          <div class="pain-card">
+            <span class="pair-label" data-i18n="pain_solutions.pain">痛点</span>
+            <div class="pain-icon">🐢</div>
+            <h3 data-i18n="pain_points.slow.title">调试反馈慢</h3>
+            <p data-i18n="pain_points.slow.desc">每次修改都要重新构建、部署，无法享受热更新（HMR），开发效率低下</p>
+          </div>
+          <div class="solution-stack">
+            <div class="feature-card featured">
+              <span class="pair-label" data-i18n="pain_solutions.solution">解决方案</span>
+              <div class="feature-icon">⚡</div>
+              <h3 data-i18n="solutions.hmr.title">跨环境 HMR</h3>
+              <p data-i18n="solutions.hmr.desc">在本地 Vite 开发，容器中的组件实时热更新，秒级反馈，极致的开发体验</p>
+              <div class="feature-tag">核心能力</div>
+            </div>
+            <div class="feature-card">
+              <span class="pair-label" data-i18n="pain_solutions.solution">解决方案</span>
+              <div class="feature-icon">📦</div>
+              <h3 data-i18n="solutions.tools.title">完整工具链</h3>
+              <p data-i18n="solutions.tools.desc">内置调试面板、UMD 构建、快速脚手架，开箱即用的完整解决方案</p>
+            </div>
+          </div>
         </div>
-        <div class="pain-card">
-          <div class="pain-icon">🐛</div>
-          <h3 data-i18n="pain_points.prod.title">生产环境难调试</h3>
-          <p data-i18n="pain_points.prod.desc">线上问题无法像本地一样打断点、查看日志，排查问题如同大海捞针</p>
+        <div class="pain-solution-row">
+          <div class="pain-card">
+            <span class="pair-label" data-i18n="pain_solutions.pain">痛点</span>
+            <div class="pain-icon">🐛</div>
+            <h3 data-i18n="pain_points.prod.title">生产环境难调试</h3>
+            <p data-i18n="pain_points.prod.desc">线上问题无法像本地一样打断点、查看日志，排查问题如同大海捞针</p>
+          </div>
+          <div class="solution-stack">
+            <div class="feature-card">
+              <span class="pair-label" data-i18n="pain_solutions.solution">解决方案</span>
+              <div class="feature-icon">🐛</div>
+              <h3 data-i18n="solutions.debug.title">生产级调试</h3>
+              <p data-i18n="solutions.debug.desc">支持在生产环境容器中临时加载本地开发版组件，像本地一样打断点调试</p>
+            </div>
+          </div>
         </div>
-        <div class="pain-card">
-          <div class="pain-icon">💥</div>
-          <h3 data-i18n="pain_points.conflict.title">运行时冲突</h3>
-          <p data-i18n="pain_points.conflict.desc">资源路径 404、容器与组件的 React 实例冲突，导致 Hook 报错等问题</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Solutions Section -->
-  <section class="section solutions" id="features">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title" data-i18n="solutions.title">dev-to 的<span class="gradient-text">解决方案</span></h2>
-        <p class="section-subtitle" data-i18n="solutions.subtitle">一套完整的工具链，彻底解决智能体容器的组件开发难题</p>
-      </div>
-      <div class="features-grid">
-        <div class="feature-card featured">
-          <div class="feature-icon">⚡</div>
-          <h3 data-i18n="solutions.hmr.title">跨环境 HMR</h3>
-          <p data-i18n="solutions.hmr.desc">在本地 Vite 开发，容器中的组件实时热更新，秒级反馈，极致的开发体验</p>
-          <div class="feature-tag">核心能力</div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🐛</div>
-          <h3 data-i18n="solutions.debug.title">生产级调试</h3>
-          <p data-i18n="solutions.debug.desc">支持在生产环境容器中临时加载本地开发版组件，像本地一样打断点调试</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🔗</div>
-          <h3 data-i18n="solutions.standard.title">标准化协议</h3>
-          <p data-i18n="solutions.standard.desc">统一的组件加载规范，容器和组件完全解耦，支持多团队跨组织协作</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">📦</div>
-          <h3 data-i18n="solutions.tools.title">完整工具链</h3>
-          <p data-i18n="solutions.tools.desc">内置调试面板、UMD 构建、快速脚手架，开箱即用的完整解决方案</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🖼️</div>
-          <h3 data-i18n="solutions.assets.title">资源自动处理</h3>
-          <p data-i18n="solutions.assets.desc">CSS、图片、字体等资源自动重定向到 Vite Dev Server，告别 404</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🔍</div>
-          <h3 data-i18n="solutions.transparent.title">完全透明</h3>
-          <p data-i18n="solutions.transparent.desc">组件内部断点、日志、源码映射完整可用，调试体验与本地无异</p>
+        <div class="pain-solution-row">
+          <div class="pain-card">
+            <span class="pair-label" data-i18n="pain_solutions.pain">痛点</span>
+            <div class="pain-icon">💥</div>
+            <h3 data-i18n="pain_points.conflict.title">运行时冲突</h3>
+            <p data-i18n="pain_points.conflict.desc">资源路径 404、容器与组件的 React 实例冲突，导致 Hook 报错等问题</p>
+          </div>
+          <div class="solution-stack">
+            <div class="feature-card">
+              <span class="pair-label" data-i18n="pain_solutions.solution">解决方案</span>
+              <div class="feature-icon">🔗</div>
+              <h3 data-i18n="solutions.standard.title">标准化协议</h3>
+              <p data-i18n="solutions.standard.desc">统一的组件加载规范，容器和组件完全解耦，支持多团队跨组织协作</p>
+            </div>
+            <div class="feature-card">
+              <span class="pair-label" data-i18n="pain_solutions.solution">解决方案</span>
+              <div class="feature-icon">🖼️</div>
+              <h3 data-i18n="solutions.assets.title">资源自动处理</h3>
+              <p data-i18n="solutions.assets.desc">CSS、图片、字体等资源自动重定向到 Vite Dev Server，告别 404</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

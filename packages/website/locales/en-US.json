@@ -13,6 +13,12 @@
         "copied": "Copied",
         "start": "Quick Start"
     },
+    "pain_solutions": {
+        "title": "Pain Points × <span class=\"gradient-text\">Solutions</span>",
+        "subtitle": "Each pain point maps to a set of dev-to capabilities.",
+        "pain": "Pain Point",
+        "solution": "Solution"
+    },
     "pain_points": {
         "title": "<span class=\"gradient-text\">Pain Points</span> of Traditional Mode",
         "subtitle": "Common problems when developing components in AI Agent containers",
