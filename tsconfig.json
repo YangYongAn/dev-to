@@ -1,8 +1,10 @@
 {
   "files": [],
   "references": [
-    { "path": "./packages/react-shared" },
+    { "path": "./packages/shared" },
     { "path": "./packages/react-plugin" },
-    { "path": "./packages/react-loader" }
+    { "path": "./packages/react-loader" },
+    { "path": "./packages/vue-plugin" },
+    { "path": "./packages/vue-loader" }
   ]
 }

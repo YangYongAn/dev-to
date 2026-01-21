@@ -12,7 +12,7 @@
 
 - chore: bump patch versions for public packages
 - Updated dependencies
-  - @dev-to/react-shared@1.0.1
+  - @dev-to/shared@1.0.1
 
 ## 1.1.1
 
@@ -83,7 +83,7 @@
      - Removed `viteHostReactBridgePlugin` alias (use `devToReactPlugin`)
      - Removed `ViteHostReactBridgePluginOptions` type (use `DevToReactPluginOptions`)
 
-  4. **New Constants** (@dev-to/react-shared):
+  4. **New Constants** (@dev-to/shared):
      - `DEV_TO_NAMESPACE` = `'dev_to'` (unified)
      - `DEV_TO_BASE_PATH` = `'/__dev_to__'` (unified)
      - `DEV_TO_DISCOVERY_PATH` = `'/__dev_to__/discovery.json'` (new)
@@ -232,7 +232,7 @@
 
   ### Packages Affected
 
-  #### @dev-to/react-shared (v0.1.2 → v1.0.0 - Major)
+  #### @dev-to/shared (v0.1.2 → v1.0.0 - Major)
 
   - **First stable release** - Graduated from 0.x to 1.0
   - Added unified discovery constants and types
@@ -292,7 +292,7 @@
   This change provides a cleaner, more professional developer experience that aligns with Vite's UI patterns.
 
 - Updated dependencies [ea3b5d3]
-  - @dev-to/react-shared@1.0.0
+  - @dev-to/shared@1.0.0
 
 ## 0.4.1
 
@@ -394,7 +394,7 @@
   - Configure external React/ReactDOM dependencies for browser usage
   - Support CDN distribution via jsdelivr (`https://cdn.jsdelivr.net/npm/@dev-to/react-loader`)
 
-  ## @dev-to/react-shared
+  ## @dev-to/shared
 
   - Add `DEV_TO_REACT_LOADER_BASE_PATH` constant for loader endpoints
 
@@ -480,7 +480,7 @@
   This fixes the critical "Minified React error #130" that users were experiencing when loading components via the UMD loader in production environments.
 
 - Updated dependencies [266dc9a]
-  - @dev-to/react-shared@0.1.2
+  - @dev-to/shared@0.1.2
 
 ## 0.2.0
 
@@ -502,7 +502,7 @@
   - Configure external React/ReactDOM dependencies for browser usage
   - Support CDN distribution via jsdelivr
 
-  ## @dev-to/react-shared
+  ## @dev-to/shared
 
   - Add `DEV_TO_REACT_LOADER_BASE_PATH` constant for loader endpoints
 
@@ -517,7 +517,7 @@
 ### Patch Changes
 
 - Updated dependencies [c9f78dd]
-  - @dev-to/react-shared@0.1.1
+  - @dev-to/shared@0.1.1
 
 ## 0.1.1
 
@@ -539,4 +539,4 @@
 - 94802f5: setup automated release workflow with changesets
 - Updated dependencies [59a4c44]
 - Updated dependencies [94802f5]
-  - @dev-to/react-shared@0.1.0
+  - @dev-to/shared@0.1.0

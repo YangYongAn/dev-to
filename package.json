@@ -2,14 +2,14 @@
   "name": "dev-to-monorepo",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@10.28.1",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
-    "build:release": "pnpm -r --filter @dev-to/react-shared --filter @dev-to/react-plugin --filter @dev-to/react-loader --filter create-dev-to build",
+    "build:release": "pnpm -r --filter @dev-to/shared --filter @dev-to/react-plugin --filter @dev-to/react-loader --filter @dev-to/vue-plugin --filter @dev-to/vue-loader --filter create-dev-to build",
     "lint": "eslint . --cache --cache-location .cache/eslint/ --max-warnings=0",
     "lint:staged": "lint-staged",
     "test": "pnpm -r test",

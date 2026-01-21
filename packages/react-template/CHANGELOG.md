@@ -35,7 +35,7 @@
   - Configure external React/ReactDOM dependencies for browser usage
   - Support CDN distribution via jsdelivr (`https://cdn.jsdelivr.net/npm/@dev-to/react-loader`)
 
-  ## @dev-to/react-shared
+  ## @dev-to/shared
 
   - Add `DEV_TO_REACT_LOADER_BASE_PATH` constant for loader endpoints
 
@@ -85,7 +85,7 @@
   - Configure external React/ReactDOM dependencies for browser usage
   - Support CDN distribution via jsdelivr
 
-  ## @dev-to/react-shared
+  ## @dev-to/shared
 
   - Add `DEV_TO_REACT_LOADER_BASE_PATH` constant for loader endpoints
 

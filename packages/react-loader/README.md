@@ -53,7 +53,7 @@ export function Demo() {
 - **Contract**: `/__dev_to__/react/contract.js` - 桥接合约
 - **Init**: `/__dev_to__/react/init.js` - 初始化脚本
 
-这些端点常量由 `@dev-to/react-shared` 统一定义，保证与 `@dev-to/react-plugin` 保持一致。
+这些端点常量由 `@dev-to/shared` 统一定义，保证与 `@dev-to/react-plugin` 保持一致。
 
 可通过 `contractEndpoint` 自定义 contract 路径；init 路径由 contract 返回值决定（未提供时回退到默认值）。
 

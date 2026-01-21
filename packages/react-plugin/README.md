@@ -53,7 +53,7 @@ export default defineConfig({
 - **Loader UMD**: `/__dev_to__/react/loader.js` - ReactLoader UMD 构建
 - **Component Loaders**: `/__dev_to__/react/loader/{ComponentName}.js` - 单组件加载器
 
-这些路径与事件名常量集中在 `@dev-to/react-shared`，用于保证 Vite 侧与宿主侧协议一致。
+这些路径与事件名常量集中在 `@dev-to/shared`，用于保证 Vite 侧与宿主侧协议一致。
 
 ### HMR 事件
 - Full Reload: `dev_to:react:full-reload`
