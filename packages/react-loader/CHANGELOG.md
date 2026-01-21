@@ -1,5 +1,12 @@
 # @dev-to/react-loader
 
+## 1.0.6
+
+### Patch Changes
+
+- Updated dependencies [e1b2fa9]
+  - @dev-to/shared@1.1.0
+
 ## 1.0.5
 
 ### Patch Changes
