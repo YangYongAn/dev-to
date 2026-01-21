@@ -1,4 +1,4 @@
-# @dev-to/react-shared
+# @dev-to/shared
 
 ## 1.0.1
 
@@ -36,7 +36,7 @@
      - Removed `viteHostReactBridgePlugin` alias (use `devToReactPlugin`)
      - Removed `ViteHostReactBridgePluginOptions` type (use `DevToReactPluginOptions`)
 
-  4. **New Constants** (@dev-to/react-shared):
+  4. **New Constants** (@dev-to/shared):
      - `DEV_TO_NAMESPACE` = `'dev_to'` (unified)
      - `DEV_TO_BASE_PATH` = `'/__dev_to__'` (unified)
      - `DEV_TO_DISCOVERY_PATH` = `'/__dev_to__/discovery.json'` (new)
@@ -185,7 +185,7 @@
 
   ### Packages Affected
 
-  #### @dev-to/react-shared (v0.1.2 → v1.0.0 - Major)
+  #### @dev-to/shared (v0.1.2 → v1.0.0 - Major)
 
   - **First stable release** - Graduated from 0.x to 1.0
   - Added unified discovery constants and types
@@ -247,7 +247,7 @@
   - Configure external React/ReactDOM dependencies for browser usage
   - Support CDN distribution via jsdelivr (`https://cdn.jsdelivr.net/npm/@dev-to/react-loader`)
 
-  ## @dev-to/react-shared
+  ## @dev-to/shared
 
   - Add `DEV_TO_REACT_LOADER_BASE_PATH` constant for loader endpoints
 
@@ -297,7 +297,7 @@
   - Configure external React/ReactDOM dependencies for browser usage
   - Support CDN distribution via jsdelivr
 
-  ## @dev-to/react-shared
+  ## @dev-to/shared
 
   - Add `DEV_TO_REACT_LOADER_BASE_PATH` constant for loader endpoints
 

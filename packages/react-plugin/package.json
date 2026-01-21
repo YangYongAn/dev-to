@@ -39,7 +39,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@dev-to/react-shared": "workspace:*",
+    "@dev-to/shared": "workspace:*",
     "picocolors": "^1.1.0",
     "typescript": "^5.4.5"
   }

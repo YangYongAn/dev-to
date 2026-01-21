@@ -13,7 +13,7 @@ import {
   DEV_TO_REACT_LOADER_UMD_PATH,
   DEV_TO_REACT_NAMESPACE,
   DEV_TO_REACT_RUNTIME_PATH,
-} from '@dev-to/react-shared'
+} from '@dev-to/shared'
 
 export const PLUGIN_NAME = `${DEV_TO_NAMESPACE}_${DEV_TO_REACT_NAMESPACE}` as const
 export const PLUGIN_LOG_PREFIX = `[${DEV_TO_NAMESPACE}:${DEV_TO_REACT_NAMESPACE}]` as const

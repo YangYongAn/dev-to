@@ -19,7 +19,7 @@ import {
   DEV_TO_REACT_NAMESPACE,
   type DevToDiscoveryContract,
   type DevToReactBridgeContract,
-} from '@dev-to/react-shared'
+} from '@dev-to/shared'
 
 type UnknownRecord = Record<string, unknown>
 

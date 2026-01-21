@@ -46,6 +46,35 @@ export const DEV_TO_REACT_CONTRACT_KEY = '__DEV_TO_REACT_CONTRACT__' as const
 export const DEV_TO_REACT_DID_OPEN_BROWSER_KEY = '__DEV_TO_REACT_DID_OPEN_BROWSER__' as const
 
 /**
+ * Vue-specific namespace.
+ *
+ * - Used for Vue framework-specific paths (e.g. `/__dev_to__/vue/init.js`)
+ * - Used as event name prefix (e.g. `dev_to:vue:full-reload`)
+ */
+export const DEV_TO_VUE_NAMESPACE = 'vue' as const
+
+/** Base path for Vue-specific bridge endpoints. */
+export const DEV_TO_VUE_BASE_PATH = `${DEV_TO_BASE_PATH}/${DEV_TO_VUE_NAMESPACE}` as const
+
+/** Vue bridge endpoints (served by `@dev-to/vue-plugin` on the Vite dev server). */
+export const DEV_TO_VUE_CONTRACT_PATH = `${DEV_TO_VUE_BASE_PATH}/contract.js` as const
+export const DEV_TO_VUE_INIT_PATH = `${DEV_TO_VUE_BASE_PATH}/init.js` as const
+export const DEV_TO_VUE_RUNTIME_PATH = `${DEV_TO_VUE_BASE_PATH}/runtime.js` as const
+export const DEV_TO_VUE_LOADER_UMD_PATH = `${DEV_TO_VUE_BASE_PATH}/loader.js` as const
+export const DEV_TO_VUE_LOADER_BASE_PATH = `${DEV_TO_VUE_BASE_PATH}/loader` as const
+
+/** Events dispatched by the Vue bridge runtime (`init.js`). */
+export const DEV_TO_VUE_EVENT_FULL_RELOAD = `${DEV_TO_NAMESPACE}:${DEV_TO_VUE_NAMESPACE}:full-reload` as const
+export const DEV_TO_VUE_EVENT_HMR_UPDATE = `${DEV_TO_NAMESPACE}:${DEV_TO_VUE_NAMESPACE}:hmr-update` as const
+
+/** Global keys used by bridge runtime on `window` / `globalThis`. */
+export const DEV_TO_VUE_DEBUG_STATE_KEY = '__DEV_TO_VUE_DEBUG__' as const
+export const DEV_TO_VUE_ORIGIN_KEY = '__DEV_TO_VUE_ORIGIN__' as const
+export const DEV_TO_VUE_RESOLVE_ASSET_KEY = '__DEV_TO_VUE_RESOLVE_ASSET__' as const
+export const DEV_TO_VUE_CONTRACT_KEY = '__DEV_TO_VUE_CONTRACT__' as const
+export const DEV_TO_VUE_DID_OPEN_BROWSER_KEY = '__DEV_TO_VUE_DID_OPEN_BROWSER__' as const
+
+/**
  * Unified discovery contract interface (framework-agnostic).
  * Served by the `/__dev_to__/discovery.json` endpoint.
  */
@@ -108,6 +137,25 @@ export interface DevToReactBridgeContract {
     contract?: string
     initClient?: string
     reactRuntime: string
+  }
+  events: {
+    fullReload: string
+    hmrUpdate: string
+  }
+  dev?: {
+    componentMap?: Record<string, string>
+  }
+}
+
+/**
+ * Legacy Vue bridge contract interface.
+ * Served by `/__dev_to__/vue/contract.js`.
+ */
+export interface DevToVueBridgeContract {
+  paths: {
+    contract?: string
+    initClient?: string
+    vueRuntime: string
   }
   events: {
     fullReload: string

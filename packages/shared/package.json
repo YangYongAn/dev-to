@@ -1,5 +1,5 @@
 {
-  "name": "@dev-to/react-shared",
+  "name": "@dev-to/shared",
   "version": "1.0.1",
   "private": false,
   "type": "module",
@@ -18,7 +18,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json -w",
     "lint": "pnpm -w lint",
-    "test": "echo 'test @dev-to/react-shared'"
+    "test": "echo 'test @dev-to/shared'"
   },
   "peerDependencies": {
     "typescript": ">=5.0.0"
@@ -26,7 +26,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/YangYongAn/dev-to.git",
-    "directory": "packages/react-shared"
+    "directory": "packages/shared"
   },
   "publishConfig": {
     "access": "public"

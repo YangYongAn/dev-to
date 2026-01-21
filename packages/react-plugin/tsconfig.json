@@ -7,6 +7,6 @@
     "lib": ["ES2022"],
     "types": ["node"]
   },
-  "references": [{ "path": "../react-shared" }],
+  "references": [{ "path": "../shared" }],
   "include": ["src"]
 }

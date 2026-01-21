@@ -5,7 +5,7 @@ import {
   DEV_TO_REACT_DEBUG_STATE_KEY,
   DEV_TO_REACT_ORIGIN_KEY,
   DEV_TO_REACT_RESOLVE_ASSET_KEY,
-} from '@dev-to/react-shared'
+} from '@dev-to/shared'
 
 import type { BridgeContract } from './types.js'
 

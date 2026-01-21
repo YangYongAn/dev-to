@@ -2,7 +2,7 @@
  * 注入 React 运行时导入
  * 用于 lib build + JSX classic 模式下，确保 React 标识符存在
  */
-import { DEV_TO_REACT_RESOLVE_ASSET_KEY } from '@dev-to/react-shared'
+import { DEV_TO_REACT_RESOLVE_ASSET_KEY } from '@dev-to/shared'
 
 import { PLUGIN_LOG_PREFIX } from './constants.js'
 

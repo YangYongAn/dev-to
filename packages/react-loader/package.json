@@ -35,6 +35,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@dev-to/react-shared": "workspace:*"
+    "@dev-to/shared": "workspace:*"
   }
 }

@@ -19,10 +19,10 @@ import { renderDebugHtml } from './debugHtml.js'
 import { getLanIPv4Hosts } from './lan.js'
 import { toFsPathFromViteEntry } from './pathUtils.js'
 
-import { DEV_TO_BASE_PATH, DEV_TO_REACT_DID_OPEN_BROWSER_KEY } from '@dev-to/react-shared'
+import { DEV_TO_BASE_PATH, DEV_TO_REACT_DID_OPEN_BROWSER_KEY } from '@dev-to/shared'
 import pc from 'picocolors'
 
-import type { DevToDiscoveryContract } from '@dev-to/react-shared'
+import type { DevToDiscoveryContract } from '@dev-to/shared'
 import type { ViteDevServer } from 'vite'
 
 import type { BridgeContract, BridgeStats, DebugStartupState, DevComponentAudit, ResolvedDevComponentConfig } from './types.js'
