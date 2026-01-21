@@ -1,0 +1,21 @@
+{
+  "name": "@dev-to/vue-template",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "pnpm -w lint",
+    "test": "echo 'test @dev-to/vue-template'"
+  },
+  "dependencies": {
+    "vue": "^3.5.12"
+  },
+  "devDependencies": {
+    "@dev-to/vue-plugin": "workspace:*",
+    "@vitejs/plugin-vue": "^5.2.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.4.11"
+  }
+}
