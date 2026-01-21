@@ -1,5 +1,12 @@
 # @dev-to/react-plugin
 
+## 1.1.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @dev-to/shared@1.0.2
+
 ## 1.1.3
 
 ### Patch Changes

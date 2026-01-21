@@ -1,5 +1,15 @@
 # @dev-to/shared
 
+## 1.0.2
+
+### Patch Changes
+
+- feat: add Vue 3 support
+
+  - @dev-to/vue-plugin: Vite plugin for Vue component providers
+  - @dev-to/vue-loader: Host-side loader for mounting remote Vue components
+  - @dev-to/shared: Add Vue-specific constants and types
+
 ## 1.0.1
 
 ### Patch Changes
