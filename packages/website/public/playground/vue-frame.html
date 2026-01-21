@@ -74,17 +74,7 @@
     </div>
   </div>
 
-  <script type="importmap">
-    {
-      "imports": {
-        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
-      }
-    }
-  </script>
-
   <script type="module">
-    import { createApp, h } from 'vue'
-
     // Get URL parameters
     const params = new URLSearchParams(window.location.search)
     const origin = params.get('origin') || 'http://localhost:5173'
@@ -101,58 +91,136 @@
         console.log('[Vue Frame] Received props update:', e.data.props)
         currentProps = e.data.props
         // Re-render component with new props
-        mountComponent()
+        loadAndRenderComponent()
       }
     })
 
     // Root container
     const container = document.getElementById('root')
     let vueApp = null
+    let RemoteVue = null
 
     // Dynamic import helper
     const nativeImport = new Function('url', 'return import(url)')
 
-    // Load and mount component
-    async function loadComponent() {
+    // Load contract
+    async function loadContract() {
       try {
-        // Try to load VueLoader from the dev server
-        const loaderModule = await nativeImport(`${origin}/@dev-to/vue-loader`)
-        const VueLoader = loaderModule.VueLoader || loaderModule.default
+        const contractUrl = `${origin}/__dev_to__/vue/contract.js`
+        const contractModule = await nativeImport(contractUrl)
+        const contract = contractModule.DEV_TO_VUE_CONTRACT || contractModule.default
 
-        if (!VueLoader) {
-          throw new Error('VueLoader not found in module')
+        if (!contract) {
+          throw new Error('Contract not found')
         }
 
-        console.log('[Vue Frame] VueLoader loaded successfully')
-        return VueLoader
+        console.log('[Vue Frame] Contract loaded:', contract)
+        return contract
+      } catch (error) {
+        console.error('[Vue Frame] Failed to load contract:', error)
+        throw new Error(`Failed to load contract from ${origin}/__dev_to__/vue/contract.js`)
       }
-      catch (error) {
-        console.error('[Vue Frame] Failed to load VueLoader:', error)
+    }
+
+    // Initialize HMR
+    async function initializeHMR(contract) {
+      try {
+        if (contract.paths.initClient) {
+          const initUrl = `${origin}${contract.paths.initClient}`
+          await nativeImport(initUrl)
+          console.log('[Vue Frame] HMR initialized')
+        }
+      } catch (error) {
+        console.warn('[Vue Frame] HMR init failed (non-critical):', error)
+      }
+    }
+
+    // Load Vue runtime from dev server
+    async function loadVueRuntime(contract) {
+      try {
+        const runtimeUrl = `${origin}${contract.paths.vueRuntime}`
+        const runtimeModule = await nativeImport(runtimeUrl)
+
+        RemoteVue = runtimeModule.default || runtimeModule
+
+        if (!RemoteVue || !RemoteVue.createApp) {
+          throw new Error('Vue not found in runtime module')
+        }
+
+        console.log('[Vue Frame] Vue runtime loaded')
+      } catch (error) {
+        console.error('[Vue Frame] Failed to load Vue runtime:', error)
         throw error
       }
     }
 
-    async function mountComponent() {
-      try {
-        const VueLoader = await loadComponent()
+    // Get component entry URL from contract
+    function getComponentEntry(contract, name) {
+      const componentMap = contract.dev?.componentMap || {}
 
-        // Unmount previous app if exists
+      // Try exact match first
+      if (componentMap[name]) {
+        return componentMap[name]
+      }
+
+      // Try wildcard
+      if (componentMap['*']) {
+        return componentMap['*']
+      }
+
+      throw new Error(`Component "${name}" not found in componentMap`)
+    }
+
+    // Load and render component
+    async function loadAndRenderComponent() {
+      try {
+        // 1. Load contract
+        const contract = await loadContract()
+
+        // 2. Initialize HMR
+        await initializeHMR(contract)
+
+        // 3. Load Vue runtime (if not already loaded)
+        if (!RemoteVue) {
+          await loadVueRuntime(contract)
+        }
+
+        // 4. Get component entry
+        let entryUrl = getComponentEntry(contract, componentName)
+
+        // Handle /@fs/ paths
+        if (entryUrl.startsWith('/@fs/')) {
+          entryUrl = `${origin}${entryUrl}`
+        } else if (!entryUrl.startsWith('http')) {
+          entryUrl = `${origin}${entryUrl}`
+        }
+
+        console.log('[Vue Frame] Loading component from:', entryUrl)
+
+        // 5. Load component
+        const componentModule = await nativeImport(entryUrl)
+        const Component = componentModule.default || componentModule[componentName] || componentModule
+
+        if (!Component) {
+          throw new Error('Component not found in module')
+        }
+
+        console.log('[Vue Frame] Component loaded successfully')
+
+        // 6. Unmount previous app if exists
         if (vueApp) {
           vueApp.unmount()
         }
 
-        // Create new Vue app with VueLoader
-        vueApp = createApp({
+        // 7. Create and mount new app
+        vueApp = RemoteVue.createApp({
           setup() {
-            return () => h(VueLoader, {
-              origin: origin,
-              name: componentName,
-              componentProps: currentProps
-            })
+            // Use reactive props
+            const props = RemoteVue.reactive(currentProps)
+            return () => RemoteVue.h(Component, props)
           }
         })
 
-        // Mount to container
         vueApp.mount(container)
 
         // Notify parent that component is ready
@@ -160,9 +228,9 @@
           type: 'dev-to:component-ready',
           componentName: componentName
         }, '*')
-      }
-      catch (error) {
-        console.error('[Vue Frame] Failed to mount component:', error)
+
+      } catch (error) {
+        console.error('[Vue Frame] Failed to load component:', error)
         showError(error)
 
         // Notify parent of error
@@ -198,11 +266,14 @@
           eventName: eventName,
           detail: e.detail
         }, '*')
+
+        // Reload component on HMR
+        loadAndRenderComponent()
       })
     })
 
     // Start loading
-    mountComponent()
+    loadAndRenderComponent()
   </script>
 </body>
 </html>

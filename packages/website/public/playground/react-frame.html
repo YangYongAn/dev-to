@@ -74,10 +74,6 @@
     </div>
   </div>
 
-  <!-- Load React from CDN -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-
   <script type="module">
     // Get URL parameters
     const params = new URLSearchParams(window.location.search)
@@ -95,50 +91,129 @@
         console.log('[React Frame] Received props update:', e.data.props)
         currentProps = e.data.props
         // Re-render component with new props
-        renderComponent()
+        loadAndRenderComponent()
       }
     })
 
     // Root container
     const container = document.getElementById('root')
     let reactRoot = null
+    let RemoteReact = null
+    let RemoteReactDOM = null
 
     // Dynamic import helper
     const nativeImport = new Function('url', 'return import(url)')
 
-    // Load and render component
-    async function loadComponent() {
+    // Load contract and get component entry
+    async function loadContract() {
       try {
-        // Try to load ReactLoader from the dev server
-        const loaderModule = await nativeImport(`${origin}/@dev-to/react-loader`)
-        const ReactLoader = loaderModule.ReactLoader || loaderModule.default
+        const contractUrl = `${origin}/__dev_to__/react/contract.js`
+        const contractModule = await nativeImport(contractUrl)
+        const contract = contractModule.DEV_TO_REACT_CONTRACT || contractModule.default
 
-        if (!ReactLoader) {
-          throw new Error('ReactLoader not found in module')
+        if (!contract) {
+          throw new Error('Contract not found')
         }
 
-        console.log('[React Frame] ReactLoader loaded successfully')
+        console.log('[React Frame] Contract loaded:', contract)
+        return contract
+      } catch (error) {
+        console.error('[React Frame] Failed to load contract:', error)
+        throw new Error(`Failed to load contract from ${origin}/__dev_to__/react/contract.js`)
+      }
+    }
 
-        // Create React element
-        const element = React.createElement(ReactLoader, {
-          origin: origin,
-          name: componentName,
-          componentProps: currentProps,
-          loading: React.createElement('div', { className: 'loading' },
-            React.createElement('div', { className: 'spinner' }),
-            React.createElement('p', null, 'Loading component...')
-          ),
-          renderError: (error) => {
-            return React.createElement('div', { className: 'error' },
-              React.createElement('h3', null, 'Component Load Error'),
-              React.createElement('pre', null, error.message || String(error))
-            )
-          }
-        })
+    // Initialize HMR
+    async function initializeHMR(contract) {
+      try {
+        if (contract.paths.initClient) {
+          const initUrl = `${origin}${contract.paths.initClient}`
+          await nativeImport(initUrl)
+          console.log('[React Frame] HMR initialized')
+        }
+      } catch (error) {
+        console.warn('[React Frame] HMR init failed (non-critical):', error)
+      }
+    }
 
-        // Create or update root
+    // Load React runtime from dev server
+    async function loadReactRuntime(contract) {
+      try {
+        const runtimeUrl = `${origin}${contract.paths.reactRuntime}`
+        const runtimeModule = await nativeImport(runtimeUrl)
+
+        RemoteReact = runtimeModule.React || runtimeModule.default?.React
+        RemoteReactDOM = runtimeModule.ReactDOMClient || runtimeModule.default?.ReactDOMClient
+
+        if (!RemoteReact || !RemoteReactDOM) {
+          throw new Error('React or ReactDOM not found in runtime module')
+        }
+
+        console.log('[React Frame] React runtime loaded')
+      } catch (error) {
+        console.error('[React Frame] Failed to load React runtime:', error)
+        throw error
+      }
+    }
+
+    // Get component entry URL from contract
+    function getComponentEntry(contract, name) {
+      const componentMap = contract.dev?.componentMap || {}
+
+      // Try exact match first
+      if (componentMap[name]) {
+        return componentMap[name]
+      }
+
+      // Try wildcard
+      if (componentMap['*']) {
+        return componentMap['*']
+      }
+
+      throw new Error(`Component "${name}" not found in componentMap`)
+    }
+
+    // Load and render component
+    async function loadAndRenderComponent() {
+      try {
+        // 1. Load contract
+        const contract = await loadContract()
+
+        // 2. Initialize HMR
+        await initializeHMR(contract)
+
+        // 3. Load React runtime (if not already loaded)
+        if (!RemoteReact || !RemoteReactDOM) {
+          await loadReactRuntime(contract)
+        }
+
+        // 4. Get component entry
+        let entryUrl = getComponentEntry(contract, componentName)
+
+        // Handle /@fs/ paths
+        if (entryUrl.startsWith('/@fs/')) {
+          entryUrl = `${origin}${entryUrl}`
+        } else if (!entryUrl.startsWith('http')) {
+          entryUrl = `${origin}${entryUrl}`
+        }
+
+        console.log('[React Frame] Loading component from:', entryUrl)
+
+        // 5. Load component
+        const componentModule = await nativeImport(entryUrl)
+        const Component = componentModule.default || componentModule[componentName] || componentModule
+
+        if (!Component) {
+          throw new Error('Component not found in module')
+        }
+
+        console.log('[React Frame] Component loaded successfully')
+
+        // 6. Render component
+        const element = RemoteReact.createElement(Component, currentProps)
+
         if (!reactRoot) {
-          reactRoot = ReactDOM.createRoot(container)
+          reactRoot = RemoteReactDOM.createRoot(container)
         }
         reactRoot.render(element)
 
@@ -147,8 +222,8 @@
           type: 'dev-to:component-ready',
           componentName: componentName
         }, '*')
-      }
-      catch (error) {
+
+      } catch (error) {
         console.error('[React Frame] Failed to load component:', error)
         showError(error)
 
@@ -157,12 +232,6 @@
           type: 'dev-to:error',
           error: error.message || String(error)
         }, '*')
-      }
-    }
-
-    function renderComponent() {
-      if (reactRoot) {
-        loadComponent()
       }
     }
 
@@ -191,11 +260,14 @@
           eventName: eventName,
           detail: e.detail
         }, '*')
+
+        // Reload component on HMR
+        loadAndRenderComponent()
       })
     })
 
     // Start loading
-    loadComponent()
+    loadAndRenderComponent()
   </script>
 </body>
 </html>
