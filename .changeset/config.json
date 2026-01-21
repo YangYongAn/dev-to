@@ -10,6 +10,8 @@
   "ignore": [
     "@dev-to/react-template",
     "@dev-to/react-playground",
+    "@dev-to/vue-template",
+    "@dev-to/vue-playground",
     "@dev-to/website"
   ]
 }
