@@ -1,5 +1,25 @@
 # @dev-to/vue-plugin
 
+## 0.4.0
+
+### Minor Changes
+
+- e1b2fa9: Unify loader path to framework-agnostic format
+
+  BREAKING CHANGE: Loader endpoints changed from framework-specific to unified paths:
+
+  - `/__dev_to__/react/loader.js` -> `/__dev_to__/loader.js`
+  - `/__dev_to__/vue/loader.js` -> `/__dev_to__/loader.js`
+  - `/__dev_to__/react/loader/{name}.js` -> `/__dev_to__/loader/{name}.js`
+  - `/__dev_to__/vue/loader/{name}.js` -> `/__dev_to__/loader/{name}.js`
+
+  Since a Vite project uses only one framework, the framework name in loader path is redundant.
+
+### Patch Changes
+
+- Updated dependencies [e1b2fa9]
+  - @dev-to/shared@1.1.0
+
 ## 0.3.0
 
 ### Minor Changes

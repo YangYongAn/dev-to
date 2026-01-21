@@ -1,5 +1,12 @@
 # @dev-to/vue-loader
 
+## 0.2.4
+
+### Patch Changes
+
+- Updated dependencies [e1b2fa9]
+  - @dev-to/shared@1.1.0
+
 ## 0.2.3
 
 ### Patch Changes
