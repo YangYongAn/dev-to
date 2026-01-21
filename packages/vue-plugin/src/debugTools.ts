@@ -1,6 +1,8 @@
 import { exec } from 'node:child_process'
 import fs from 'node:fs'
+import path from 'node:path'
 import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
 
 import {
   STABLE_BASE_PATH,
@@ -13,7 +15,10 @@ import {
   STABLE_LOADER_UMD_PATH,
   STABLE_VUE_RUNTIME_PATH,
 } from './constants.js'
+import { renderDebugHtml } from './debugHtml.js'
 import { getLanIPv4Hosts } from './lan.js'
+import { toFsPathFromViteEntry } from './pathUtils.js'
+import { createLoaderUmdWrapper } from './loaderUmdWrapper.js'
 
 import { DEV_TO_BASE_PATH, DEV_TO_VUE_DID_OPEN_BROWSER_KEY } from '@dev-to/shared'
 
@@ -31,6 +36,9 @@ export interface DebugToolsContext {
   open?: boolean
 }
 
+/**
+ * 尝试复用已有的浏览器标签页（仅限 macOS + Chrome/Edge/Safari）
+ */
 function openBrowser(url: string) {
   const bridgePath = STABLE_DEBUG_HTML_PATH
 
@@ -100,6 +108,57 @@ function openBrowser(url: string) {
     return
   }
   exec(`xdg-open "${url}"`)
+}
+
+/**
+ * 获取 @dev-to/vue-loader 的 UMD 文件路径
+ * 兼容 npm 包和 monorepo 两种场景
+ */
+function getVueLoaderUmdPath(): string | null {
+  const require = createRequire(import.meta.url)
+
+  // 策略 1: 直接解析 package.json（npm 包场景）
+  try {
+    const loaderPkgPath = require.resolve('@dev-to/vue-loader/package.json')
+    const loaderPkgDir = path.dirname(loaderPkgPath)
+    const umdPath = path.join(loaderPkgDir, 'dist/index.umd.js')
+
+    if (fs.existsSync(umdPath)) {
+      return umdPath
+    }
+  }
+  catch {
+    // 继续尝试下一个策略
+  }
+
+  // 策略 2: 通过主模块回溯找到 package.json（monorepo 场景）
+  try {
+    const loaderMainPath = require.resolve('@dev-to/vue-loader')
+    const loaderPkgDir = path.dirname(path.dirname(loaderMainPath))
+    const umdPath = path.join(loaderPkgDir, 'dist/index.umd.js')
+
+    if (fs.existsSync(umdPath)) {
+      return umdPath
+    }
+  }
+  catch {
+    // 继续尝试下一个策略
+  }
+
+  // 策略 3: 兼容 monorepo 本地开发的相对路径
+  try {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url))
+    const umdPath = path.resolve(__dirname, '../../vue-loader/dist/index.umd.js')
+
+    if (fs.existsSync(umdPath)) {
+      return umdPath
+    }
+  }
+  catch {
+    // 继续
+  }
+
+  return null
 }
 
 const globalState = globalThis as typeof globalThis & Record<string, unknown>
@@ -263,6 +322,9 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
       )
       const requestOrigin = hostHeader ? `${proto}://${hostHeader}` : originCandidates[0]
 
+      const componentNames = Object.keys(ctx.contract?.dev?.componentMap || {})
+      const libComponentExample = componentNames.slice(0, 2).join(',') || 'Demo'
+
       res.statusCode = 200
       res.setHeader('Content-Type', 'application/json; charset=utf-8')
       res.end(
@@ -288,7 +350,27 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
               localStorageKey: 'VITE_DEV_SERVER_ORIGIN',
               suggested: requestOrigin,
               snippet: `localStorage.setItem('VITE_DEV_SERVER_ORIGIN', '${requestOrigin}'); location.reload();`,
+              libBuild: {
+                command: 'dev-to build',
+                env: {
+                  DEV_TO_VUE_LIB_SECTION: libComponentExample,
+                },
+                output: {
+                  dir: 'dist/<component>/',
+                  js: '<component>.js (UMD, 尽量单文件 bundle)',
+                  css: '<component>.css (如有样式)',
+                },
+                externals: ['vue'],
+                umdGlobals: {
+                  vue: 'Vue',
+                },
+              },
             },
+            tips: [
+              '宿主侧需设置 localStorage.VITE_DEV_SERVER_ORIGIN（可从 originCandidates 里选择一个可访问的 origin）。',
+              'components 参数的 key 必须与后端返回的 componentName 完全一致（严格匹配）。',
+              '如需产出可分发 UMD 包：使用 `dev-to build`（等价于 `vite build --mode lib`，仅构建 components 指定的组件，输出到 dist/<component>/）。',
+            ],
           },
           null,
           2,
@@ -297,20 +379,158 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
       return
     }
 
+    // Handle vue-loader UMD endpoint: /__dev_to__/vue/loader.js
+    if (pathname === STABLE_LOADER_UMD_PATH) {
+      const vueLoaderUmdPath = getVueLoaderUmdPath()
+
+      if (vueLoaderUmdPath) {
+        try {
+          const umdCode = fs.readFileSync(vueLoaderUmdPath, 'utf-8')
+          res.statusCode = 200
+          res.setHeader('Content-Type', 'application/javascript; charset=utf-8')
+          res.setHeader('Access-Control-Allow-Origin', '*')
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+          res.end(umdCode)
+          return
+        }
+        catch (error) {
+          console.warn(`[dev_to:vue] Failed to read local UMD: ${error}. Falling back to CDN.`)
+        }
+      }
+
+      const cdnUrl = 'https://cdn.jsdelivr.net/npm/@dev-to/vue-loader@latest/dist/index.umd.js'
+      res.statusCode = 302
+      res.setHeader('Location', cdnUrl)
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+      res.end()
+      return
+    }
+
+    // Handle loader endpoint: /__dev_to__/vue/loader/{ComponentName}.js
+    if (pathname.startsWith(STABLE_LOADER_BASE_PATH)) {
+      const loaderPathPattern = new RegExp(`^${STABLE_LOADER_BASE_PATH}/([^/]+)\\.js$`)
+      const match = pathname.match(loaderPathPattern)
+
+      if (match) {
+        const componentName = match[1]
+
+        const isHttps = !!server.config.server.https
+        const proto = isHttps ? 'https' : 'http'
+        const hostHeader = String(req.headers.host || '')
+        const addr = server.httpServer?.address()
+        const actualPort = addr && typeof addr === 'object' ? addr.port : undefined
+
+        const origin = hostHeader
+          ? `${proto}://${hostHeader}`
+          : `${proto}://localhost${actualPort ? `:${actualPort}` : ''}`
+
+        const hasLocalUmd = getVueLoaderUmdPath() !== null
+        const vueLoaderUrl = hasLocalUmd
+          ? `${origin}${STABLE_LOADER_UMD_PATH}`
+          : 'https://cdn.jsdelivr.net/npm/@dev-to/vue-loader@latest/dist/index.umd.js'
+
+        const code = createLoaderUmdWrapper({
+          componentName,
+          origin,
+          contractEndpoint: STABLE_CONTRACT_PATH,
+          vueLoaderUrl,
+        })
+
+        res.statusCode = 200
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8')
+        res.setHeader('Access-Control-Allow-Origin', '*')
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        res.end(code)
+        return
+      }
+    }
+
     if (url.startsWith(STABLE_DEBUG_HTML_PATH)) {
-      const isHttps = !!server.config.server.https
-      const proto = isHttps ? 'https' : 'http'
       const addr = server.httpServer?.address()
       const actualPort = addr && typeof addr === 'object' ? addr.port : undefined
       const lanHosts = getLanIPv4Hosts()
+
+      const isHttps = !!server.config.server.https
+      const proto = isHttps ? 'https' : 'http'
       const candidateHosts = ['localhost', '127.0.0.1', ...lanHosts]
       const originCandidates = candidateHosts.map(
         h => `${proto}://${h}${actualPort ? `:${actualPort}` : ''}`,
       )
 
+      const serverConfigLite = {
+        host: server.config.server.host,
+        port: server.config.server.port,
+        strictPort: server.config.server.strictPort,
+        cors: server.config.server.cors,
+        https: !!server.config.server.https,
+      }
+
+      // 获取配置文件路径
+      let configFilePath: string | undefined
+      const rootDir = server.config.root || process.cwd()
+
+      configFilePath = server.config.configFile || undefined
+
+      if (!configFilePath) {
+        try {
+          const files = fs.readdirSync(rootDir)
+          const configFile = files.find(file => /^vite\.config\.(ts|js|mjs|cjs|cts)$/.test(file))
+          if (configFile) {
+            configFilePath = path.resolve(rootDir, configFile)
+          }
+        }
+        catch {
+          const configFiles = [
+            'vite.config.ts',
+            'vite.config.js',
+            'vite.config.mjs',
+            'vite.config.cjs',
+            'vite.config.cts',
+          ]
+          for (const file of configFiles) {
+            const fullPath = path.resolve(rootDir, file)
+            if (fs.existsSync(fullPath)) {
+              configFilePath = fullPath
+              break
+            }
+          }
+        }
+      }
+
+      // 将 entry 路径转换为绝对路径映射
+      const entryPathMap: Record<string, string> = {}
+      for (const [componentName, entry] of Object.entries(ctx.contract.dev.componentMap)) {
+        if (componentName === '*') {
+          entryPathMap[componentName] = ctx.audit.defaultEntryAbs
+          continue
+        }
+        if (entry.startsWith('/@fs')) {
+          const fsPath = toFsPathFromViteEntry(entry)
+          if (fsPath) {
+            entryPathMap[componentName] = fsPath
+          }
+        }
+        else if (entry === '/') {
+          entryPathMap[componentName] = ctx.audit.defaultEntryAbs
+        }
+        else if (
+          !entry.startsWith('http://')
+          && !entry.startsWith('https://')
+          && !entry.startsWith('/')
+        ) {
+          entryPathMap[componentName] = path.resolve(rootDir, entry)
+        }
+      }
+
       const html = renderDebugHtml({
+        resolvedDevComponentMap: ctx.contract.dev.componentMap,
+        entryPathMap,
+        audit: ctx.audit,
+        stats: ctx.stats,
+        serverConfigLite,
         originCandidates,
-        contract: ctx.contract,
+        actualPort: typeof actualPort === 'number' ? actualPort : undefined,
+        configFilePath,
       })
 
       res.statusCode = 200
@@ -321,84 +541,4 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
 
     next()
   })
-}
-
-function renderDebugHtml(params: { originCandidates: string[], contract: BridgeContract }) {
-  const { originCandidates, contract } = params
-  const originsJson = JSON.stringify(originCandidates)
-  const contractJson = JSON.stringify(contract, null, 2)
-
-  return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DevTo Vue Debug</title>
-  <style>
-    body { font-family: system-ui, sans-serif; padding: 20px; color: #111827; }
-    h1 { font-size: 20px; margin-bottom: 8px; }
-    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
-    .origin { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-    button { border: 1px solid #d1d5db; background: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
-    pre { background: #f9fafb; padding: 10px; border-radius: 6px; overflow: auto; font-size: 12px; }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-  </style>
-</head>
-<body>
-  <h1>DevTo Vue Debug</h1>
-  <div class="card">
-    <div><strong>Set origin in host</strong></div>
-    <div id="origin-list"></div>
-    <pre id="origin-cmd"></pre>
-  </div>
-  <div class="card">
-    <div><strong>Contract</strong></div>
-    <pre>${contractJson}</pre>
-  </div>
-  <script>
-    const origins = ${originsJson};
-    const list = document.getElementById('origin-list');
-    const cmd = document.getElementById('origin-cmd');
-
-    function makeCmd(origin) {
-      return "localStorage.setItem('VITE_DEV_SERVER_ORIGIN', '" + origin + "'); location.reload();";
-    }
-
-    function setCmd(origin) {
-      cmd.textContent = makeCmd(origin);
-    }
-
-    function copy(text) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        return navigator.clipboard.writeText(text);
-      }
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      return Promise.resolve();
-    }
-
-    origins.forEach(origin => {
-      const row = document.createElement('div');
-      row.className = 'origin';
-      const code = document.createElement('code');
-      code.textContent = origin;
-      const btn = document.createElement('button');
-      btn.textContent = 'Copy';
-      btn.onclick = () => {
-        setCmd(origin);
-        copy(makeCmd(origin));
-      };
-      row.appendChild(code);
-      row.appendChild(btn);
-      list.appendChild(row);
-    });
-
-    if (origins[0]) setCmd(origins[0]);
-  </script>
-</body>
-</html>`
 }
