@@ -256,6 +256,21 @@
             "no_server_hint": "Make sure Vite dev server is running at localhost:5173",
             "detection_failed": "Framework detection failed",
             "detection_failed_hint": "Check @dev-to/react-plugin or @dev-to/vue-plugin configuration"
+        },
+        "quickstart": {
+            "title": "Quick Start",
+            "intro": "No project yet? Follow these steps to get started:",
+            "step1": {
+                "title": "Create Project"
+            },
+            "step2": {
+                "title": "Install & Start"
+            },
+            "step3": {
+                "title": "Auto Connect",
+                "desc": "Once the project starts, Playground will auto-detect and connect to localhost:5173"
+            },
+            "learn_more": "Learn more →"
         }
     }
 }

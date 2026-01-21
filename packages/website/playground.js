@@ -63,6 +63,9 @@ function init() {
   // 设置 iframe 通信
   setupIframeCommunication()
 
+  // 设置复制按钮
+  setupCopyButtons()
+
   // 开始轮询检测开发服务器
   startPolling()
 }
@@ -412,6 +415,39 @@ function showError(message) {
     </div>
   `
   elements.loadingOverlay.style.display = 'flex'
+}
+
+/**
+ * 设置复制按钮
+ */
+function setupCopyButtons() {
+  document.querySelectorAll('.copy-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const code = btn.getAttribute('data-code')
+      if (!code) return
+
+      try {
+        await navigator.clipboard.writeText(code)
+
+        // 显示复制成功状态
+        btn.classList.add('copied')
+        const originalHTML = btn.innerHTML
+        btn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        `
+
+        setTimeout(() => {
+          btn.classList.remove('copied')
+          btn.innerHTML = originalHTML
+        }, 2000)
+      }
+      catch (err) {
+        console.error('Failed to copy:', err)
+      }
+    })
+  })
 }
 
 // 页面加载完成后初始化
