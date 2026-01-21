@@ -1,0 +1,39 @@
+{
+  "name": "@dev-to/vue-loader",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./umd": "./dist/index.umd.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rslib build",
+    "dev": "rslib build --watch",
+    "lint": "pnpm -w lint",
+    "test": "echo 'test @dev-to/vue-loader'"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0",
+    "vue": ">=3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YangYongAn/dev-to.git",
+    "directory": "packages/vue-loader"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@dev-to/shared": "workspace:*"
+  }
+}
