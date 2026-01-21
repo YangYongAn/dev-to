@@ -1,5 +1,16 @@
 # @dev-to/vue-plugin
 
+## 0.3.0
+
+### Minor Changes
+
+- 0e53d63: Add debug page and UMD wrapper support
+
+  - Add full debug page with Vue-themed styling, component configuration display, and environment setup commands
+  - Add auto-generated UMD wrapper for components (`/__dev_to__/vue/loader/{ComponentName}.js`)
+  - Add lib build utilities with Vue SFC (.vue) file support
+  - Export new functions: `createLoaderUmdWrapper`, `renderDebugHtml`, and lib build utilities
+
 ## 0.2.3
 
 ### Patch Changes
