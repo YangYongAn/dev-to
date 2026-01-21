@@ -1,0 +1,21 @@
+{
+  "name": "@dev-to/vue-playground",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "pnpm -w lint",
+    "test": "echo 'test @dev-to/vue-playground'"
+  },
+  "dependencies": {
+    "@dev-to/vue-loader": "workspace:*",
+    "vue": "^3.5.12"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.4.11"
+  }
+}
