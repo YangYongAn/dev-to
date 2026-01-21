@@ -2,7 +2,7 @@
 
 中文 | [English](./README.md)
 
-一套面向 **AI Agent 平台**和**智能体容器**的 React 组件开发工具链，让第三方开发者享受"本地级"的开发体验。
+一套面向 **AI Agent 平台**和**智能体容器**的 React/Vue 组件开发工具链，让第三方开发者享受"本地级"的开发体验。
 
 > **🚀 快速开始：** `npm create dev-to` - 30 秒创建你的第一个项目！
 
@@ -83,7 +83,7 @@
 | **CSS 隔离** | 无 | Shadow DOM/Scoped | Shadow DOM | 无 | CSS Modules |
 | **路由管理** | 无 | 支持 | 支持 | 核心特性 | 无 |
 | **预加载** | 支持 | 支持 | 支持 | 支持 | 无 |
-| **多框架支持** | 是 | 是 | 是 | 是 | 仅 React |
+| **多框架支持** | 是 | 是 | 是 | 是 | React + Vue（开发态） |
 | **TypeScript 类型共享** | 需插件 | 无 | 无 | 无 | 原生支持 |
 
 ### 开发体验对比
@@ -136,9 +136,13 @@
 | [create-dev-to](./packages/create-dev-to) | [![npm](https://img.shields.io/npm/v/create-dev-to.svg)](https://www.npmjs.com/package/create-dev-to) | 🚀 **脚手架工具** - 快速创建集成 dev-to 的前端项目（支持多框架） |
 | [@dev-to/react-plugin](./packages/react-plugin) | [![npm](https://img.shields.io/npm/v/@dev-to/react-plugin.svg)](https://www.npmjs.com/package/@dev-to/react-plugin) | ⚡ **Vite 侧插件** - 在 Vite Dev Server 上暴露稳定的桥接入口 |
 | [@dev-to/react-loader](./packages/react-loader) | [![npm](https://img.shields.io/npm/v/@dev-to/react-loader.svg)](https://www.npmjs.com/package/@dev-to/react-loader) | 🔌 **宿主侧加载器** - 在任意页面中动态加载远程 React 组件 |
-| [@dev-to/react-shared](./packages/react-shared) | [![npm](https://img.shields.io/npm/v/@dev-to/react-shared.svg)](https://www.npmjs.com/package/@dev-to/react-shared) | 📡 **共享协议** - Vite 侧与宿主侧的通信协议和类型定义 |
+| [@dev-to/shared](./packages/shared) | [![npm](https://img.shields.io/npm/v/@dev-to/shared.svg)](https://www.npmjs.com/package/@dev-to/shared) | 📡 **共享协议** - Vite 侧与宿主侧的通信协议和类型定义 |
+| [@dev-to/vue-plugin](./packages/vue-plugin) | 0.1.0 | ⚡ **Vite 侧插件** - 在 Vite Dev Server 上暴露 Vue 桥接入口 |
+| [@dev-to/vue-loader](./packages/vue-loader) | 0.1.0 | 🔌 **宿主侧加载器** - 在任意页面中动态加载远程 Vue 组件 |
 | @dev-to/react-template | - | 📋 **示例项目** - 演示 Vite 组件提供方的完整实现 |
 | @dev-to/react-playground | - | 🎮 **示例项目** - 演示宿主应用如何加载远程组件 |
+| @dev-to/vue-template | - | 📋 **示例项目** - 演示 Vite Vue 组件提供方的完整实现 |
+| @dev-to/vue-playground | - | 🎮 **示例项目** - 演示 Vue 宿主如何加载远程组件 |
 
 ---
 
@@ -272,7 +276,7 @@ graph TB
 ### 包依赖关系
 
 ```
-@dev-to/react-shared (基础协议层)
+@dev-to/shared (基础协议层)
   ├── @dev-to/react-plugin (Vite 侧)
   │   └── @dev-to/react-template (示例)
   │
@@ -304,9 +308,9 @@ bun create dev-to
 **脚手架特性：**
 
 ✨ **智能引导**
-- 🎨 选择框架 (React ✅ 已支持 | Vue/Svelte/Solid 等即将推出)
+- 🎨 选择框架 (React/Vue ✅ 已支持 | Svelte/Solid 等即将推出)
 - 📦 选择包管理器 (pnpm/npm/yarn/bun)
-- 🔧 选择 React 模板 (TypeScript/JavaScript，支持 SWC)
+- 🔧 选择模板 (React/Vue，TypeScript/JavaScript，支持 SWC)
 - 🎯 可选 Rolldown 实验性支持
 
 ⚡ **开箱即用**
@@ -589,7 +593,7 @@ pnpm dev  # http://localhost:8080
 
 #### 1) 包发布（Changesets + CI）
 
-**适用范围**：`private: false` 的包（`@dev-to/react-shared`、`@dev-to/react-plugin`、`@dev-to/react-loader`、`create-dev-to`）。
+**适用范围**：`private: false` 的包（`@dev-to/shared`、`@dev-to/react-plugin`、`@dev-to/react-loader`、`create-dev-to`）。
 
 **协作流程**：
 1. 完成功能/修复并自测。
@@ -638,7 +642,7 @@ git push --follow-tags
 # - react-loader
 # - react-playground
 # - react-plugin
-# - react-shared
+# - shared
 # - react-template
 # - repo
 # - deps
@@ -760,7 +764,7 @@ MIT © [YangYongAn](https://github.com/YangYongAn)
 <details>
 <summary><b>Q: 支持 Vue/Svelte 吗？</b></summary>
 
-目前仅支持 React。但架构设计是框架无关的，理论上可以扩展支持其他框架。
+已支持 React 与 Vue（开发态 HMR）。架构设计是框架无关的，其他框架可逐步扩展。
 
 </details>
 

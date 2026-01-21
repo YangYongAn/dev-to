@@ -25,9 +25,9 @@
 
 | 包名 | 版本 | 用途 | 技术栈 | 依赖关系 |
 |------|------|------|--------|---------|
-| **@dev-to/react-shared** | 0.1.0 | 桥接协议和常量定义 | TypeScript | 无依赖（基础层） |
-| **@dev-to/react-plugin** | 0.1.1 | Vite 插件（组件提供方） | Rslib, picocolors | 依赖 react-shared |
-| **@dev-to/react-loader** | 0.1.0 | 宿主侧加载器组件 | Rslib, React 18 | 依赖 react-shared |
+| **@dev-to/shared** | 0.1.0 | 桥接协议和常量定义 | TypeScript | 无依赖（基础层） |
+| **@dev-to/react-plugin** | 0.1.1 | Vite 插件（组件提供方） | Rslib, picocolors | 依赖 shared |
+| **@dev-to/react-loader** | 0.1.0 | 宿主侧加载器组件 | Rslib, React 18 | 依赖 shared |
 | **create-dev-to** | 0.0.1 | 脚手架工具 | TypeScript, @clack/prompts | 独立（CLI 工具） |
 
 ### 示例包（私有，不发布）
@@ -40,7 +40,7 @@
 ### 依赖关系图
 
 ```
-@dev-to/react-shared (基础协议层)
+@dev-to/shared (基础协议层)
   ├── @dev-to/react-plugin (Vite 侧插件)
   │   └── @dev-to/react-template (示例)
   │
@@ -103,7 +103,7 @@ cd packages/react-playground && pnpm dev   # Terminal 2 (port 8080)
 - `react-loader` - 宿主侧加载器
 - `react-playground` - 示例项目（宿主应用）
 - `react-plugin` - Vite 插件
-- `react-shared` - 共享协议
+- `shared` - 共享协议
 - `react-template` - 示例项目（组件提供方）
 
 **特殊 scope**（跨包或基础设施）:
@@ -241,8 +241,8 @@ pnpm -r --parallel dev
 
 ### 2. 包依赖原则
 
-- **react-shared**: 不依赖任何内部包，保持纯净
-- **react-plugin / react-loader**: 只依赖 react-shared
+- **shared**: 不依赖任何内部包，保持纯净
+- **react-plugin / react-loader**: 只依赖 shared
 - **示例项目**: 可依赖所有核心包
 
 ### 3. 构建顺序
@@ -250,7 +250,7 @@ pnpm -r --parallel dev
 依赖关系决定了构建顺序，pnpm 会自动处理：
 
 ```
-1. react-shared (无依赖)
+1. shared (无依赖)
 2. react-plugin, react-loader (依赖 shared)
 3. create-dev-to (独立)
 4. react-template, react-playground (依赖 plugin/loader)

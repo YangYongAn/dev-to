@@ -2,7 +2,7 @@
 
 English | [Chinese](./README_zh.md)
 
-A React component toolchain for AI agent platforms and agent containers. It gives third-party developers a local-like experience while the host container hot-reloads components in real time.
+A React/Vue component toolchain for AI agent platforms and agent containers. It gives third-party developers a local-like experience while the host container hot-reloads components in real time.
 
 > Quick start: `npm create dev-to` - create your first project in ~30 seconds.
 
@@ -55,7 +55,7 @@ dev-to solves this by:
 | **CSS isolation** | No | Shadow DOM/Scoped | Shadow DOM | No | CSS Modules |
 | **Route management** | No | Yes | Yes | Core feature | No |
 | **Preloading** | Yes | Yes | Yes | Yes | No |
-| **Multi-framework** | Yes | Yes | Yes | Yes | React only |
+| **Multi-framework** | Yes | Yes | Yes | Yes | React + Vue (dev) |
 | **TypeScript type sharing** | Plugin required | No | No | No | Native |
 
 ### Developer experience
@@ -106,9 +106,13 @@ Need multi-framework support?
 | [create-dev-to](./packages/create-dev-to) | [![npm](https://img.shields.io/npm/v/create-dev-to.svg)](https://www.npmjs.com/package/create-dev-to) | Scaffold tool to create dev-to projects (multi-framework). |
 | [@dev-to/react-plugin](./packages/react-plugin) | [![npm](https://img.shields.io/npm/v/@dev-to/react-plugin.svg)](https://www.npmjs.com/package/@dev-to/react-plugin) | Vite-side plugin to expose bridge endpoints. |
 | [@dev-to/react-loader](./packages/react-loader) | [![npm](https://img.shields.io/npm/v/@dev-to/react-loader.svg)](https://www.npmjs.com/package/@dev-to/react-loader) | Host-side loader that mounts remote React components. |
-| [@dev-to/react-shared](./packages/react-shared) | [![npm](https://img.shields.io/npm/v/@dev-to/react-shared.svg)](https://www.npmjs.com/package/@dev-to/react-shared) | Shared protocol, constants, and types. |
+| [@dev-to/shared](./packages/shared) | [![npm](https://img.shields.io/npm/v/@dev-to/shared.svg)](https://www.npmjs.com/package/@dev-to/shared) | Shared protocol, constants, and types. |
+| [@dev-to/vue-plugin](./packages/vue-plugin) | 0.1.0 | Vite-side plugin to expose bridge endpoints (Vue). |
+| [@dev-to/vue-loader](./packages/vue-loader) | 0.1.0 | Host-side loader that mounts remote Vue components. |
 | @dev-to/react-template | - | Example component provider (private). |
 | @dev-to/react-playground | - | Example host app (private). |
+| @dev-to/vue-template | - | Example component provider (private). |
+| @dev-to/vue-playground | - | Example host app (private). |
 
 ## Architecture
 
@@ -146,7 +150,7 @@ graph TB
 ### Package dependency graph
 
 ```
-@dev-to/react-shared (base protocol)
+@dev-to/shared (base protocol)
   +-- @dev-to/react-plugin (Vite side)
   |   +-- @dev-to/react-template (example)
   +-- @dev-to/react-loader (host side)
@@ -253,7 +257,7 @@ npm create dev-to
 ```
 
 Scaffold highlights:
-- Choose framework (React supported now; Vue/Svelte/Solid planned).
+- Choose framework (React/Vue supported; Svelte/Solid planned).
 - Choose package manager (pnpm/npm/yarn/bun).
 - Choose React template (TypeScript/JavaScript, SWC support).
 - Optional Rolldown experiments.
@@ -311,6 +315,55 @@ function App() {
     </div>
   )
 }
+```
+
+#### Vue: Install the plugin (component provider)
+
+```bash
+npm install -D @dev-to/vue-plugin
+```
+
+Configure Vite:
+
+```ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { devToVuePlugin } from '@dev-to/vue-plugin'
+
+export default defineConfig({
+  server: {
+    port: 5173,
+    cors: true,
+  },
+  plugins: [
+    vue(),
+    devToVuePlugin({
+      MyCard: 'src/components/MyCard.vue',
+    }),
+  ],
+})
+```
+
+#### Vue: Install the loader (host app)
+
+```bash
+npm install @dev-to/vue-loader
+```
+
+Use the loader in the host app:
+
+```vue
+<script setup lang="ts">
+import { VueLoader } from '@dev-to/vue-loader'
+</script>
+
+<template>
+  <VueLoader
+    origin="http://localhost:5173"
+    name="MyCard"
+    :component-props="{ title: 'Title', count: 42 }"
+  />
+</template>
 ```
 
 #### Step 3: Run both apps
@@ -478,7 +531,7 @@ pnpm dev
 
 ### 1) Package release (Changesets + CI)
 
-Scope: packages with `private: false` (`@dev-to/react-shared`, `@dev-to/react-plugin`, `@dev-to/react-loader`, `create-dev-to`).
+Scope: packages with `private: false` (`@dev-to/shared`, `@dev-to/react-plugin`, `@dev-to/react-loader`, `create-dev-to`).
 
 Workflow:
 1. Implement the change and test locally.
@@ -571,7 +624,7 @@ Two options:
 <details>
 <summary><b>Will Vue/Svelte be supported?</b></summary>
 
-React is supported today. The architecture is framework-agnostic, so other frameworks can be added later.
+Vue dev HMR is supported today. The architecture is framework-agnostic, so other frameworks can be added later.
 
 </details>
 
