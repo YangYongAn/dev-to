@@ -1,5 +1,13 @@
 # @dev-to/react-loader
 
+## 1.0.3
+
+### Patch Changes
+
+- 062dcc1: refactor: update dependency from @dev-to/react-shared to @dev-to/shared
+- Updated dependencies [062dcc1]
+  - @dev-to/shared@1.0.3
+
 ## 1.0.2
 
 ### Patch Changes

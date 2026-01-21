@@ -1,5 +1,13 @@
 # @dev-to/shared
 
+## 1.0.3
+
+### Patch Changes
+
+- 062dcc1: refactor: rename from @dev-to/react-shared to @dev-to/shared
+
+  Add Vue-specific constants and types for multi-framework support.
+
 ## 1.0.2
 
 ### Patch Changes
