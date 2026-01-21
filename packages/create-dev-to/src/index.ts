@@ -89,7 +89,18 @@ const FRAMEWORKS: Framework[] = [
     name: 'vue',
     display: 'Vue',
     color: primaryGreen,
-    variants: [],
+    variants: [
+      {
+        name: 'vue-ts',
+        display: 'TypeScript',
+        color: primaryGreen,
+      },
+      {
+        name: 'vue',
+        display: 'JavaScript',
+        color: yellow,
+      },
+    ],
   },
   {
     name: 'svelte',
@@ -720,7 +731,13 @@ function injectPluginIntoViteConfig(content: string, pluginPackage: string, plug
   return out
 }
 
-function updatePluginComponentName(content: string, pluginName: string, componentName: string, projectName: string): string {
+function updatePluginComponentName(
+  content: string,
+  pluginName: string,
+  componentName: string,
+  projectName: string,
+  componentEntry?: string,
+): string {
   // 生成默认组件名称（与项目名称转换逻辑保持一致）
   const defaultComponentName = projectName
     .split(/[-_\s]+/)
@@ -739,8 +756,9 @@ function updatePluginComponentName(content: string, pluginName: string, componen
   }
 
   // 否则，使用对象配置形式 devToReactPlugin({ [ComponentName]: 'src/[ComponentName]/index.tsx' })
+  const entryPath = componentEntry || `src/${componentName}/index.tsx`
   const newPluginCall = `${pluginName}({
-      ${componentName}: 'src/${componentName}/index.tsx',
+      ${componentName}: '${entryPath}',
     })`
 
   // 检查 pluginCall 是否存在
@@ -952,6 +970,89 @@ export default function App() {
 }
 `
   fs.writeFileSync(appCssPath, appCssContent, 'utf-8')
+}
+
+function updateVueAppTemplate(root: string, componentName: string, isTs: boolean) {
+  const appPath = path.join(root, 'src', 'App.vue')
+  if (!fs.existsSync(appPath)) {
+    return
+  }
+
+  const scriptLang = isTs ? ' lang="ts"' : ''
+  const appContent = `<script setup${scriptLang}>
+import ${componentName} from './${componentName}/index.vue'
+</script>
+
+<template>
+  <div class="app">
+    <header class="appHeader">
+      <span class="eyebrow">dev-to template</span>
+      <h1>Component preview</h1>
+      <p class="subtitle">
+        Vite dev server with <code class="appCode">@dev-to/vue-plugin</code>
+      </p>
+    </header>
+
+    <section class="preview">
+      <div class="previewInner">
+        <${componentName} />
+      </div>
+    </section>
+  </div>
+</template>
+
+<style scoped>
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  text-align: center;
+}
+
+.appHeader {
+  max-width: 720px;
+}
+
+.appHeader h1 {
+  margin: 4px 0 6px;
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.eyebrow {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #4b5563;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.appCode {
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.preview {
+  width: min(720px, 94vw);
+}
+
+.previewInner {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 28px 22px;
+}
+</style>
+`
+
+  fs.writeFileSync(appPath, appContent, 'utf-8')
 }
 
 function createComponentFile(root: string, componentName: string, isTs: boolean) {
@@ -1314,6 +1415,133 @@ export default function ${componentName}(props) {
   fs.writeFileSync(path.join(componentDir, 'index.module.css'), styleContent, 'utf-8')
 }
 
+function createVueComponentFile(root: string, componentName: string, isTs: boolean) {
+  const componentDir = path.join(root, 'src', componentName)
+  const componentFile = path.join(componentDir, 'index.vue')
+
+  if (!fs.existsSync(componentDir)) {
+    fs.mkdirSync(componentDir, { recursive: true })
+  }
+
+  const scriptLang = isTs ? ' lang="ts"' : ''
+  const propsDecl = isTs
+    ? 'const props = defineProps<{ title?: string }>()'
+    : 'const props = defineProps({ title: String })'
+
+  const componentContent = `<script setup${scriptLang}>
+import { computed, ref } from 'vue'
+import devtoLogo from '../assets/devto.svg'
+import vueLogo from '../assets/vue.svg'
+import viteLogo from '/vite.svg'
+
+${propsDecl}
+const count = ref(0)
+const title = computed(() => props.title || 'DevTo + Vite + Vue')
+</script>
+
+<template>
+  <div class="component">
+    <div class="logoRow">
+      <a href="https://github.com/YangYongAn/dev-to" target="_blank" rel="noreferrer">
+        <img :src="devtoLogo" class="logoDevto" alt="dev-to logo" />
+      </a>
+      <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
+        <img :src="viteLogo" class="logo" alt="Vite logo" />
+      </a>
+      <a href="https://vuejs.org" target="_blank" rel="noreferrer">
+        <img :src="vueLogo" class="logoVue" alt="Vue logo" />
+      </a>
+    </div>
+    <h1>{{ title }}</h1>
+    <p class="subtitle">
+      Remote component served by <code class="code">@dev-to/vue-plugin</code>
+    </p>
+    <div class="counterCard">
+      <button type="button" @click="count += 1">
+        count is {{ count }}
+      </button>
+      <p>
+        Edit <code class="code">src/${componentName}/index.vue</code> to test HMR
+      </p>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.component {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 12px 28px;
+  text-align: center;
+}
+
+.logoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+
+.logo,
+.logoDevto,
+.logoVue {
+  height: 48px;
+}
+
+.logoDevto {
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.35);
+}
+
+.subtitle {
+  margin: 8px auto 18px;
+  max-width: 520px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.counterCard {
+  margin: 18px auto;
+  padding: 20px 18px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.counterCard button {
+  border: 1px solid rgba(15, 118, 110, 0.5);
+  border-radius: 999px;
+  padding: 8px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #10b981, #0ea5a0 55%, #0d9488);
+  cursor: pointer;
+}
+
+.counterCard p {
+  margin: 14px 0 0;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.code {
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+}
+</style>
+`
+
+  fs.writeFileSync(componentFile, componentContent, 'utf-8')
+}
+
 function setupReactSWC(root: string, isTs: boolean) {
   editFile(path.join(root, 'package.json'), (content) => {
     return content.replace(
@@ -1549,27 +1777,31 @@ async function init() {
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
   pkg.name = toValidPackageName(getProjectName())
   pkg.scripts = pkg.scripts ?? {}
-  if (!pkg.scripts['build:lib']) {
+  if (!pkg.scripts['build:lib'] && selectedFramework.name === 'react') {
     pkg.scripts['build:lib'] = 'dev-to build'
   }
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
 
-  // 处理 SWC 和 React Compiler 配置
   const isTs = template.includes('ts')
-  if (isReactSwc) {
-    spinner.message('Setting up SWC...')
-    setupReactSWC(root, isTs)
-  }
-  if (isReactCompiler) {
-    spinner.message('Setting up React Compiler...')
-    setupReactCompiler(root, isTs)
+  const isVue = selectedFramework.name === 'vue'
+
+  if (!isVue) {
+    if (isReactSwc) {
+      spinner.message('Setting up SWC...')
+      setupReactSWC(root, isTs)
+    }
+    if (isReactCompiler) {
+      spinner.message('Setting up React Compiler...')
+      setupReactCompiler(root, isTs)
+    }
   }
 
-  spinner.message('Adding @dev-to/react-plugin')
+  const pluginPackage = isVue ? '@dev-to/vue-plugin' : '@dev-to/react-plugin'
+  const pluginName = isVue ? 'devToVuePlugin' : 'devToReactPlugin'
+
+  spinner.message(`Adding ${pluginPackage}`)
 
   // 添加插件依赖
-  const pluginPackage = '@dev-to/react-plugin'
-  const pluginName = 'devToReactPlugin'
   addDevDependency(root, pluginPackage, 'latest')
 
   // 注入插件到 vite.config
@@ -1577,17 +1809,36 @@ async function init() {
   if (viteConfigPath) {
     let patched = fs.readFileSync(viteConfigPath, 'utf-8')
     patched = injectPluginIntoViteConfig(patched, pluginPackage, pluginName)
-    patched = updatePluginComponentName(patched, pluginName, componentName as string, projectName as string)
+    const componentEntry = isVue
+      ? `src/${componentName}/index.vue`
+      : `src/${componentName}/index.${isTs ? 'tsx' : 'jsx'}`
+    patched = updatePluginComponentName(
+      patched,
+      pluginName,
+      componentName as string,
+      projectName as string,
+      componentEntry,
+    )
     fs.writeFileSync(viteConfigPath, patched)
   }
 
   spinner.message('Updating template files...')
   ensureDevtoLogo(root)
-  updateAppTemplate(root, componentName as string, isTs)
+  if (isVue) {
+    updateVueAppTemplate(root, componentName as string, isTs)
+  }
+  else {
+    updateAppTemplate(root, componentName as string, isTs)
+  }
 
   // 创建组件文件
   spinner.message(`Creating component ${componentName}...`)
-  createComponentFile(root, componentName as string, isTs)
+  if (isVue) {
+    createVueComponentFile(root, componentName as string, isTs)
+  }
+  else {
+    createComponentFile(root, componentName as string, isTs)
+  }
 
   // 显示项目创建完成的消息，包含缓存信息
   let completionMessage = 'Project created'
