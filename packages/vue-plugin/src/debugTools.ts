@@ -379,7 +379,7 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
       return
     }
 
-    // Handle vue-loader UMD endpoint: /__dev_to__/vue/loader.js
+    // Handle vue-loader UMD endpoint: /__dev_to__/loader.js
     if (pathname === STABLE_LOADER_UMD_PATH) {
       const vueLoaderUmdPath = getVueLoaderUmdPath()
 
@@ -406,7 +406,7 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
       return
     }
 
-    // Handle loader endpoint: /__dev_to__/vue/loader/{ComponentName}.js
+    // Handle loader endpoint: /__dev_to__/loader/{ComponentName}.js
     if (pathname.startsWith(STABLE_LOADER_BASE_PATH)) {
       const loaderPathPattern = new RegExp(`^${STABLE_LOADER_BASE_PATH}/([^/]+)\\.js$`)
       const match = pathname.match(loaderPathPattern)

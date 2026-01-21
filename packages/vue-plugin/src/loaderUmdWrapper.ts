@@ -36,7 +36,7 @@ export function createLoaderUmdWrapper(options: CreateLoaderUmdWrapperOptions): 
  *    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
  *
  * 2. Load this wrapper:
- *    <script src="${origin}/__dev_to__/vue/loader/${componentName}.js"></script>
+ *    <script src="${origin}/__dev_to__/loader/${componentName}.js"></script>
  *
  * 3. Use as a Vue component:
  *

@@ -304,7 +304,7 @@ export function renderDebugHtml(params: DebugHtmlRenderParams) {
                           .map(([name, entry]) => {
                             const abs = entryPathMap[name]
                             const displayPath = abs ? getShortPath(abs) : entry
-                            const wrapperUrl = (originCandidates[0] || 'http://localhost:5173') + '/__dev_to__/vue/loader/' + name + '.js'
+                            const wrapperUrl = (originCandidates[0] || 'http://localhost:5173') + '/__dev_to__/loader/' + name + '.js'
                             const entryHtml = abs ? '<a href="' + toVsCodeUrl(abs) + '" class="link-code" title="点击在 IDE 中打开"><code>' + escapeHtml(displayPath) + '</code></a>' : '<code>' + escapeHtml(entry) + '</code>'
                             return '<tr>'
                               + '<td><code class="code-name">' + name + '</code></td>'
@@ -406,7 +406,7 @@ devToVuePlugin(<span class="str">'Demo'</span>, { open: <span class="kw">true</s
 
             <div class="info-grid">
                 <div class="info-label">端点:</div>
-                <div class="info-value"><code>/__dev_to__/vue/loader/{ComponentName}.js</code></div>
+                <div class="info-value"><code>/__dev_to__/loader/{ComponentName}.js</code></div>
                 <div class="info-label">作用:</div>
                 <div class="info-value">自动将组件导出为 Vue 组件实例，无需宿主集成 @dev-to/vue-loader</div>
                 <div class="info-label">依赖:</div>
@@ -428,7 +428,7 @@ devToVuePlugin(<span class="str">'Demo'</span>, { open: <span class="kw">true</s
 <span class="kw">&lt;script&gt;</span> <span class="kw">src</span>=<span class="str">"https://unpkg.com/vue@3/dist/vue.global.prod.js"</span> <span class="kw">&lt;/script&gt;</span>
 
 <span class="cmt">// 2. 加载包装器脚本</span>
-<span class="kw">&lt;script&gt;</span> <span class="kw">src</span>=<span class="str">"\${originCandidates[0] || 'http://localhost:5173'}/__dev_to__/vue/loader/{ComponentName}.js"</span> <span class="kw">&lt;/script&gt;</span>
+<span class="kw">&lt;script&gt;</span> <span class="kw">src</span>=<span class="str">"\${originCandidates[0] || 'http://localhost:5173'}/__dev_to__/loader/{ComponentName}.js"</span> <span class="kw">&lt;/script&gt;</span>
 
 <span class="cmt">// 3. 直接作为 Vue 组件使用</span>
 <span class="kw">const</span> app = Vue.createApp(window.ComponentName);

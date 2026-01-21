@@ -405,7 +405,7 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
       return
     }
 
-    // Handle react-loader UMD endpoint: /__dev_to__/react/loader.js
+    // Handle react-loader UMD endpoint: /__dev_to__/loader.js
     // Serve local react-loader UMD build for testing (before publishing to npm)
     if (pathname === STABLE_LOADER_UMD_PATH) {
       const reactLoaderUmdPath = getReactLoaderUmdPath()
@@ -436,7 +436,7 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
       return
     }
 
-    // Handle loader endpoint: /__dev_to__/react/loader/{ComponentName}.js
+    // Handle loader endpoint: /__dev_to__/loader/{ComponentName}.js
     // Returns a lightweight UMD wrapper that uses ReactLoader to load the component
     if (pathname.startsWith(STABLE_LOADER_BASE_PATH)) {
       const loaderPathPattern = new RegExp(`^${STABLE_LOADER_BASE_PATH}/([^/]+)\\.js$`)

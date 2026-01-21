@@ -16,6 +16,10 @@ export const DEV_TO_DISCOVERY_PATH = `${DEV_TO_BASE_PATH}/discovery.json` as con
 export const DEV_TO_DEBUG_HTML_PATH = `${DEV_TO_BASE_PATH}/debug.html` as const
 export const DEV_TO_DEBUG_JSON_PATH = `${DEV_TO_BASE_PATH}/debug.json` as const
 
+/** Unified loader endpoints (framework-agnostic, since a project uses only one framework). */
+export const DEV_TO_LOADER_BASE_PATH = `${DEV_TO_BASE_PATH}/loader` as const
+export const DEV_TO_LOADER_UMD_PATH = `${DEV_TO_BASE_PATH}/loader.js` as const
+
 /**
  * React-specific namespace.
  *
