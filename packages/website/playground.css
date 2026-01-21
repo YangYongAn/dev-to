@@ -13,84 +13,131 @@
 
 /* Debug Panel (Left Side) */
 .debug-panel {
-  width: 420px;
-  min-width: 380px;
-  max-width: 520px;
+  width: 400px;
+  min-width: 360px;
+  max-width: 480px;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border-color);
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 20px 16px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
 }
 
 /* 自定义滚动条 */
 .debug-panel::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .debug-panel::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: transparent;
 }
 
 .debug-panel::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary);
-  border-radius: 4px;
+  background: var(--border-color);
+  border-radius: 3px;
 }
 
 .debug-panel::-webkit-scrollbar-thumb:hover {
   background: var(--border-color-hover);
 }
 
+/* Panel Header */
+.panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.panel-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.panel-title svg {
+  color: var(--accent);
+}
+
 /* Debug Panel Section */
 .debug-panel-section {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  transition: all var(--transition-normal);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background var(--transition-fast);
+}
+
+.debug-panel-section:last-child {
+  border-bottom: none;
 }
 
 .debug-panel-section:hover {
-  border-color: var(--border-color-hover);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.debug-panel-section h3 {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 12px;
+[data-theme="light"] .debug-panel-section:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Section Header */
+.section-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.section-icon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.section-header h3 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 /* Connection Status */
+.status-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
 .status-indicator {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding: 10px 12px;
-  background: var(--bg-primary);
-  border-radius: var(--radius-sm);
+  gap: 12px;
 }
 
 .status-dot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--text-tertiary);
   flex-shrink: 0;
+  position: relative;
 }
 
 .status-dot[data-status="connected"] {
   background: var(--accent);
-  box-shadow: 0 0 8px rgba(63, 185, 80, 0.5);
+  box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.7);
+  animation: pulse-ring 2s ease-out infinite;
 }
 
 .status-dot[data-status="connecting"] {
@@ -104,6 +151,7 @@
 
 .status-dot[data-status="error"] {
   background: #dc2626;
+  animation: shake 0.5s;
 }
 
 @keyframes pulse {
@@ -112,34 +160,52 @@
     transform: scale(1);
   }
   50% {
-    opacity: 0.5;
-    transform: scale(0.9);
+    opacity: 0.6;
+    transform: scale(0.85);
   }
 }
 
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(63, 185, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(63, 185, 80, 0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
 .status-text {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--text-primary);
+  flex: 1;
 }
 
 .connection-info {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8rem;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.info-row:last-child {
-  border-bottom: none;
+  font-size: 0.75rem;
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
 }
 
 .info-row .label {
@@ -148,28 +214,10 @@
 }
 
 .info-row .value {
-  color: var(--text-primary);
+  color: var(--accent);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-}
-
-.waiting-message {
-  padding: 12px;
-  background: var(--bg-primary);
-  border-radius: var(--radius-sm);
-  border-left: 3px solid var(--accent-2);
-}
-
-.waiting-message p {
-  font-size: 0.85rem;
-  margin: 0 0 6px;
-  color: var(--text-primary);
-}
-
-.waiting-message .hint {
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
 }
 
 /* Component List */
@@ -530,70 +578,49 @@
    Quick Start Guide Styles
    ===================================================== */
 
-.waiting-status {
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px dashed var(--border-color);
+.section-quickstart {
+  background: rgba(63, 185, 80, 0.03);
+  border-left: 3px solid var(--accent);
 }
 
-.quick-start-guide {
-  margin-top: 8px;
-  padding: 16px;
-  background: linear-gradient(135deg, rgba(63, 185, 80, 0.05) 0%, rgba(63, 185, 80, 0.02) 100%);
-  border: 1px solid rgba(63, 185, 80, 0.15);
-  border-radius: var(--radius-md);
+[data-theme="light"] .section-quickstart {
+  background: rgba(63, 185, 80, 0.05);
 }
 
-.quick-start-guide h4 {
-  font-size: 0.95rem;
-  font-weight: 700;
+.section-quickstart .section-icon {
   color: var(--accent);
-  margin: 0 0 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  letter-spacing: 0.3px;
-}
-
-.quick-start-guide h4::before {
-  content: "";
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  background: var(--accent);
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='13 17 18 12 13 7'%3E%3C/polyline%3E%3Cpolyline points='6 17 11 12 6 7'%3E%3C/polyline%3E%3C/svg%3E") no-repeat center / contain;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='13 17 18 12 13 7'%3E%3C/polyline%3E%3Cpolyline points='6 17 11 12 6 7'%3E%3C/polyline%3E%3C/svg%3E") no-repeat center / contain;
-  flex-shrink: 0;
 }
 
 .guide-intro {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin: 0 0 12px;
-  line-height: 1.6;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin: 0 0 14px;
+  line-height: 1.5;
 }
 
 /* Package Manager Tabs */
 .pm-tabs {
   display: flex;
-  gap: 4px;
-  margin-bottom: 16px;
-  background: var(--bg-secondary);
+  gap: 6px;
+  margin-bottom: 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 4px;
 }
 
 .pm-tab {
   flex: 1;
-  padding: 6px 8px;
+  padding: 5px 8px;
   border: none;
   background: transparent;
   color: var(--text-tertiary);
-  font-size: 0.75rem;
-  font-weight: 500;
-  border-radius: calc(var(--radius-sm) - 2px);
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 4px;
   cursor: pointer;
   transition: all var(--transition-fast);
+  text-transform: lowercase;
 }
 
 .pm-tab:hover {
@@ -604,12 +631,13 @@
 .pm-tab.active {
   background: var(--accent);
   color: #fff;
+  box-shadow: 0 2px 4px rgba(63, 185, 80, 0.2);
 }
 
 .guide-steps {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .guide-step {
@@ -619,19 +647,17 @@
 }
 
 .step-number {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   background: var(--accent);
-  border: none;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(63, 185, 80, 0.25);
 }
 
 .step-content {
@@ -640,36 +666,35 @@
 }
 
 .step-content h5 {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 8px;
-  letter-spacing: 0.2px;
 }
 
 .step-desc {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .step-hint {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--text-tertiary);
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   padding: 6px 10px;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  border-left: 2px solid var(--accent);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .code-block {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 8px 10px;
@@ -684,15 +709,16 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 500;
 }
 
 .copy-btn {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   background: transparent;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  border-radius: 4px;
   color: var(--text-tertiary);
   cursor: pointer;
   display: flex;
@@ -705,6 +731,7 @@
   background: var(--accent-dim);
   border-color: var(--accent);
   color: var(--accent);
+  transform: scale(1.05);
 }
 
 .copy-btn.copied {
@@ -714,14 +741,14 @@
 }
 
 .guide-footer {
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(63, 185, 80, 0.2);
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
   text-align: center;
 }
 
 .guide-link {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: var(--accent);
   text-decoration: none;
   font-weight: 600;

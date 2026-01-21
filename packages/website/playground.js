@@ -142,6 +142,12 @@ async function onServerDetected(origin, discovery) {
     renderComponentList(discovery.components)
     setupHMREventListeners(currentFramework.type)
 
+    // 隐藏快速上手 section
+    const quickstartSection = document.getElementById('quickstart-section')
+    if (quickstartSection) {
+      quickstartSection.style.display = 'none'
+    }
+
     // 显示各个 section
     elements.componentSection.style.display = 'block'
     elements.propsSection.style.display = 'block'

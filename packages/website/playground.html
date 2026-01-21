@@ -68,95 +68,130 @@
   <div class="playground-container">
     <!-- Debug Panel (Left Side) -->
     <aside class="debug-panel">
+      <!-- Panel Header -->
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+            <line x1="9" y1="21" x2="9" y2="9"></line>
+          </svg>
+          <span>Debug Panel</span>
+        </h2>
+      </div>
+
       <!-- Connection Status -->
-      <div class="debug-panel-section">
-        <h3 data-i18n="playground.connection.title">连接状态</h3>
-        <div class="status-indicator">
-          <span class="status-dot" id="connection-dot" data-status="disconnected"></span>
-          <span class="status-text" id="connection-text" data-i18n="playground.connection.disconnected">未连接</span>
+      <div class="debug-panel-section section-connection">
+        <div class="section-header">
+          <svg class="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+          </svg>
+          <h3 data-i18n="playground.connection.title">连接状态</h3>
+        </div>
+        <div class="status-card" id="status-card">
+          <div class="status-indicator">
+            <span class="status-dot" id="connection-dot" data-status="disconnected"></span>
+            <span class="status-text" id="connection-text" data-i18n="playground.connection.disconnected">未连接</span>
+          </div>
         </div>
         <div class="connection-info" id="connection-info" style="display: none;">
           <div class="info-row">
-            <span class="label" data-i18n="playground.connection.origin">服务器地址:</span>
+            <span class="label" data-i18n="playground.connection.origin">服务器地址</span>
             <span class="value" id="server-origin">-</span>
           </div>
           <div class="info-row">
-            <span class="label" data-i18n="playground.connection.framework">框架:</span>
+            <span class="label" data-i18n="playground.connection.framework">框架</span>
             <span class="value" id="framework-info">-</span>
           </div>
           <div class="info-row">
-            <span class="label" data-i18n="playground.connection.version">版本:</span>
+            <span class="label" data-i18n="playground.connection.version">版本</span>
             <span class="value" id="framework-version">-</span>
-          </div>
-        </div>
-        <div class="waiting-message" id="waiting-message">
-          <div class="waiting-status">
-            <p data-i18n="playground.connection.waiting">等待开发服务器...</p>
-            <p class="hint" data-i18n="playground.errors.no_server_hint">请确保 Vite 开发服务器正在 localhost:5173 运行</p>
-          </div>
-
-          <!-- Quick Start Guide -->
-          <div class="quick-start-guide">
-            <h4 data-i18n="playground.quickstart.title">快速上手</h4>
-            <p class="guide-intro" data-i18n="playground.quickstart.intro">还没有项目？跟着下面的步骤快速开始：</p>
-
-            <!-- Package Manager Tabs -->
-            <div class="pm-tabs">
-              <button class="pm-tab active" data-pm="npm">npm</button>
-              <button class="pm-tab" data-pm="pnpm">pnpm</button>
-              <button class="pm-tab" data-pm="yarn">yarn</button>
-              <button class="pm-tab" data-pm="bun">bun</button>
-            </div>
-
-            <div class="guide-steps">
-              <div class="guide-step">
-                <div class="step-number">1</div>
-                <div class="step-content">
-                  <h5 data-i18n="playground.quickstart.step1.title">创建并启动项目</h5>
-                  <div class="code-block">
-                    <code id="cmd-create">npm create dev-to my-app</code>
-                    <button class="copy-btn" data-cmd="create" title="复制">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                      </svg>
-                    </button>
-                  </div>
-                  <p class="step-hint" data-i18n="playground.quickstart.step1.hint">脚手架会自动安装依赖并启动开发服务器</p>
-                </div>
-              </div>
-
-              <div class="guide-step">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                  <h5 data-i18n="playground.quickstart.step2.title">自动连接</h5>
-                  <p class="step-desc" data-i18n="playground.quickstart.step2.desc">项目启动后，Playground 会自动检测并连接到 localhost:5173</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="guide-footer">
-              <a href="https://github.com/YangYongAn/dev-to#quick-start" target="_blank" class="guide-link" data-i18n="playground.quickstart.learn_more">
-                了解更多 →
-              </a>
-            </div>
           </div>
         </div>
       </div>
 
+      <!-- Quick Start Guide (shown when disconnected) -->
+      <div class="debug-panel-section section-quickstart" id="quickstart-section">
+        <div class="section-header">
+          <svg class="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <h3 data-i18n="playground.quickstart.title">快速上手</h3>
+        </div>
+        <p class="guide-intro" data-i18n="playground.quickstart.intro">还没有项目？跟着下面的步骤快速开始：</p>
+
+        <!-- Package Manager Tabs -->
+        <div class="pm-tabs">
+          <button class="pm-tab active" data-pm="npm">npm</button>
+          <button class="pm-tab" data-pm="pnpm">pnpm</button>
+          <button class="pm-tab" data-pm="yarn">yarn</button>
+          <button class="pm-tab" data-pm="bun">bun</button>
+        </div>
+
+        <div class="guide-steps">
+          <div class="guide-step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h5 data-i18n="playground.quickstart.step1.title">创建并启动项目</h5>
+              <div class="code-block">
+                <code id="cmd-create">npm create dev-to my-app</code>
+                <button class="copy-btn" data-cmd="create" title="复制">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+              </div>
+              <p class="step-hint" data-i18n="playground.quickstart.step1.hint">脚手架会自动安装依赖并启动开发服务器</p>
+            </div>
+          </div>
+
+          <div class="guide-step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h5 data-i18n="playground.quickstart.step2.title">自动连接</h5>
+              <p class="step-desc" data-i18n="playground.quickstart.step2.desc">项目启动后，Playground 会自动检测并连接到 localhost:5173</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-footer">
+          <a href="https://github.com/YangYongAn/dev-to#quick-start" target="_blank" class="guide-link" data-i18n="playground.quickstart.learn_more">
+            了解更多 →
+          </a>
+        </div>
+      </div>
+
       <!-- Component List -->
-      <div class="debug-panel-section" id="component-section" style="display: none;">
-        <h3 data-i18n="playground.components.title">组件列表</h3>
+      <div class="debug-panel-section section-components" id="component-section" style="display: none;">
+        <div class="section-header">
+          <svg class="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <h3 data-i18n="playground.components.title">组件列表</h3>
+        </div>
         <div class="component-list" id="component-list">
           <!-- Dynamically populated -->
         </div>
       </div>
 
       <!-- Props Editor -->
-      <div class="debug-panel-section" id="props-section" style="display: none;">
-        <h3 data-i18n="playground.props.title">Props 编辑器</h3>
+      <div class="debug-panel-section section-props" id="props-section" style="display: none;">
+        <div class="section-header">
+          <svg class="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+          <h3 data-i18n="playground.props.title">Props 编辑器</h3>
+        </div>
         <div class="props-editor">
-          <textarea id="props-json" rows="8" placeholder='{"title": "Hello World"}'>{"title": "Hello World"}</textarea>
+          <textarea id="props-json" rows="6" placeholder='{"title": "Hello World"}'>{"title": "Hello World"}</textarea>
           <div class="props-actions">
             <button id="apply-props" class="btn btn-primary" data-i18n="playground.props.apply">应用</button>
             <button id="reset-props" class="btn btn-secondary" data-i18n="playground.props.reset">重置</button>
@@ -165,23 +200,36 @@
       </div>
 
       <!-- HMR Event Log -->
-      <div class="debug-panel-section" id="hmr-section" style="display: none;">
-        <h3 data-i18n="playground.hmr.title">HMR 事件日志</h3>
+      <div class="debug-panel-section section-hmr" id="hmr-section" style="display: none;">
+        <div class="section-header">
+          <svg class="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+          <h3 data-i18n="playground.hmr.title">HMR 事件</h3>
+        </div>
         <div id="hmr-log" class="hmr-log">
           <div class="log-empty" data-i18n="playground.hmr.empty">暂无事件</div>
         </div>
       </div>
 
       <!-- Performance Monitor -->
-      <div class="debug-panel-section" id="perf-section" style="display: none;">
-        <h3 data-i18n="playground.performance.title">性能监控</h3>
+      <div class="debug-panel-section section-perf" id="perf-section" style="display: none;">
+        <div class="section-header">
+          <svg class="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <h3 data-i18n="playground.performance.title">性能监控</h3>
+        </div>
         <div class="perf-stats">
           <div class="stat-item">
-            <span class="stat-label" data-i18n="playground.performance.last_reload">上次重载:</span>
+            <span class="stat-label" data-i18n="playground.performance.last_reload">上次重载</span>
             <span class="stat-value" id="perf-reload-time">-</span>
           </div>
           <div class="stat-item">
-            <span class="stat-label" data-i18n="playground.performance.hmr_count">HMR 次数:</span>
+            <span class="stat-label" data-i18n="playground.performance.hmr_count">HMR 次数</span>
             <span class="stat-value" id="perf-hmr-count">0</span>
           </div>
         </div>
