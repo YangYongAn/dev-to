@@ -1,5 +1,13 @@
 # @dev-to/react-plugin
 
+## 1.1.7
+
+### Patch Changes
+
+- 11a5514: chore: release all packages
+- Updated dependencies [11a5514]
+  - @dev-to/shared@1.0.5
+
 ## 1.1.6
 
 ### Patch Changes

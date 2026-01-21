@@ -1,5 +1,11 @@
 # @dev-to/shared
 
+## 1.0.5
+
+### Patch Changes
+
+- 11a5514: chore: release all packages
+
 ## 1.0.4
 
 ### Patch Changes
