@@ -6,7 +6,7 @@
 
 /* CSS Variables */
 :root {
-  /* Colors - Clean, minimal palette */
+  /* Dark Theme (Default) */
   --bg-primary: #0d1117;
   --bg-secondary: #161b22;
   --bg-tertiary: #21262d;
@@ -28,7 +28,32 @@
 
   --border-color: rgba(139, 148, 158, 0.15);
   --border-color-hover: rgba(139, 148, 158, 0.3);
+}
 
+/* Light Theme */
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #eaeef2;
+  --bg-card: rgba(246, 248, 250, 0.8);
+  --bg-card-hover: rgba(234, 238, 242, 0.9);
+
+  --text-primary: #1f2328;
+  --text-secondary: #636c76;
+  --text-tertiary: #8c959f;
+
+  --accent: #2da44e;
+  --accent-light: #1f8b3f;
+  --accent-dim: rgba(45, 164, 78, 0.15);
+
+  --accent-2: #d97706;
+  --accent-2-dim: rgba(217, 119, 6, 0.15);
+
+  --border-color: rgba(31, 35, 40, 0.12);
+  --border-color-hover: rgba(31, 35, 40, 0.25);
+}
+
+:root {
   /* Spacing */
   --section-padding: 100px;
   --container-max: 1100px;
@@ -95,9 +120,11 @@ a {
   right: 0;
   z-index: 100;
   padding: 12px 0;
-  background: rgba(13, 17, 23, 0.85);
+  background: var(--bg-primary);
+  opacity: 0.95;
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-color);
+  transition: background var(--transition-normal);
 }
 
 .nav-container {
@@ -1439,6 +1466,47 @@ a {
 }
 
 /* Language Switcher */
+/* Theme Switch */
+.theme-switch {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 6px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+}
+
+.theme-switch:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  transform: scale(1.05);
+}
+
+[data-theme="dark"] .theme-switch .icon-sun {
+  display: block;
+}
+
+[data-theme="dark"] .theme-switch .icon-moon {
+  display: none;
+}
+
+[data-theme="light"] .theme-switch .icon-sun {
+  display: none;
+}
+
+[data-theme="light"] .theme-switch .icon-moon {
+  display: block;
+}
+
+/* Lang Switch */
 .lang-switch {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
