@@ -4,7 +4,8 @@
         "comparison": "Comparison",
         "architecture": "Architecture",
         "scenarios": "Scenarios",
-        "quickstart": "Quick Start"
+        "quickstart": "Quick Start",
+        "playground": "Playground"
     },
     "hero": {
         "badge": "🔧 React/Vue Component Dev Toolchain Cross-Environment",
@@ -212,5 +213,49 @@
         "resources": "Resources",
         "docs": "Docs",
         "community": "Community"
+    },
+    "playground": {
+        "title": "Playground",
+        "subtitle": "Preview and debug dev-to components in real-time",
+        "connection": {
+            "title": "Connection Status",
+            "connected": "Connected",
+            "connecting": "Connecting...",
+            "disconnected": "Disconnected",
+            "waiting": "Waiting for dev server...",
+            "origin": "Server Origin",
+            "framework": "Framework",
+            "version": "Version"
+        },
+        "components": {
+            "title": "Components",
+            "empty": "No components configured"
+        },
+        "hmr": {
+            "title": "HMR Event Log",
+            "empty": "No events yet"
+        },
+        "props": {
+            "title": "Props Editor",
+            "apply": "Apply",
+            "reset": "Reset",
+            "invalid_json": "Invalid JSON format"
+        },
+        "performance": {
+            "title": "Performance",
+            "last_reload": "Last Reload",
+            "hmr_count": "HMR Count",
+            "contract_requests": "Contract Requests"
+        },
+        "toolbar": {
+            "reload": "Reload",
+            "open_debug": "Open Debug Panel"
+        },
+        "errors": {
+            "no_server": "No dev server detected",
+            "no_server_hint": "Make sure Vite dev server is running at localhost:5173",
+            "detection_failed": "Framework detection failed",
+            "detection_failed_hint": "Check @dev-to/react-plugin or @dev-to/vue-plugin configuration"
+        }
     }
 }

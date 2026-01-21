@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 import { defineConfig } from 'vite'
 import { execSync } from 'child_process'
+import { resolve } from 'path'
 import fs from 'fs'
 
 function getGitInfo() {
@@ -63,6 +64,12 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        playground: resolve(__dirname, 'playground.html'),
+      },
+    },
   },
   define: {
     __VERSION_INFO__: JSON.stringify({

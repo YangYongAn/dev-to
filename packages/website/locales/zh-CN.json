@@ -4,7 +4,8 @@
         "comparison": "对比",
         "architecture": "架构",
         "scenarios": "场景",
-        "quickstart": "快速开始"
+        "quickstart": "快速开始",
+        "playground": "Playground"
     },
     "hero": {
         "badge": "🔧 React/Vue 组件跨环境开发工具链",
@@ -212,5 +213,49 @@
         "resources": "资源",
         "docs": "文档",
         "community": "社区"
+    },
+    "playground": {
+        "title": "Playground",
+        "subtitle": "实时预览和调试 dev-to 组件",
+        "connection": {
+            "title": "连接状态",
+            "connected": "已连接",
+            "connecting": "连接中...",
+            "disconnected": "未连接",
+            "waiting": "等待开发服务器...",
+            "origin": "服务器地址",
+            "framework": "框架",
+            "version": "版本"
+        },
+        "components": {
+            "title": "组件列表",
+            "empty": "未发现组件配置"
+        },
+        "hmr": {
+            "title": "HMR 事件日志",
+            "empty": "暂无事件"
+        },
+        "props": {
+            "title": "Props 编辑器",
+            "apply": "应用",
+            "reset": "重置",
+            "invalid_json": "JSON 格式无效"
+        },
+        "performance": {
+            "title": "性能监控",
+            "last_reload": "上次重载",
+            "hmr_count": "HMR 次数",
+            "contract_requests": "合约请求"
+        },
+        "toolbar": {
+            "reload": "重新加载",
+            "open_debug": "打开调试面板"
+        },
+        "errors": {
+            "no_server": "未检测到开发服务器",
+            "no_server_hint": "请确保 Vite 开发服务器正在 localhost:5173 运行",
+            "detection_failed": "框架检测失败",
+            "detection_failed_hint": "请检查 @dev-to/react-plugin 或 @dev-to/vue-plugin 配置"
+        }
     }
 }
