@@ -1,7 +1,11 @@
 name: Website Production
 
 on:
-  workflow_call:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/website/**'
+      - '.github/workflows/website-release-deploy.yml'
   workflow_dispatch:
 
 permissions:
@@ -56,6 +60,11 @@ jobs:
         run: |
           version=$(node -e "console.log(require('./packages/website/package.json').version)")
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git tag -l "website-v$version" | grep -q .; then
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+          fi
 
           # Get changelog since last website tag
           last_tag=$(git tag --list 'website-v*' --sort=-v:refname | head -n 1)
@@ -70,6 +79,7 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
+        if: steps.info.outputs.tag_exists != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: website-v${{ steps.info.outputs.version }}

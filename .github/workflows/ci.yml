@@ -66,8 +66,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should_release: ${{ steps.check.outputs.should_release }}
-      website_should_preview: ${{ steps.check.outputs.website_should_preview }}
-      website_should_release: ${{ steps.check.outputs.website_should_release }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -97,44 +95,6 @@ jobs:
           echo "::group::Changed files"
           echo "$changed_files"
           echo "::endgroup::"
-
-          # Check if website files changed
-          if echo "$changed_files" | grep -q '^packages/website/'; then
-            website_changed="true"
-          else
-            website_changed="false"
-          fi
-
-          # Check if website version changed
-          old_version=$(git show ${{ github.event.before }}:packages/website/package.json 2>/dev/null | grep '"version"' | sed 's/.*"version": "\(.*\)".*/\1/' || echo "")
-          new_version=$(grep '"version"' packages/website/package.json | sed 's/.*"version": "\(.*\)".*/\1/')
-
-          if [ -n "$old_version" ] && [ "$old_version" != "$new_version" ]; then
-            website_version_changed="true"
-          else
-            website_version_changed="false"
-          fi
-
-          echo "::group::Website changes"
-          echo "Files changed: $website_changed"
-          echo "Version changed: $old_version → $new_version"
-          echo "Version bumped: $website_version_changed"
-          echo "::endgroup::"
-
-          # Decision: preview vs production
-          if [ "$website_version_changed" = "true" ]; then
-            echo "website_should_release=true" >> "$GITHUB_OUTPUT"
-            echo "website_should_preview=false" >> "$GITHUB_OUTPUT"
-            echo "✓ Website production deploy: version changed ($old_version → $new_version)"
-          elif [ "$website_changed" = "true" ]; then
-            echo "website_should_release=false" >> "$GITHUB_OUTPUT"
-            echo "website_should_preview=true" >> "$GITHUB_OUTPUT"
-            echo "✓ Website preview deploy: files changed"
-          else
-            echo "website_should_release=false" >> "$GITHUB_OUTPUT"
-            echo "website_should_preview=false" >> "$GITHUB_OUTPUT"
-            echo "✗ No website changes"
-          fi
 
           # Check if we need to release packages
           # Only trigger if:
@@ -179,21 +139,3 @@ jobs:
       contents: write
       pull-requests: write
       packages: write
-
-  website-preview:
-    name: Website Preview
-    needs: dispatch
-    if: needs.dispatch.outputs.website_should_preview == 'true'
-    uses: ./.github/workflows/website-preview-deploy.yml
-    secrets: inherit
-    permissions:
-      contents: write
-
-  website-release:
-    name: Website Production
-    needs: dispatch
-    if: needs.dispatch.outputs.website_should_release == 'true'
-    uses: ./.github/workflows/website-release-deploy.yml
-    secrets: inherit
-    permissions:
-      contents: write

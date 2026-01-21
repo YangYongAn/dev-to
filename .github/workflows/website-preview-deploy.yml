@@ -1,7 +1,11 @@
 name: Website Preview
 
 on:
-  workflow_call:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packages/website/**'
+      - '.github/workflows/website-preview-deploy.yml'
   workflow_dispatch:
 
 permissions:
