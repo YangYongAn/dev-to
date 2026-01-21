@@ -1,10 +1,17 @@
 ---
+"@dev-to/shared": patch
+"@dev-to/react-plugin": patch
+"@dev-to/react-loader": patch
 "@dev-to/vue-plugin": patch
 "@dev-to/vue-loader": patch
-"@dev-to/shared": patch
+"create-dev-to": patch
 ---
 
-feat: initial release of Vue packages
+feat: add Vue 3 support
 
-- @dev-to/vue-plugin: Vite plugin for Vue component providers
-- @dev-to/vue-loader: Host-side loader for mounting remote Vue components
+- @dev-to/shared: renamed from react-shared, add Vue constants
+- @dev-to/react-plugin: update to use @dev-to/shared
+- @dev-to/react-loader: update to use @dev-to/shared
+- @dev-to/vue-plugin: new Vite plugin for Vue components
+- @dev-to/vue-loader: new loader for Vue components
+- create-dev-to: add Vue template support
