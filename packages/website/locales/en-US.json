@@ -7,7 +7,7 @@
         "quickstart": "Quick Start"
     },
     "hero": {
-        "badge": "🔧 React Component Dev Toolchain Cross-Environment",
+        "badge": "🔧 React/Vue Component Dev Toolchain Cross-Environment",
         "subtitle": "Enjoy <strong>Local-Level</strong> Development Experience in Agent Containers",
         "copy": "Copy",
         "copied": "Copied",
@@ -114,7 +114,7 @@
             "yes": "Yes",
             "core": "Core Feature",
             "plugin": "Plugin Required",
-            "react_only": "React now (extensible later)"
+            "react_only": "React + Vue"
         },
         "dx": "Developer Experience",
         "dx.setup": "Initial Setup",
@@ -208,7 +208,7 @@
         "cta": "View Full Docs"
     },
     "footer": {
-        "desc": "React Component Dev Toolchain for AI Agent Platforms",
+        "desc": "React/Vue Component Dev Toolchain for AI Agent Platforms",
         "resources": "Resources",
         "docs": "Docs",
         "community": "Community"

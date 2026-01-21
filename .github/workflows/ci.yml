@@ -105,7 +105,7 @@ jobs:
 
           # Check if any publishable package files changed
           publishable_changed="false"
-          if echo "$changed_files" | grep -qE '^packages/(react-shared|react-plugin|react-loader|create-dev-to)/'; then
+          if echo "$changed_files" | grep -qE '^packages/(shared|react-plugin|react-loader|vue-plugin|vue-loader|create-dev-to)/'; then
             publishable_changed="true"
           fi
 

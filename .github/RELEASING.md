@@ -37,9 +37,11 @@
 
 ### 可发布的包
 
-- `@dev-to/react-shared`
+- `@dev-to/shared`
 - `@dev-to/react-plugin`
 - `@dev-to/react-loader`
+- `@dev-to/vue-plugin`
+- `@dev-to/vue-loader`
 - `create-dev-to`
 
 ---

@@ -6,7 +6,7 @@
 
 ## 📦 项目概述
 
-**dev-to** 是一个面向 **AI Agent 平台**和**智能体容器**的 React 组件开发工具链，支持跨环境热加载（HMR）和生产级调试。
+**dev-to** 是一个面向 **AI Agent 平台**和**智能体容器**的 React/Vue 组件开发工具链，支持跨环境热加载（HMR）和生产级调试。
 
 ### 技术栈
 
@@ -26,28 +26,38 @@
 | 包名 | 版本 | 用途 | 技术栈 | 依赖关系 |
 |------|------|------|--------|---------|
 | **@dev-to/shared** | 0.1.0 | 桥接协议和常量定义 | TypeScript | 无依赖（基础层） |
-| **@dev-to/react-plugin** | 0.1.1 | Vite 插件（组件提供方） | Rslib, picocolors | 依赖 shared |
-| **@dev-to/react-loader** | 0.1.0 | 宿主侧加载器组件 | Rslib, React 18 | 依赖 shared |
+| **@dev-to/react-plugin** | 0.1.1 | Vite 插件（React 组件提供方） | Rslib, picocolors | 依赖 shared |
+| **@dev-to/react-loader** | 0.1.0 | 宿主侧加载器组件（React） | Rslib, React 18 | 依赖 shared |
+| **@dev-to/vue-plugin** | 0.1.0 | Vite 插件（Vue 组件提供方） | Rslib, Vue 3 | 依赖 shared |
+| **@dev-to/vue-loader** | 0.1.0 | 宿主侧加载器组件（Vue） | Rslib, Vue 3 | 依赖 shared |
 | **create-dev-to** | 0.0.1 | 脚手架工具 | TypeScript, @clack/prompts | 独立（CLI 工具） |
 
 ### 示例包（私有，不发布）
 
 | 包名 | 用途 | 技术栈 |
 |------|------|--------|
-| **@dev-to/react-template** | Vite 组件提供方示例 | Vite, React 18, Less |
-| **@dev-to/react-playground** | Rsbuild 宿主应用示例 | Rsbuild, React 18 |
+| **@dev-to/react-template** | Vite React 组件提供方示例 | Vite, React 18, Less |
+| **@dev-to/react-playground** | Rsbuild React 宿主应用示例 | Rsbuild, React 18 |
+| **@dev-to/vue-template** | Vite Vue 组件提供方示例 | Vite, Vue 3 |
+| **@dev-to/vue-playground** | Vite Vue 宿主应用示例 | Vite, Vue 3 |
 
 ### 依赖关系图
 
 ```
 @dev-to/shared (基础协议层)
-  ├── @dev-to/react-plugin (Vite 侧插件)
+  ├── @dev-to/react-plugin (Vite 侧插件 - React)
   │   └── @dev-to/react-template (示例)
   │
-  └── @dev-to/react-loader (宿主侧加载器)
-      └── @dev-to/react-playground (示例)
+  ├── @dev-to/react-loader (宿主侧加载器 - React)
+  │   └── @dev-to/react-playground (示例)
+  │
+  ├── @dev-to/vue-plugin (Vite 侧插件 - Vue)
+  │   └── @dev-to/vue-template (示例)
+  │
+  └── @dev-to/vue-loader (宿主侧加载器 - Vue)
+      └── @dev-to/vue-playground (示例)
 
-create-dev-to (独立 CLI 工具)
+create-dev-to (独立 CLI 工具 - 支持 React & Vue)
 ```
 
 ---
@@ -67,9 +77,13 @@ pnpm dev
 # 代码检查
 pnpm lint
 
-# 运行示例项目
+# 运行 React 示例项目
 cd packages/react-template && pnpm dev     # Terminal 1 (port 5173)
 cd packages/react-playground && pnpm dev   # Terminal 2 (port 8080)
+
+# 运行 Vue 示例项目
+cd packages/vue-template && pnpm dev       # Terminal 3 (port 5174)
+cd packages/vue-playground && pnpm dev     # Terminal 4 (port 5175)
 ```
 
 ---
@@ -100,11 +114,16 @@ cd packages/react-playground && pnpm dev   # Terminal 2 (port 8080)
 **包相关 scope**（对应 `packages/` 下的目录名）:
 
 - `create-dev-to` - 脚手架工具
-- `react-loader` - 宿主侧加载器
-- `react-playground` - 示例项目（宿主应用）
-- `react-plugin` - Vite 插件
+- `react-loader` - 宿主侧加载器（React）
+- `react-playground` - 示例项目（React 宿主应用）
+- `react-plugin` - Vite 插件（React）
+- `react-template` - 示例项目（React 组件提供方）
 - `shared` - 共享协议
-- `react-template` - 示例项目（组件提供方）
+- `vue-loader` - 宿主侧加载器（Vue）
+- `vue-playground` - 示例项目（Vue 宿主应用）
+- `vue-plugin` - Vite 插件（Vue）
+- `vue-template` - 示例项目（Vue 组件提供方）
+- `website` - 官网
 
 **特殊 scope**（跨包或基础设施）:
 
@@ -250,10 +269,10 @@ pnpm -r --parallel dev
 依赖关系决定了构建顺序，pnpm 会自动处理：
 
 ```
-1. shared (无依赖)
-2. react-plugin, react-loader (依赖 shared)
+1. shared (无依赖 - 基础层)
+2. react-plugin, react-loader, vue-plugin, vue-loader (依赖 shared)
 3. create-dev-to (独立)
-4. react-template, react-playground (依赖 plugin/loader)
+4. react-template, react-playground, vue-template, vue-playground (依赖 plugin/loader)
 ```
 
 ### 4. 发布清单
@@ -335,7 +354,7 @@ A: 所有会影响已发布包的变更（feat, fix, perf, refactor）都需要 
 A: 使用 `npm deprecate` 标记错误版本，然后发布新的 patch 版本修复问题。不建议删除已发布的版本。
 
 **Q: 示例项目需要发布吗？**
-A: 不需要，react-template 和 react-playground 的 `package.json` 中设置了 `"private": true`，不会被发布。
+A: 不需要，所有示例项目（react-template、react-playground、vue-template、vue-playground）都在 `package.json` 中设置了 `"private": true`，不会被发布，也已添加到 `.changeset/config.json` 的 ignore 列表中。
 ---
 
 ## 🚨 常见陷阱与解决方案
