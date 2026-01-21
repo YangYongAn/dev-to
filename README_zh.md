@@ -137,12 +137,11 @@
 | [@dev-to/react-plugin](./packages/react-plugin) | [![npm](https://img.shields.io/npm/v/@dev-to/react-plugin.svg)](https://www.npmjs.com/package/@dev-to/react-plugin) | ⚡ **Vite 侧插件** - 在 Vite Dev Server 上暴露稳定的桥接入口 |
 | [@dev-to/react-loader](./packages/react-loader) | [![npm](https://img.shields.io/npm/v/@dev-to/react-loader.svg)](https://www.npmjs.com/package/@dev-to/react-loader) | 🔌 **宿主侧加载器** - 在任意页面中动态加载远程 React 组件 |
 | [@dev-to/shared](./packages/shared) | [![npm](https://img.shields.io/npm/v/@dev-to/shared.svg)](https://www.npmjs.com/package/@dev-to/shared) | 📡 **共享协议** - Vite 侧与宿主侧的通信协议和类型定义 |
-| [@dev-to/vue-plugin](./packages/vue-plugin) | 0.1.0 | ⚡ **Vite 侧插件** - 在 Vite Dev Server 上暴露 Vue 桥接入口 |
-| [@dev-to/vue-loader](./packages/vue-loader) | 0.1.0 | 🔌 **宿主侧加载器** - 在任意页面中动态加载远程 Vue 组件 |
-| @dev-to/react-template | - | 📋 **示例项目** - 演示 Vite 组件提供方的完整实现 |
-| @dev-to/react-playground | - | 🎮 **示例项目** - 演示宿主应用如何加载远程组件 |
-| @dev-to/vue-template | - | 📋 **示例项目** - 演示 Vite Vue 组件提供方的完整实现 |
-| @dev-to/vue-playground | - | 🎮 **示例项目** - 演示 Vue 宿主如何加载远程组件 |
+| [@dev-to/vue-plugin](./packages/vue-plugin) | [![npm](https://img.shields.io/npm/v/@dev-to/vue-plugin.svg)](https://www.npmjs.com/package/@dev-to/vue-plugin) | ⚡ **Vite 侧插件** - 在 Vite Dev Server 上暴露 Vue 桥接入口 |
+| [@dev-to/vue-loader](./packages/vue-loader) | [![npm](https://img.shields.io/npm/v/@dev-to/vue-loader.svg)](https://www.npmjs.com/package/@dev-to/vue-loader) | 🔌 **宿主侧加载器** - 在任意页面中动态加载远程 Vue 组件 |
+| [website](./packages/website) | - | 🌐 **官方网站** - 内置 Playground 在线调试工具 |
+
+> **注意：** 旧的示例包（`react-template`、`react-playground`、`vue-template`、`vue-playground`）已归档到 `packages/archived/` 目录。
 
 ---
 
@@ -277,13 +276,14 @@ graph TB
 
 ```
 @dev-to/shared (基础协议层)
-  ├── @dev-to/react-plugin (Vite 侧)
-  │   └── @dev-to/react-template (示例)
-  │
-  └── @dev-to/react-loader (宿主侧)
-      └── @dev-to/react-playground (示例)
+  ├── @dev-to/react-plugin (Vite 侧, React)
+  ├── @dev-to/vue-plugin (Vite 侧, Vue)
+  ├── @dev-to/react-loader (宿主侧, React)
+  └── @dev-to/vue-loader (宿主侧, Vue)
 
 create-dev-to (独立脚手架)
+
+website (官方网站 + Playground)
 ```
 
 ---
@@ -574,20 +574,29 @@ pnpm lint
 pnpm test
 ```
 
-### 运行示例项目
+### 运行 Playground
+
+官方网站内置了 Playground，可自动检测本地开发服务器：
 
 ```bash
-# Terminal 1: 启动组件提供方 (react-template)
-cd packages/react-template
-pnpm dev  # http://localhost:5173
+# Terminal 1: 启动官网
+cd packages/website
+pnpm dev
+# 访问 http://localhost:5180/playground.html
 
-# Terminal 2: 启动宿主应用 (react-playground)
-cd packages/react-playground
-pnpm dev  # http://localhost:8080
-
-# 访问 http://localhost:8080 查看效果
-# 修改 packages/react-template/src/RemoteCard/ 中的代码，查看 HMR 效果
+# Terminal 2: 启动你的组件项目
+npm create dev-to my-app
+cd my-app
+pnpm dev
+# Playground 会自动检测 localhost:5173
 ```
+
+**Playground 功能：**
+- 自动检测 localhost:5173 开发服务器
+- 自动识别框架类型（React/Vue）
+- 调试面板：连接状态、组件列表、HMR 日志
+- Props 编辑器：实时修改组件属性
+- 性能监控
 
 ### 发布流程
 
@@ -640,10 +649,11 @@ git push --follow-tags
 # scope 必须是以下之一:
 # - create-dev-to
 # - react-loader
-# - react-playground
 # - react-plugin
+# - vue-loader
+# - vue-plugin
 # - shared
-# - react-template
+# - website
 # - repo
 # - deps
 # - ci

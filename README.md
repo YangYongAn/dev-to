@@ -107,12 +107,11 @@ Need multi-framework support?
 | [@dev-to/react-plugin](./packages/react-plugin) | [![npm](https://img.shields.io/npm/v/@dev-to/react-plugin.svg)](https://www.npmjs.com/package/@dev-to/react-plugin) | Vite-side plugin to expose bridge endpoints. |
 | [@dev-to/react-loader](./packages/react-loader) | [![npm](https://img.shields.io/npm/v/@dev-to/react-loader.svg)](https://www.npmjs.com/package/@dev-to/react-loader) | Host-side loader that mounts remote React components. |
 | [@dev-to/shared](./packages/shared) | [![npm](https://img.shields.io/npm/v/@dev-to/shared.svg)](https://www.npmjs.com/package/@dev-to/shared) | Shared protocol, constants, and types. |
-| [@dev-to/vue-plugin](./packages/vue-plugin) | 0.1.0 | Vite-side plugin to expose bridge endpoints (Vue). |
-| [@dev-to/vue-loader](./packages/vue-loader) | 0.1.0 | Host-side loader that mounts remote Vue components. |
-| @dev-to/react-template | - | Example component provider (private). |
-| @dev-to/react-playground | - | Example host app (private). |
-| @dev-to/vue-template | - | Example component provider (private). |
-| @dev-to/vue-playground | - | Example host app (private). |
+| [@dev-to/vue-plugin](./packages/vue-plugin) | [![npm](https://img.shields.io/npm/v/@dev-to/vue-plugin.svg)](https://www.npmjs.com/package/@dev-to/vue-plugin) | Vite-side plugin to expose bridge endpoints (Vue). |
+| [@dev-to/vue-loader](./packages/vue-loader) | [![npm](https://img.shields.io/npm/v/@dev-to/vue-loader.svg)](https://www.npmjs.com/package/@dev-to/vue-loader) | Host-side loader that mounts remote Vue components. |
+| [website](./packages/website) | - | Official website with built-in Playground. |
+
+> **Note:** Legacy example packages (`react-template`, `react-playground`, `vue-template`, `vue-playground`) have been archived to `packages/archived/`.
 
 ## Architecture
 
@@ -151,12 +150,14 @@ graph TB
 
 ```
 @dev-to/shared (base protocol)
-  +-- @dev-to/react-plugin (Vite side)
-  |   +-- @dev-to/react-template (example)
-  +-- @dev-to/react-loader (host side)
-      +-- @dev-to/react-playground (example)
+  +-- @dev-to/react-plugin (Vite side, React)
+  +-- @dev-to/vue-plugin (Vite side, Vue)
+  +-- @dev-to/react-loader (host side, React)
+  +-- @dev-to/vue-loader (host side, Vue)
 
 create-dev-to (standalone scaffold)
+
+website (official site + playground)
 ```
 
 ### Workflow
@@ -515,17 +516,29 @@ pnpm lint
 pnpm test
 ```
 
-### Run the examples
+### Run the Playground
+
+The website includes a built-in Playground that auto-detects your local dev server:
 
 ```bash
-# Terminal 1
-cd packages/react-template
+# Terminal 1: Start the website
+cd packages/website
 pnpm dev
+# Visit http://localhost:5180/playground.html
 
-# Terminal 2
-cd packages/react-playground
+# Terminal 2: Start your component project
+npm create dev-to my-app
+cd my-app
 pnpm dev
+# The Playground will auto-detect localhost:5173
 ```
+
+The Playground provides:
+- Auto-detection of localhost:5173 dev server
+- Automatic framework detection (React/Vue)
+- Debug panel with connection status, component list, HMR logs
+- Props editor for real-time component testing
+- Performance monitoring
 
 ## Release process
 
