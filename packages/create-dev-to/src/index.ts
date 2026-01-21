@@ -1777,7 +1777,7 @@ async function init() {
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
   pkg.name = toValidPackageName(getProjectName())
   pkg.scripts = pkg.scripts ?? {}
-  if (!pkg.scripts['build:lib'] && selectedFramework.name === 'react') {
+  if (!pkg.scripts['build:lib'] && (selectedFramework.name === 'react' || selectedFramework.name === 'vue')) {
     pkg.scripts['build:lib'] = 'dev-to build'
   }
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
