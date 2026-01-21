@@ -1,5 +1,21 @@
 # @dev-to/react-loader
 
+## 1.0.3
+
+### Patch Changes
+
+- 0331d66: feat: add Vue 3 support
+
+  - @dev-to/shared: renamed from react-shared, add Vue constants
+  - @dev-to/react-plugin: update to use @dev-to/shared
+  - @dev-to/react-loader: update to use @dev-to/shared
+  - @dev-to/vue-plugin: new Vite plugin for Vue components
+  - @dev-to/vue-loader: new loader for Vue components
+  - create-dev-to: add Vue template support
+
+- Updated dependencies [0331d66]
+  - @dev-to/shared@1.0.3
+
 ## 1.0.2
 
 ### Patch Changes
