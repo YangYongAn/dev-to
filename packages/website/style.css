@@ -120,11 +120,14 @@ a {
   right: 0;
   z-index: 100;
   padding: 12px 0;
-  background: var(--bg-primary);
-  opacity: 0.95;
+  background: rgba(13, 17, 23, 0.95);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-color);
-  transition: background var(--transition-normal);
+  transition: all var(--transition-normal);
+}
+
+[data-theme="light"] .nav {
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .nav-container {
