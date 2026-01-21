@@ -83,44 +83,37 @@
             <h4 data-i18n="playground.quickstart.title">快速上手</h4>
             <p class="guide-intro" data-i18n="playground.quickstart.intro">还没有项目？跟着下面的步骤快速开始：</p>
 
+            <!-- Package Manager Tabs -->
+            <div class="pm-tabs">
+              <button class="pm-tab active" data-pm="npm">npm</button>
+              <button class="pm-tab" data-pm="pnpm">pnpm</button>
+              <button class="pm-tab" data-pm="yarn">yarn</button>
+              <button class="pm-tab" data-pm="bun">bun</button>
+            </div>
+
             <div class="guide-steps">
               <div class="guide-step">
                 <div class="step-number">1</div>
                 <div class="step-content">
-                  <h5 data-i18n="playground.quickstart.step1.title">创建项目</h5>
+                  <h5 data-i18n="playground.quickstart.step1.title">创建并启动项目</h5>
                   <div class="code-block">
-                    <code>npm create dev-to@latest my-app</code>
-                    <button class="copy-btn" data-code="npm create dev-to@latest my-app" title="复制">
+                    <code id="cmd-create">npm create dev-to my-app</code>
+                    <button class="copy-btn" data-cmd="create" title="复制">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                       </svg>
                     </button>
                   </div>
+                  <p class="step-hint" data-i18n="playground.quickstart.step1.hint">脚手架会自动安装依赖并启动开发服务器</p>
                 </div>
               </div>
 
               <div class="guide-step">
                 <div class="step-number">2</div>
                 <div class="step-content">
-                  <h5 data-i18n="playground.quickstart.step2.title">安装依赖并启动</h5>
-                  <div class="code-block">
-                    <code>cd my-app && npm install && npm run dev</code>
-                    <button class="copy-btn" data-code="cd my-app && npm install && npm run dev" title="复制">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="guide-step">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                  <h5 data-i18n="playground.quickstart.step3.title">自动连接</h5>
-                  <p class="step-desc" data-i18n="playground.quickstart.step3.desc">项目启动后，Playground 会自动检测并连接到 localhost:5173</p>
+                  <h5 data-i18n="playground.quickstart.step2.title">自动连接</h5>
+                  <p class="step-desc" data-i18n="playground.quickstart.step2.desc">项目启动后，Playground 会自动检测并连接到 localhost:5173</p>
                 </div>
               </div>
             </div>

@@ -66,6 +66,9 @@ function init() {
   // 设置复制按钮
   setupCopyButtons()
 
+  // 设置包管理器选择
+  setupPackageManagerTabs()
+
   // 开始轮询检测开发服务器
   startPolling()
 }
@@ -417,13 +420,84 @@ function showError(message) {
   elements.loadingOverlay.style.display = 'flex'
 }
 
+// 包管理器命令映射
+const PM_COMMANDS = {
+  npm: {
+    create: 'npm create dev-to my-app',
+  },
+  pnpm: {
+    create: 'pnpm create dev-to my-app',
+  },
+  yarn: {
+    create: 'yarn create dev-to my-app',
+  },
+  bun: {
+    create: 'bun create dev-to my-app',
+  },
+}
+
+let currentPM = 'npm'
+
+/**
+ * 设置包管理器选择 tabs
+ */
+function setupPackageManagerTabs() {
+  const tabs = document.querySelectorAll('.pm-tab')
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const pm = tab.getAttribute('data-pm')
+      if (!pm || pm === currentPM) return
+
+      // 更新 tab 状态
+      tabs.forEach(t => t.classList.remove('active'))
+      tab.classList.add('active')
+
+      // 更新当前包管理器
+      currentPM = pm
+
+      // 更新所有命令
+      updateCommands(pm)
+    })
+  })
+}
+
+/**
+ * 更新命令显示
+ */
+function updateCommands(pm) {
+  const commands = PM_COMMANDS[pm]
+  if (!commands) return
+
+  Object.entries(commands).forEach(([key, cmd]) => {
+    const codeEl = document.getElementById(`cmd-${key}`)
+    if (codeEl) {
+      codeEl.textContent = cmd
+    }
+  })
+}
+
+/**
+ * 获取当前命令
+ */
+function getCurrentCommand(cmdType) {
+  return PM_COMMANDS[currentPM]?.[cmdType] || ''
+}
+
 /**
  * 设置复制按钮
  */
 function setupCopyButtons() {
   document.querySelectorAll('.copy-btn').forEach((btn) => {
     btn.addEventListener('click', async () => {
-      const code = btn.getAttribute('data-code')
+      // 支持两种方式：data-code 直接指定，或 data-cmd 动态获取
+      let code = btn.getAttribute('data-code')
+      if (!code) {
+        const cmdType = btn.getAttribute('data-cmd')
+        if (cmdType) {
+          code = getCurrentCommand(cmdType)
+        }
+      }
       if (!code) return
 
       try {

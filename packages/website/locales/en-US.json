@@ -261,12 +261,10 @@
             "title": "Quick Start",
             "intro": "No project yet? Follow these steps to get started:",
             "step1": {
-                "title": "Create Project"
+                "title": "Create & Start Project",
+                "hint": "The CLI will auto-install dependencies and start dev server"
             },
             "step2": {
-                "title": "Install & Start"
-            },
-            "step3": {
                 "title": "Auto Connect",
                 "desc": "Once the project starts, Playground will auto-detect and connect to localhost:5173"
             },
