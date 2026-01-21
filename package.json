@@ -2,7 +2,6 @@
   "name": "dev-to-monorepo",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.28.1",
   "workspaces": [
     "packages/*"
   ],
