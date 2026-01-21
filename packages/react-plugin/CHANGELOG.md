@@ -1,5 +1,12 @@
 # @dev-to/react-plugin
 
+## 1.1.6
+
+### Patch Changes
+
+- Updated dependencies [400d3e2]
+  - @dev-to/shared@1.0.4
+
 ## 1.1.5
 
 ### Patch Changes

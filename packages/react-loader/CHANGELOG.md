@@ -1,5 +1,12 @@
 # @dev-to/react-loader
 
+## 1.0.4
+
+### Patch Changes
+
+- Updated dependencies [400d3e2]
+  - @dev-to/shared@1.0.4
+
 ## 1.0.3
 
 ### Patch Changes
