@@ -1,5 +1,11 @@
 # create-dev-to
 
+## 1.7.2
+
+### Patch Changes
+
+- 11a5514: chore: release all packages
+
 ## 1.7.1
 
 ### Patch Changes

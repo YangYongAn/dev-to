@@ -1,5 +1,13 @@
 # @dev-to/vue-plugin
 
+## 0.2.3
+
+### Patch Changes
+
+- 11a5514: chore: release all packages
+- Updated dependencies [11a5514]
+  - @dev-to/shared@1.0.5
+
 ## 0.2.2
 
 ### Patch Changes
