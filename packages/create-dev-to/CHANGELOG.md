@@ -1,5 +1,14 @@
 # create-dev-to
 
+## 1.7.1
+
+### Patch Changes
+
+- 062dcc1: feat: add Vue template support
+
+  - Add Vue TypeScript and JavaScript variants
+  - Implement Vue-specific template generation
+
 ## 1.7.0
 
 ### Minor Changes

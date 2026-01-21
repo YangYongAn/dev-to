@@ -1,5 +1,16 @@
 # @dev-to/vue-loader
 
+## 0.2.1
+
+### Patch Changes
+
+- 062dcc1: feat: initial release of Vue loader component
+
+  Host-side loader for mounting remote Vue components.
+
+- Updated dependencies [062dcc1]
+  - @dev-to/shared@1.0.3
+
 ## 0.2.0
 
 ### Minor Changes
