@@ -6,24 +6,40 @@
     return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
   }
 
-  function getTheme() {
-    const stored = localStorage.getItem(THEME_KEY)
-    return stored || getSystemTheme()
+  function getStoredTheme() {
+    return localStorage.getItem(THEME_KEY) // 'light' | 'dark' | 'auto' | null
   }
 
   function setTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme)
+    // theme can be 'light', 'dark', or 'auto'
     localStorage.setItem(THEME_KEY, theme)
+
+    const effectiveTheme = theme === 'auto' ? getSystemTheme() : theme
+    document.documentElement.setAttribute('data-theme', effectiveTheme)
+    document.documentElement.setAttribute('data-theme-setting', theme)
   }
 
   function toggleTheme() {
-    const current = getTheme()
-    const next = current === 'dark' ? 'light' : 'dark'
+    const current = getStoredTheme() || 'auto'
+    let next
+
+    // Cycle: dark → light → auto → dark
+    if (current === 'dark') {
+      next = 'light'
+    }
+    else if (current === 'light') {
+      next = 'auto'
+    }
+    else { // 'auto' or null
+      next = 'dark'
+    }
+
     setTheme(next)
   }
 
   // Initialize theme on page load (before DOMContentLoaded to prevent flash)
-  setTheme(getTheme())
+  const initialTheme = getStoredTheme() || 'auto'
+  setTheme(initialTheme)
 
   // Bind theme switch button
   document.addEventListener('DOMContentLoaded', () => {
@@ -33,11 +49,12 @@
     }
   })
 
-  // Listen to system theme changes
+  // Listen to system theme changes (only when theme is set to 'auto')
   window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
-    // Only update if user hasn't set a preference
-    if (!localStorage.getItem(THEME_KEY)) {
-      setTheme(e.matches ? 'light' : 'dark')
+    const stored = getStoredTheme()
+    if (stored === 'auto' || stored === null) {
+      const effectiveTheme = e.matches ? 'light' : 'dark'
+      document.documentElement.setAttribute('data-theme', effectiveTheme)
     }
   })
 })()
