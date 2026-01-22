@@ -1,6 +1,11 @@
 name: Website Preview
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/website/**'
+      - '.github/workflows/website-preview-deploy.yml'
   pull_request:
     branches: [main]
     paths:
@@ -10,9 +15,10 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 concurrency:
-  group: website-preview
+  group: website-preview-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -26,25 +32,58 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if version changed (skip preview on release)
+        id: version_check
+        if: github.event_name == 'push'
+        run: |
+          # Get current and previous version
+          current_version=$(node -e "console.log(require('./packages/website/package.json').version)")
+          previous_version=$(git show HEAD~1:packages/website/package.json 2>/dev/null | node -e "
+            let data = '';
+            process.stdin.on('data', chunk => data += chunk);
+            process.stdin.on('end', () => {
+              try { console.log(JSON.parse(data).version); }
+              catch { console.log(''); }
+            });
+          " 2>/dev/null || echo "")
+
+          echo "current=$current_version" >> "$GITHUB_OUTPUT"
+          echo "previous=$previous_version" >> "$GITHUB_OUTPUT"
+
+          if [ "$current_version" != "$previous_version" ] && [ -n "$previous_version" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Version changed from $previous_version to $current_version - skipping preview (production deploy will handle)"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Version unchanged ($current_version) - deploying preview"
+          fi
 
       - name: Setup pnpm
+        if: steps.version_check.outputs.changed != 'true'
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
       - name: Setup Node
+        if: steps.version_check.outputs.changed != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
 
       - name: Install dependencies
+        if: steps.version_check.outputs.changed != 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Build website
+        if: steps.version_check.outputs.changed != 'true'
         run: pnpm --filter @dev-to/website build
 
       - name: Deploy to Vercel (Preview)
+        if: steps.version_check.outputs.changed != 'true'
         id: deploy
         working-directory: packages/website
         run: |
@@ -52,6 +91,31 @@ jobs:
           echo "$output"
           url=$(echo "$output" | grep -Eo 'https://[^ ]+\.vercel\.app' | head -n 1)
           echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        if: steps.version_check.outputs.changed != 'true'
+        run: |
           echo "### 🔗 Preview Deployed" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**URL:** $url" >> "$GITHUB_STEP_SUMMARY"
+          echo "**URL:** ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && steps.deploy.outputs.url
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### 🔗 Website Preview\n\n**URL:** ${{ steps.deploy.outputs.url }}`
+            })
+
+      - name: Skip notice
+        if: steps.version_check.outputs.changed == 'true'
+        run: |
+          echo "### ⏭️ Preview Skipped" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Version changed from \`${{ steps.version_check.outputs.previous }}\` to \`${{ steps.version_check.outputs.current }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Production deployment will be triggered by **Website Production** workflow." >> "$GITHUB_STEP_SUMMARY"

@@ -4,8 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'packages/website/**'
-      - '.github/workflows/website-release-deploy.yml'
+      - 'packages/website/package.json'
   workflow_dispatch:
 
 permissions:
@@ -16,8 +15,55 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check:
+    name: Check Version Change
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+      version: ${{ steps.check.outputs.version }}
+      previous_version: ${{ steps.check.outputs.previous_version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if version changed
+        id: check
+        run: |
+          current_version=$(node -e "console.log(require('./packages/website/package.json').version)")
+          previous_version=$(git show HEAD~1:packages/website/package.json 2>/dev/null | node -e "
+            let data = '';
+            process.stdin.on('data', chunk => data += chunk);
+            process.stdin.on('end', () => {
+              try { console.log(JSON.parse(data).version); }
+              catch { console.log(''); }
+            });
+          " 2>/dev/null || echo "")
+
+          echo "version=$current_version" >> "$GITHUB_OUTPUT"
+          echo "previous_version=$previous_version" >> "$GITHUB_OUTPUT"
+
+          # For workflow_dispatch, always deploy
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "Manual trigger - deploying version $current_version"
+            exit 0
+          fi
+
+          # For push, only deploy if version changed
+          if [ "$current_version" != "$previous_version" ] && [ -n "$previous_version" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "Version changed: $previous_version -> $current_version"
+          else
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "Version unchanged: $current_version (previous: $previous_version)"
+          fi
+
   release:
     name: Deploy Production
+    needs: check
+    if: needs.check.outputs.should_deploy == 'true'
     runs-on: ubuntu-latest
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -55,44 +101,47 @@ jobs:
           url=$(echo "$output" | grep -Eo 'https://[^ ]+' | tail -n 1)
           echo "url=$url" >> "$GITHUB_OUTPUT"
 
-      - name: Get version and changelog
-        id: info
+      - name: Check if tag exists
+        id: tag_check
         run: |
-          version=$(node -e "console.log(require('./packages/website/package.json').version)")
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+          version="${{ needs.check.outputs.version }}"
           if git tag -l "website-v$version" | grep -q .; then
-            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-          # Get changelog since last website tag
+      - name: Get changelog
+        id: changelog
+        run: |
+          version="${{ needs.check.outputs.version }}"
           last_tag=$(git tag --list 'website-v*' --sort=-v:refname | head -n 1)
+
           if [ -n "$last_tag" ]; then
             changelog=$(git log ${last_tag}..HEAD --pretty=format:"- %s" -- packages/website 2>/dev/null || echo "No changes")
           else
             changelog=$(git log --pretty=format:"- %s" -- packages/website 2>/dev/null | head -20 || echo "Initial release")
           fi
 
-          echo "changelog<<EOF" >> "$GITHUB_OUTPUT"
+          echo "content<<EOF" >> "$GITHUB_OUTPUT"
           echo "$changelog" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
-        if: steps.info.outputs.tag_exists != 'true'
+        if: steps.tag_check.outputs.exists != 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: website-v${{ steps.info.outputs.version }}
-          name: Website v${{ steps.info.outputs.version }}
+          tag_name: website-v${{ needs.check.outputs.version }}
+          name: Website v${{ needs.check.outputs.version }}
           generate_release_notes: false
           body: |
-            ## 🌐 Website v${{ steps.info.outputs.version }}
+            ## 🌐 Website v${{ needs.check.outputs.version }}
 
             **生产环境:** ${{ steps.deploy.outputs.url }}
 
             ### 📝 更新内容
 
-            ${{ steps.info.outputs.changelog }}
+            ${{ steps.changelog.outputs.content }}
 
       - name: Summary
         run: |
@@ -100,6 +149,21 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
           echo "|-------|-------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Version | \`v${{ steps.info.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Version | \`v${{ needs.check.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Previous | \`v${{ needs.check.outputs.previous_version }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| URL | ${{ steps.deploy.outputs.url }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Tag | \`website-v${{ steps.info.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Tag | \`website-v${{ needs.check.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
+
+  skip:
+    name: Skip Notice
+    needs: check
+    if: needs.check.outputs.should_deploy != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summary
+        run: |
+          echo "### ⏭️ Production Deploy Skipped" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Version unchanged: \`${{ needs.check.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "To trigger a production deploy, update the version in \`packages/website/package.json\`" >> "$GITHUB_STEP_SUMMARY"
