@@ -44,9 +44,10 @@ export function toggleLanguage() {
 }
 
 function updateContent() {
-  const elements = document.querySelectorAll('[data-i18n]')
   const t = translations[currentLang]
 
+  // Update text content
+  const elements = document.querySelectorAll('[data-i18n]')
   elements.forEach((el) => {
     const key = el.getAttribute('data-i18n')
     const value = getNestedValue(t, key)
@@ -59,6 +60,17 @@ function updateContent() {
         // Support HTML in translations (e.g. for gradient text or emphasis)
         el.innerHTML = value
       }
+    }
+  })
+
+  // Update title attributes
+  const titleElements = document.querySelectorAll('[data-i18n-title]')
+  titleElements.forEach((el) => {
+    const key = el.getAttribute('data-i18n-title')
+    const value = getNestedValue(t, key)
+    if (value) {
+      el.setAttribute('title', value)
+      el.setAttribute('aria-label', value)
     }
   })
 }

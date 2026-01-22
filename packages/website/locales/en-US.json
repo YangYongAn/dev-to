@@ -214,9 +214,15 @@
         "docs": "Docs",
         "community": "Community"
     },
+    "common": {
+        "switch_theme": "Switch Theme",
+        "copy": "Copy"
+    },
     "playground": {
         "title": "Playground",
         "subtitle": "Preview and debug dev-to components in real-time",
+        "debug_panel": "Debug Panel",
+        "select_component": "Select component...",
         "connection": {
             "title": "Connection Status",
             "connected": "Connected",
@@ -255,7 +261,10 @@
             "no_server": "No dev server detected",
             "no_server_hint": "Make sure Vite dev server is running at localhost:5173",
             "detection_failed": "Framework detection failed",
-            "detection_failed_hint": "Check @dev-to/react-plugin or @dev-to/vue-plugin configuration"
+            "detection_failed_hint": "Check @dev-to/react-plugin or @dev-to/vue-plugin configuration",
+            "load_failed": "Load Failed",
+            "unsupported_framework": "Unsupported framework type",
+            "no_framework_detected": "Cannot detect framework type from discovery endpoint"
         },
         "quickstart": {
             "title": "Quick Start",

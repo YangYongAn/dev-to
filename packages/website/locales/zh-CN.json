@@ -214,9 +214,15 @@
         "docs": "文档",
         "community": "社区"
     },
+    "common": {
+        "switch_theme": "切换主题",
+        "copy": "复制"
+    },
     "playground": {
         "title": "Playground",
         "subtitle": "实时预览和调试 dev-to 组件",
+        "debug_panel": "调试面板",
+        "select_component": "选择组件...",
         "connection": {
             "title": "连接状态",
             "connected": "已连接",
@@ -255,7 +261,10 @@
             "no_server": "未检测到开发服务器",
             "no_server_hint": "请确保 Vite 开发服务器正在 localhost:5173 运行",
             "detection_failed": "框架检测失败",
-            "detection_failed_hint": "请检查 @dev-to/react-plugin 或 @dev-to/vue-plugin 配置"
+            "detection_failed_hint": "请检查 @dev-to/react-plugin 或 @dev-to/vue-plugin 配置",
+            "load_failed": "加载失败",
+            "unsupported_framework": "不支持的框架类型",
+            "no_framework_detected": "无法从 discovery 端点检测框架类型"
         },
         "quickstart": {
             "title": "快速上手",

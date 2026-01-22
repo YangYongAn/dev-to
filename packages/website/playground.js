@@ -1,5 +1,7 @@
 // playground.js - Playground 核心逻辑
 
+import { getTranslation } from './i18n.js'
+
 const DEV_SERVER_CANDIDATES = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
@@ -180,11 +182,11 @@ function detectFramework(discovery) {
   const frameworkVersion = discovery?.framework?.version
 
   if (!frameworkType) {
-    throw new Error('无法从 discovery 端点检测框架类型')
+    throw new Error(getTranslation('playground.errors.no_framework_detected'))
   }
 
   if (frameworkType !== 'react' && frameworkType !== 'vue') {
-    throw new Error(`不支持的框架类型: ${frameworkType}`)
+    throw new Error(`${getTranslation('playground.errors.unsupported_framework')}: ${frameworkType}`)
   }
 
   return {
@@ -200,24 +202,20 @@ function updateConnectionStatus(status) {
   elements.connectionDot.setAttribute('data-status', status)
 
   if (status === 'connected') {
-    elements.connectionText.textContent = '已连接'
-    elements.connectionText.setAttribute('data-i18n', 'playground.connection.connected')
+    elements.connectionText.textContent = getTranslation('playground.connection.connected')
     elements.waitingMessage.style.display = 'none'
     elements.connectionInfo.style.display = 'block'
   }
   else if (status === 'connecting') {
-    elements.connectionText.textContent = '连接中...'
-    elements.connectionText.setAttribute('data-i18n', 'playground.connection.connecting')
+    elements.connectionText.textContent = getTranslation('playground.connection.connecting')
   }
   else if (status === 'disconnected') {
-    elements.connectionText.textContent = '未连接'
-    elements.connectionText.setAttribute('data-i18n', 'playground.connection.disconnected')
+    elements.connectionText.textContent = getTranslation('playground.connection.disconnected')
     elements.waitingMessage.style.display = 'block'
     elements.connectionInfo.style.display = 'none'
   }
   else if (status === 'error') {
-    elements.connectionText.textContent = '检测失败'
-    elements.connectionText.setAttribute('data-i18n', 'playground.errors.detection_failed')
+    elements.connectionText.textContent = getTranslation('playground.errors.detection_failed')
   }
 }
 
@@ -235,7 +233,8 @@ function updateServerInfo(origin, framework) {
  */
 function renderComponentList(components) {
   elements.componentList.innerHTML = ''
-  elements.componentSelect.innerHTML = '<option value="">选择组件...</option>'
+  const selectText = getTranslation('playground.select_component')
+  elements.componentSelect.innerHTML = `<option value="">${selectText}</option>`
 
   if (!components || Object.keys(components).length === 0) {
     elements.componentList.innerHTML = '<p class="component-empty" data-i18n="playground.components.empty">未发现组件配置</p>'
@@ -374,7 +373,7 @@ function applyProps() {
     }
   }
   catch (error) {
-    alert('JSON 格式无效: ' + error.message)
+    alert(getTranslation('playground.props.invalid_json') + ': ' + error.message)
   }
 }
 
@@ -416,11 +415,13 @@ function setupIframeCommunication() {
  * 显示错误
  */
 function showError(message) {
+  const loadFailed = getTranslation('playground.errors.load_failed')
+  const reload = getTranslation('playground.toolbar.reload')
   elements.loadingOverlay.innerHTML = `
     <div class="error-message">
-      <h3>加载失败</h3>
+      <h3>${loadFailed}</h3>
       <p>${message}</p>
-      <button onclick="location.reload()" class="btn btn-primary">重新加载</button>
+      <button onclick="location.reload()" class="btn btn-primary">${reload}</button>
     </div>
   `
   elements.loadingOverlay.style.display = 'flex'
