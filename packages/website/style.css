@@ -120,14 +120,28 @@ a {
   right: 0;
   z-index: 100;
   padding: 12px 0;
-  background: rgba(13, 17, 23, 0.95);
-  backdrop-filter: blur(12px);
+  background: rgba(13, 17, 23, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border-color);
   transition: all var(--transition-normal);
 }
 
 [data-theme="light"] .nav {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.65);
+  border-bottom-color: rgba(31, 35, 40, 0.15);
+}
+
+[data-theme="light"] .theme-switch,
+[data-theme="light"] .lang-switch {
+  background: rgba(246, 248, 250, 0.8);
+  border-color: rgba(31, 35, 40, 0.15);
+}
+
+[data-theme="light"] .theme-switch:hover,
+[data-theme="light"] .lang-switch:hover {
+  background: rgba(234, 238, 242, 0.9);
+  border-color: var(--accent);
 }
 
 .nav-container {
@@ -242,6 +256,17 @@ a {
   animation: fadeInUp 0.5s ease;
 }
 
+[data-theme="light"] .hero-badge {
+  background: #eaeef2;
+  border-color: rgba(31, 35, 40, 0.15);
+}
+
+[data-theme="light"] .hero-grid {
+  background-image:
+    linear-gradient(rgba(31, 35, 40, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 35, 40, 0.06) 1px, transparent 1px);
+}
+
 .hero-title {
   font-size: clamp(3.5rem, 10vw, 6rem);
   font-weight: 800;
@@ -315,6 +340,16 @@ a {
   border-radius: 999px;
 }
 
+[data-theme="light"] .hero-command {
+  background: #f6f8fa;
+  border-color: rgba(31, 35, 40, 0.15);
+}
+
+[data-theme="light"] .hero-command-tabs {
+  background: #eaeef2;
+  border-color: rgba(31, 35, 40, 0.12);
+}
+
 .hero-command-tab {
   padding: 4px 10px;
   font-size: 0.75rem;
@@ -335,6 +370,10 @@ a {
   color: #0d1117;
   background: var(--accent);
   border-color: var(--accent);
+}
+
+[data-theme="light"] .hero-command-tab.is-active {
+  color: #fff;
 }
 
 .hero-command-line {
@@ -373,6 +412,16 @@ a {
   border-color: var(--accent);
 }
 
+[data-theme="light"] .copy-btn {
+  background: #eaeef2;
+  border-color: rgba(31, 35, 40, 0.15);
+}
+
+[data-theme="light"] .copy-btn:hover {
+  background: #d8dee4;
+  border-color: rgba(31, 35, 40, 0.25);
+}
+
 .hero-cta {
   display: flex;
   align-items: center;
@@ -398,6 +447,10 @@ a {
   background: var(--accent);
   color: #0d1117;
   border: none;
+}
+
+[data-theme="light"] .btn-primary {
+  color: #fff;
 }
 
 .btn-primary:hover {
@@ -1217,6 +1270,10 @@ a {
   color: #0d1117;
   background: var(--accent);
   border-radius: 50%;
+}
+
+[data-theme="light"] .step-number {
+  color: #fff;
 }
 
 .step-content {

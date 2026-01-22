@@ -169,12 +169,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Nav background on scroll
   const nav = document.querySelector('.nav')
 
-  window.addEventListener('scroll', () => {
+  const updateNavBackground = () => {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light'
     if (window.scrollY > 100) {
-      nav.style.background = 'rgba(10, 10, 15, 0.95)'
+      nav.style.background = isLight ? 'rgba(255, 255, 255, 0.75)' : 'rgba(10, 10, 15, 0.75)'
     }
     else {
-      nav.style.background = 'rgba(10, 10, 15, 0.8)'
+      nav.style.background = isLight ? 'rgba(255, 255, 255, 0.65)' : 'rgba(10, 10, 15, 0.6)'
     }
-  })
+  }
+
+  window.addEventListener('scroll', updateNavBackground)
+
+  // Update nav when theme changes
+  const themeObserver = new MutationObserver(updateNavBackground)
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
 })
