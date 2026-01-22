@@ -26,7 +26,24 @@ export function getTranslation(key) {
 }
 
 function getNestedValue(obj, path) {
-  return path.split('.').reduce((acc, part) => acc && acc[part], obj)
+  const parts = path.split('.')
+  let current = obj
+
+  // Try progressively longer key combinations
+  for (let i = 0; i < parts.length; i++) {
+    if (!current) return undefined
+
+    // Try remaining parts as a single flat key (e.g., "dx.setup")
+    const remainingKey = parts.slice(i).join('.')
+    if (current[remainingKey] !== undefined) {
+      return current[remainingKey]
+    }
+
+    // Otherwise, navigate one level deeper
+    current = current[parts[i]]
+  }
+
+  return current
 }
 
 export function setLanguage(lang) {
@@ -55,6 +72,10 @@ function updateContent() {
     if (value) {
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
         el.placeholder = value
+      }
+      else if (el.tagName === 'text' || el.namespaceURI === 'http://www.w3.org/2000/svg') {
+        // SVG elements need textContent
+        el.textContent = value
       }
       else {
         // Support HTML in translations (e.g. for gradient text or emphasis)
