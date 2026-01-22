@@ -45,7 +45,8 @@
         "subtitle": "A complete toolchain to solve component development challenges in agent containers",
         "hmr": {
             "title": "Cross-Env HMR",
-            "desc": "Vite dev locally, real-time HMR in container, instant feedback"
+            "desc": "Vite dev locally, real-time HMR in container, instant feedback",
+            "tag": "Core Feature"
         },
         "debug": {
             "title": "Prod-Level Debug",

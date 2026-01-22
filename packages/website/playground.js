@@ -237,7 +237,8 @@ function renderComponentList(components) {
   elements.componentSelect.innerHTML = `<option value="">${selectText}</option>`
 
   if (!components || Object.keys(components).length === 0) {
-    elements.componentList.innerHTML = '<p class="component-empty" data-i18n="playground.components.empty">未发现组件配置</p>'
+    const emptyText = getTranslation('playground.components.empty')
+    elements.componentList.innerHTML = `<p class="component-empty">${emptyText}</p>`
     return
   }
 
