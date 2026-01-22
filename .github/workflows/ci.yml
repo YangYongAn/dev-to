@@ -101,6 +101,11 @@ jobs:
           echo "$changed_files"
           echo "::endgroup::"
 
+          # Store changed files for summary
+          echo "changed_files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$changed_files" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
           # === Package Release Decision ===
           changeset_count=$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' 2>/dev/null | wc -l | tr -d ' ')
           changeset_changed=$(echo "$changed_files" | grep -c '^\.changeset/.*\.md$' || echo "0")
@@ -109,22 +114,33 @@ jobs:
             publishable_changed="true"
           fi
 
+          echo "changeset_count=$changeset_count" >> "$GITHUB_OUTPUT"
+          echo "changeset_changed=$changeset_changed" >> "$GITHUB_OUTPUT"
+          echo "publishable_changed=$publishable_changed" >> "$GITHUB_OUTPUT"
+
+          package_release_reason=""
           if [ "$changeset_changed" -gt 0 ]; then
             echo "should_release_packages=true" >> "$GITHUB_OUTPUT"
-            echo "✓ Package release: changeset files modified"
+            package_release_reason="changeset files modified"
+            echo "✓ Package release: $package_release_reason"
           elif [ "$changeset_count" -gt 0 ] && [ "$publishable_changed" = "true" ]; then
             echo "should_release_packages=true" >> "$GITHUB_OUTPUT"
-            echo "✓ Package release: pending changesets + publishable changes"
+            package_release_reason="pending changesets ($changeset_count) + publishable packages changed"
+            echo "✓ Package release: $package_release_reason"
           else
             echo "should_release_packages=false" >> "$GITHUB_OUTPUT"
-            echo "✗ No package release"
+            package_release_reason="no changesets or no publishable changes"
+            echo "✗ No package release: $package_release_reason"
           fi
+          echo "package_release_reason=$package_release_reason" >> "$GITHUB_OUTPUT"
 
           # === Website Decision ===
           website_changed="false"
           if echo "$changed_files" | grep -qE '^packages/website/'; then
             website_changed="true"
           fi
+
+          echo "website_changed=$website_changed" >> "$GITHUB_OUTPUT"
 
           # Check website version change
           current_version=$(node -e "console.log(require('./packages/website/package.json').version)")
@@ -138,29 +154,95 @@ jobs:
           " 2>/dev/null || echo "")
 
           echo "website_version=$current_version" >> "$GITHUB_OUTPUT"
+          echo "previous_website_version=$previous_version" >> "$GITHUB_OUTPUT"
 
           version_changed="false"
           if [ "$current_version" != "$previous_version" ] && [ -n "$previous_version" ]; then
             version_changed="true"
           fi
+          echo "version_changed=$version_changed" >> "$GITHUB_OUTPUT"
 
           # Website Preview: only if website changed but version not changed
+          preview_reason=""
           if [ "$website_changed" = "true" ] && [ "$version_changed" = "false" ]; then
             echo "should_preview_website=true" >> "$GITHUB_OUTPUT"
-            echo "✓ Website preview deploy"
+            preview_reason="website files changed, version unchanged (v$current_version)"
+            echo "✓ Website preview deploy: $preview_reason"
           else
             echo "should_preview_website=false" >> "$GITHUB_OUTPUT"
-            echo "✗ No website preview"
+            if [ "$website_changed" = "false" ]; then
+              preview_reason="no website files changed"
+            elif [ "$version_changed" = "true" ]; then
+              preview_reason="version changed, will trigger production deploy instead"
+            fi
+            echo "✗ No website preview: $preview_reason"
           fi
+          echo "preview_reason=$preview_reason" >> "$GITHUB_OUTPUT"
 
           # Website Production: only if version changed
+          production_reason=""
           if [ "$version_changed" = "true" ]; then
             echo "should_release_website=true" >> "$GITHUB_OUTPUT"
-            echo "✓ Website production deploy: $previous_version -> $current_version"
+            production_reason="version bumped: v$previous_version → v$current_version"
+            echo "✓ Website production deploy: $production_reason"
           else
             echo "should_release_website=false" >> "$GITHUB_OUTPUT"
-            echo "✗ No website production deploy"
+            production_reason="version unchanged (v$current_version)"
+            echo "✗ No website production deploy: $production_reason"
           fi
+          echo "production_reason=$production_reason" >> "$GITHUB_OUTPUT"
+
+      - name: Workflow Decision Summary
+        run: |
+          echo "## 📋 CI Workflow Decision Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Commit:** \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Trigger:** ${{ github.event_name }} to ${{ github.ref }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # Changed files section
+          echo "### 📁 Changed Files" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.check.outputs.changed_files }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # Decisions table
+          echo "### 🎯 Workflow Decisions" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Workflow | Status | Reason |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|----------|--------|--------|" >> "$GITHUB_STEP_SUMMARY"
+
+          # Package Release
+          if [ "${{ steps.check.outputs.should_release_packages }}" = "true" ]; then
+            echo "| 📦 Package Release | ✅ **Triggered** | ${{ steps.check.outputs.package_release_reason }} |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| 📦 Package Release | ⏭️ Skipped | ${{ steps.check.outputs.package_release_reason }} |" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          # Website Preview
+          if [ "${{ steps.check.outputs.should_preview_website }}" = "true" ]; then
+            echo "| 🔗 Website Preview | ✅ **Triggered** | ${{ steps.check.outputs.preview_reason }} |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| 🔗 Website Preview | ⏭️ Skipped | ${{ steps.check.outputs.preview_reason }} |" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          # Website Production
+          if [ "${{ steps.check.outputs.should_release_website }}" = "true" ]; then
+            echo "| 🚀 Website Production | ✅ **Triggered** | ${{ steps.check.outputs.production_reason }} |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| 🚀 Website Production | ⏭️ Skipped | ${{ steps.check.outputs.production_reason }} |" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # Additional details
+          echo "### 📊 Details" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Changesets**: ${{ steps.check.outputs.changeset_count }} pending, ${{ steps.check.outputs.changeset_changed }} modified in this push" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Publishable packages changed**: ${{ steps.check.outputs.publishable_changed }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Website files changed**: ${{ steps.check.outputs.website_changed }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Website version**: ${{ steps.check.outputs.previous_website_version }} → ${{ steps.check.outputs.website_version }}" >> "$GITHUB_STEP_SUMMARY"
 
   # Trigger package release workflow
   release-packages:
