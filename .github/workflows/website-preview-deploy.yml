@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -45,6 +47,134 @@ jobs:
           echo "$output"
           url=$(echo "$output" | grep -Eo 'https://[^ ]+\.vercel\.app' | head -n 1)
           echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Get version info
+        id: version
+        run: |
+          current=$(node -e "console.log(require('./packages/website/package.json').version)")
+          IFS='.' read -r major minor patch <<< "$current"
+          next="${major}.${minor}.$((patch + 1))"
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+
+      - name: Get changelog
+        id: changelog
+        run: |
+          last_tag=$(git tag --list 'website-v*' --sort=-v:refname | head -n 1)
+          if [ -n "$last_tag" ]; then
+            changelog=$(git log ${last_tag}..HEAD --pretty=format:"- %s" -- packages/website 2>/dev/null || echo "No changes")
+          else
+            changelog=$(git log --pretty=format:"- %s" -- packages/website 2>/dev/null | head -20 || echo "Initial release")
+          fi
+          echo "content<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$changelog" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update release PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH_NAME="release/website"
+          NEXT_VERSION="${{ steps.version.outputs.next }}"
+          PR_TITLE="chore(website): release v${NEXT_VERSION}"
+          PREVIEW_URL="${{ steps.deploy.outputs.url }}"
+
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if PR already exists
+          existing_pr=$(gh pr list --head "$BRANCH_NAME" --json number --jq '.[0].number' 2>/dev/null || echo "")
+
+          if [ -n "$existing_pr" ]; then
+            echo "Updating existing PR #$existing_pr"
+
+            # Fetch and checkout the branch
+            git fetch origin "$BRANCH_NAME" || true
+            git checkout -B "$BRANCH_NAME" "origin/$BRANCH_NAME" 2>/dev/null || git checkout -B "$BRANCH_NAME"
+
+            # Rebase onto main
+            git rebase origin/main || {
+              echo "Rebase failed, creating fresh branch"
+              git rebase --abort
+              git checkout main
+              git branch -D "$BRANCH_NAME"
+              git checkout -B "$BRANCH_NAME"
+            }
+
+            # Update version
+            node -e "
+              const fs = require('fs');
+              const pkg = JSON.parse(fs.readFileSync('packages/website/package.json', 'utf8'));
+              pkg.version = '$NEXT_VERSION';
+              fs.writeFileSync('packages/website/package.json', JSON.stringify(pkg, null, 2) + '\n');
+            "
+
+            # Commit and push
+            git add packages/website/package.json
+            if git diff --staged --quiet; then
+              echo "No changes to commit"
+            else
+              git commit -m "chore(website): bump version to v${NEXT_VERSION}"
+            fi
+            git push origin "$BRANCH_NAME" --force
+
+            # Update PR description
+            gh pr edit "$existing_pr" --title "$PR_TITLE" --body "$(cat <<EOF
+          ## 🌐 Website v${NEXT_VERSION}
+
+          **Preview:** ${PREVIEW_URL}
+
+          ### 📝 更新内容
+
+          ${{ steps.changelog.outputs.content }}
+
+          ---
+          _合并此 PR 将自动部署到生产环境_
+          EOF
+          )"
+
+            echo "Updated PR #$existing_pr"
+          else
+            echo "Creating new release PR"
+
+            # Create new branch
+            git checkout -B "$BRANCH_NAME"
+
+            # Update version
+            node -e "
+              const fs = require('fs');
+              const pkg = JSON.parse(fs.readFileSync('packages/website/package.json', 'utf8'));
+              pkg.version = '$NEXT_VERSION';
+              fs.writeFileSync('packages/website/package.json', JSON.stringify(pkg, null, 2) + '\n');
+            "
+
+            # Commit and push
+            git add packages/website/package.json
+            git commit -m "chore(website): bump version to v${NEXT_VERSION}"
+            git push origin "$BRANCH_NAME" --force
+
+            # Create PR
+            gh pr create \
+              --title "$PR_TITLE" \
+              --body "$(cat <<EOF
+          ## 🌐 Website v${NEXT_VERSION}
+
+          **Preview:** ${PREVIEW_URL}
+
+          ### 📝 更新内容
+
+          ${{ steps.changelog.outputs.content }}
+
+          ---
+          _合并此 PR 将自动部署到生产环境_
+          EOF
+          )" \
+              --head "$BRANCH_NAME" \
+              --base main
+
+            echo "Created new release PR"
+          fi
 
       - name: Summary
         run: |
