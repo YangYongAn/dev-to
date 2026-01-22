@@ -1765,6 +1765,15 @@ a {
   transform: scale(1.05);
 }
 
+/* Default icon visibility (before data-theme is set) */
+.theme-switch .icon-sun {
+  display: block;
+}
+
+.theme-switch .icon-moon {
+  display: none;
+}
+
 [data-theme="dark"] .theme-switch .icon-sun {
   display: block;
 }
