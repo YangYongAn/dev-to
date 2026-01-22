@@ -539,3 +539,32 @@ if (document.readyState === 'loading') {
 else {
   init()
 }
+
+// Mobile menu toggle
+const mobileMenuToggle = document.querySelector('.mobile-menu-toggle')
+const mobileMenu = document.querySelector('.mobile-menu')
+const nav = document.querySelector('.nav')
+
+if (mobileMenuToggle && mobileMenu) {
+  mobileMenuToggle.addEventListener('click', () => {
+    mobileMenuToggle.classList.toggle('active')
+    mobileMenu.classList.toggle('active')
+  })
+
+  // Close mobile menu when clicking a link
+  const mobileMenuLinks = mobileMenu.querySelectorAll('a')
+  mobileMenuLinks.forEach((link) => {
+    link.addEventListener('click', () => {
+      mobileMenuToggle.classList.remove('active')
+      mobileMenu.classList.remove('active')
+    })
+  })
+
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (nav && !nav.contains(e.target) && mobileMenu.classList.contains('active')) {
+      mobileMenuToggle.classList.remove('active')
+      mobileMenu.classList.remove('active')
+    }
+  })
+}

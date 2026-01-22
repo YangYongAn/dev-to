@@ -169,6 +169,12 @@ a {
   color: var(--accent);
 }
 
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
 .nav-links {
   display: flex;
   align-items: center;
@@ -186,12 +192,98 @@ a {
   color: var(--text-primary);
 }
 
+.nav-links a.active {
+  color: var(--accent);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .nav-github {
   display: flex;
   align-items: center;
   padding: 6px;
   border-radius: var(--radius-sm);
   transition: color var(--transition-fast);
+  color: var(--text-secondary);
+}
+
+.nav-github:hover {
+  color: var(--accent);
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  transition: color var(--transition-fast);
+}
+
+.mobile-menu-toggle:hover {
+  color: var(--text-primary);
+}
+
+.mobile-menu-toggle .icon-close {
+  display: none;
+}
+
+.mobile-menu-toggle.active .icon-menu {
+  display: none;
+}
+
+.mobile-menu-toggle.active .icon-close {
+  display: block;
+}
+
+/* Mobile Menu */
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 16px 0;
+  flex-direction: column;
+  gap: 0;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+
+.mobile-menu.active {
+  max-height: 400px;
+  opacity: 1;
+}
+
+.mobile-menu a {
+  padding: 12px 24px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  border-left: 3px solid transparent;
+}
+
+.mobile-menu a:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border-left-color: var(--accent);
+}
+
+.mobile-menu a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
 }
 
 .nav-github:hover {
@@ -1586,8 +1678,31 @@ a {
     --section-padding: 64px;
   }
 
-  .nav-links a:not(.nav-github) {
+  .nav-links {
     display: none;
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-menu {
+    display: flex;
+  }
+
+  .lang-switch span {
+    display: none;
+  }
+
+  .lang-switch {
+    padding: 6px;
+    min-width: auto;
+  }
+
+  .lang-switch svg {
+    margin-right: 0;
   }
 
   .hero-command {
@@ -1638,7 +1753,6 @@ a {
   justify-content: center;
   width: 32px;
   height: 32px;
-  margin-right: 8px;
 }
 
 .theme-switch:hover {
@@ -1687,10 +1801,3 @@ a {
   background: var(--bg-secondary);
 }
 
-@media (max-width: 768px) {
-  .lang-switch {
-    position: absolute;
-    top: 16px;
-    right: 60px;
-  }
-}

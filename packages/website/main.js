@@ -184,4 +184,32 @@ document.addEventListener('DOMContentLoaded', () => {
   // Update nav when theme changes
   const themeObserver = new MutationObserver(updateNavBackground)
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+
+  // Mobile menu toggle
+  const mobileMenuToggle = document.querySelector('.mobile-menu-toggle')
+  const mobileMenu = document.querySelector('.mobile-menu')
+
+  if (mobileMenuToggle && mobileMenu) {
+    mobileMenuToggle.addEventListener('click', () => {
+      mobileMenuToggle.classList.toggle('active')
+      mobileMenu.classList.toggle('active')
+    })
+
+    // Close mobile menu when clicking a link
+    const mobileMenuLinks = mobileMenu.querySelectorAll('a')
+    mobileMenuLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        mobileMenuToggle.classList.remove('active')
+        mobileMenu.classList.remove('active')
+      })
+    })
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!nav.contains(e.target) && mobileMenu.classList.contains('active')) {
+        mobileMenuToggle.classList.remove('active')
+        mobileMenu.classList.remove('active')
+      }
+    })
+  }
 })
