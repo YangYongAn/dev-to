@@ -221,6 +221,8 @@
     },
     "playground": {
         "title": "Playground",
+        "page_title": "Playground | dev-to",
+        "page_description": "dev-to Playground - 实时预览和调试组件",
         "subtitle": "实时预览和调试 dev-to 组件",
         "debug_panel": "调试面板",
         "select_component": "选择组件...",
@@ -244,6 +246,7 @@
         },
         "props": {
             "title": "Props 编辑器",
+            "placeholder": "{\"title\": \"Hello World\"}",
             "apply": "应用",
             "reset": "重置",
             "invalid_json": "JSON 格式无效"

@@ -221,6 +221,8 @@
     },
     "playground": {
         "title": "Playground",
+        "page_title": "Playground | dev-to",
+        "page_description": "dev-to Playground - Preview and debug components in real-time",
         "subtitle": "Preview and debug dev-to components in real-time",
         "debug_panel": "Debug Panel",
         "select_component": "Select component...",
@@ -244,6 +246,7 @@
         },
         "props": {
             "title": "Props Editor",
+            "placeholder": "{\"title\": \"Hello World\"}",
             "apply": "Apply",
             "reset": "Reset",
             "invalid_json": "Invalid JSON format"

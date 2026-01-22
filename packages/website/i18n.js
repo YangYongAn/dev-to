@@ -63,6 +63,25 @@ export function toggleLanguage() {
 function updateContent() {
   const t = translations[currentLang]
 
+  // Update page title if data-i18n-title is set on html element
+  const titleKey = document.documentElement.getAttribute('data-i18n-page-title')
+  if (titleKey) {
+    const pageTitle = getNestedValue(t, titleKey)
+    if (pageTitle) {
+      document.title = pageTitle
+    }
+  }
+
+  // Update meta description if data-i18n-description is set
+  const metaDesc = document.querySelector('meta[name="description"][data-i18n-description]')
+  if (metaDesc) {
+    const descKey = metaDesc.getAttribute('data-i18n-description')
+    const pageDesc = getNestedValue(t, descKey)
+    if (pageDesc) {
+      metaDesc.setAttribute('content', pageDesc)
+    }
+  }
+
   // Update text content
   const elements = document.querySelectorAll('[data-i18n]')
   elements.forEach((el) => {

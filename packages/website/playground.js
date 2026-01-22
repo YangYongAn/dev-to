@@ -1,6 +1,6 @@
 // playground.js - Playground 核心逻辑
 
-import { getTranslation } from './i18n.js'
+import { getTranslation, initI18n } from './i18n.js'
 
 const DEV_SERVER_CANDIDATES = [
   'http://localhost:5173',
@@ -30,12 +30,15 @@ let elements = {}
  * 初始化
  */
 function init() {
+  // 初始化国际化
+  initI18n()
+
   // 获取 DOM 元素引用
   elements = {
     connectionDot: document.getElementById('connection-dot'),
     connectionText: document.getElementById('connection-text'),
     connectionInfo: document.getElementById('connection-info'),
-    waitingMessage: document.getElementById('waiting-message'),
+    quickstartSection: document.getElementById('quickstart-section'),
     serverOrigin: document.getElementById('server-origin'),
     frameworkInfo: document.getElementById('framework-info'),
     frameworkVersion: document.getElementById('framework-version'),
@@ -144,12 +147,6 @@ async function onServerDetected(origin, discovery) {
     renderComponentList(discovery.components)
     setupHMREventListeners(currentFramework.type)
 
-    // 隐藏快速上手 section
-    const quickstartSection = document.getElementById('quickstart-section')
-    if (quickstartSection) {
-      quickstartSection.style.display = 'none'
-    }
-
     // 显示各个 section
     elements.componentSection.style.display = 'block'
     elements.propsSection.style.display = 'block'
@@ -203,7 +200,7 @@ function updateConnectionStatus(status) {
 
   if (status === 'connected') {
     elements.connectionText.textContent = getTranslation('playground.connection.connected')
-    elements.waitingMessage.style.display = 'none'
+    elements.quickstartSection.style.display = 'none'
     elements.connectionInfo.style.display = 'block'
   }
   else if (status === 'connecting') {
@@ -211,7 +208,7 @@ function updateConnectionStatus(status) {
   }
   else if (status === 'disconnected') {
     elements.connectionText.textContent = getTranslation('playground.connection.disconnected')
-    elements.waitingMessage.style.display = 'block'
+    elements.quickstartSection.style.display = 'block'
     elements.connectionInfo.style.display = 'none'
   }
   else if (status === 'error') {
@@ -382,7 +379,7 @@ function applyProps() {
  * 重置 Props
  */
 function resetProps() {
-  elements.propsJson.value = '{"title": "Hello World"}'
+  elements.propsJson.value = getTranslation('playground.props.placeholder') || '{"title": "Hello World"}'
 }
 
 /**
