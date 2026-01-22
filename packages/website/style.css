@@ -133,13 +133,17 @@ a {
 }
 
 [data-theme="light"] .theme-switch,
-[data-theme="light"] .lang-switch {
+[data-theme="light"] .lang-switch,
+[data-theme="light"] .nav-github,
+[data-theme="light"] .mobile-menu-toggle {
   background: rgba(246, 248, 250, 0.8);
   border-color: rgba(31, 35, 40, 0.15);
 }
 
 [data-theme="light"] .theme-switch:hover,
-[data-theme="light"] .lang-switch:hover {
+[data-theme="light"] .lang-switch:hover,
+[data-theme="light"] .nav-github:hover,
+[data-theme="light"] .mobile-menu-toggle:hover {
   background: rgba(234, 238, 242, 0.9);
   border-color: var(--accent);
 }
@@ -205,29 +209,43 @@ a {
 .nav-github {
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   padding: 6px;
   border-radius: var(--radius-sm);
-  transition: color var(--transition-fast);
+  transition: all var(--transition-fast);
   color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
 }
 
 .nav-github:hover {
   color: var(--accent);
+  border-color: var(--accent);
+  background: var(--bg-secondary);
 }
 
 /* Mobile Menu Toggle */
 .mobile-menu-toggle {
   display: none;
-  background: transparent;
-  border: none;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   color: var(--text-secondary);
   cursor: pointer;
   padding: 6px;
-  transition: color var(--transition-fast);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
 }
 
 .mobile-menu-toggle:hover {
   color: var(--text-primary);
+  border-color: var(--accent);
+  background: var(--bg-secondary);
 }
 
 .mobile-menu-toggle .icon-close {
@@ -284,10 +302,6 @@ a {
 .mobile-menu a.active {
   color: var(--accent);
   border-left-color: var(--accent);
-}
-
-.nav-github:hover {
-  color: var(--accent);
 }
 
 /* =====================================================
@@ -1699,6 +1713,8 @@ a {
   .lang-switch {
     padding: 6px;
     min-width: auto;
+    border-radius: 50%;
+    width: 32px;
   }
 
   .lang-switch svg {
