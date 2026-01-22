@@ -7,7 +7,9 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
+  packages: write
 
 jobs:
   lint:
@@ -65,12 +67,15 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
-      should_release: ${{ steps.check.outputs.should_release }}
+      should_release_packages: ${{ steps.check.outputs.should_release_packages }}
+      should_preview_website: ${{ steps.check.outputs.should_preview_website }}
+      should_release_website: ${{ steps.check.outputs.should_release_website }}
+      website_version: ${{ steps.check.outputs.website_version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -86,7 +91,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check changes
+      - name: Check changes and decide workflows
         id: check
         run: |
           # Get changed files in this push
@@ -96,46 +101,87 @@ jobs:
           echo "$changed_files"
           echo "::endgroup::"
 
-          # Check if we need to release packages
-          # Only trigger if:
-          # 1. Changeset files (.md) were added/modified in .changeset/, OR
-          # 2. There are pending changesets AND publishable packages changed
+          # === Package Release Decision ===
           changeset_count=$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' 2>/dev/null | wc -l | tr -d ' ')
           changeset_changed=$(echo "$changed_files" | grep -c '^\.changeset/.*\.md$' || echo "0")
-
-          # Check if any publishable package files changed
           publishable_changed="false"
           if echo "$changed_files" | grep -qE '^packages/(shared|react-plugin|react-loader|vue-plugin|vue-loader|create-dev-to)/'; then
             publishable_changed="true"
           fi
 
-          echo "::group::Package release decision"
-          echo "Pending changesets: $changeset_count"
-          echo "Changeset files modified: $changeset_changed"
-          echo "Publishable packages changed: $publishable_changed"
-          echo "::endgroup::"
-
-          # Trigger release if:
-          # - New changeset files were added/modified, OR
-          # - There are pending changesets AND publishable packages changed
           if [ "$changeset_changed" -gt 0 ]; then
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
-            echo "✓ Package release needed: changeset files modified"
+            echo "should_release_packages=true" >> "$GITHUB_OUTPUT"
+            echo "✓ Package release: changeset files modified"
           elif [ "$changeset_count" -gt 0 ] && [ "$publishable_changed" = "true" ]; then
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
-            echo "✓ Package release needed: pending changesets + publishable changes"
+            echo "should_release_packages=true" >> "$GITHUB_OUTPUT"
+            echo "✓ Package release: pending changesets + publishable changes"
           else
-            echo "should_release=false" >> "$GITHUB_OUTPUT"
-            echo "✗ No package release needed"
+            echo "should_release_packages=false" >> "$GITHUB_OUTPUT"
+            echo "✗ No package release"
           fi
 
+          # === Website Decision ===
+          website_changed="false"
+          if echo "$changed_files" | grep -qE '^packages/website/'; then
+            website_changed="true"
+          fi
+
+          # Check website version change
+          current_version=$(node -e "console.log(require('./packages/website/package.json').version)")
+          previous_version=$(git show HEAD~1:packages/website/package.json 2>/dev/null | node -e "
+            let data = '';
+            process.stdin.on('data', chunk => data += chunk);
+            process.stdin.on('end', () => {
+              try { console.log(JSON.parse(data).version); }
+              catch { console.log(''); }
+            });
+          " 2>/dev/null || echo "")
+
+          echo "website_version=$current_version" >> "$GITHUB_OUTPUT"
+
+          version_changed="false"
+          if [ "$current_version" != "$previous_version" ] && [ -n "$previous_version" ]; then
+            version_changed="true"
+          fi
+
+          # Website Preview: only if website changed but version not changed
+          if [ "$website_changed" = "true" ] && [ "$version_changed" = "false" ]; then
+            echo "should_preview_website=true" >> "$GITHUB_OUTPUT"
+            echo "✓ Website preview deploy"
+          else
+            echo "should_preview_website=false" >> "$GITHUB_OUTPUT"
+            echo "✗ No website preview"
+          fi
+
+          # Website Production: only if version changed
+          if [ "$version_changed" = "true" ]; then
+            echo "should_release_website=true" >> "$GITHUB_OUTPUT"
+            echo "✓ Website production deploy: $previous_version -> $current_version"
+          else
+            echo "should_release_website=false" >> "$GITHUB_OUTPUT"
+            echo "✗ No website production deploy"
+          fi
+
+  # Trigger package release workflow
   release-packages:
     name: Release Packages
     needs: dispatch
-    if: needs.dispatch.outputs.should_release == 'true'
+    if: needs.dispatch.outputs.should_release_packages == 'true'
     uses: ./.github/workflows/release-packages.yml
     secrets: inherit
-    permissions:
-      contents: write
-      pull-requests: write
-      packages: write
+
+  # Trigger website preview workflow
+  preview-website:
+    name: Preview Website
+    needs: dispatch
+    if: needs.dispatch.outputs.should_preview_website == 'true'
+    uses: ./.github/workflows/website-preview-deploy.yml
+    secrets: inherit
+
+  # Trigger website production workflow
+  release-website:
+    name: Release Website
+    needs: dispatch
+    if: needs.dispatch.outputs.should_release_website == 'true'
+    uses: ./.github/workflows/website-release-deploy.yml
+    secrets: inherit
