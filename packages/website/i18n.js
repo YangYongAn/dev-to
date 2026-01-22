@@ -51,7 +51,7 @@ export function setLanguage(lang) {
   currentLang = lang
   localStorage.setItem('lang', lang)
   updateContent()
-  updateActiveButton()
+  updateActiveOption()
   document.documentElement.lang = lang
 }
 
@@ -115,22 +115,54 @@ function updateContent() {
   })
 }
 
-function updateActiveButton() {
-  const switchBtn = document.querySelector('.lang-switch')
-  if (switchBtn) {
-    switchBtn.textContent = currentLang === 'zh-CN' ? 'English' : '中文'
-  }
+function updateActiveOption() {
+  const options = document.querySelectorAll('.lang-option')
+  options.forEach((option) => {
+    if (option.getAttribute('data-lang') === currentLang) {
+      option.classList.add('active')
+    }
+    else {
+      option.classList.remove('active')
+    }
+  })
 }
 
 export function initI18n() {
   // Initial render
   updateContent()
-  updateActiveButton()
+  updateActiveOption()
   document.documentElement.lang = currentLang
 
-  // Bind click event to switcher if exists
-  const switcher = document.querySelector('.lang-switch')
-  if (switcher) {
-    switcher.addEventListener('click', toggleLanguage)
+  // Bind click event to lang switch button to toggle menu
+  const langSwitch = document.querySelector('.lang-switch')
+  const langWrapper = document.querySelector('.lang-switch-wrapper')
+
+  if (langSwitch && langWrapper) {
+    langSwitch.addEventListener('click', (e) => {
+      e.stopPropagation()
+      langWrapper.classList.toggle('active')
+    })
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!langWrapper.contains(e.target)) {
+        langWrapper.classList.remove('active')
+      }
+    })
   }
+
+  // Bind click events to language options
+  const langOptions = document.querySelectorAll('.lang-option')
+  langOptions.forEach((option) => {
+    option.addEventListener('click', () => {
+      const lang = option.getAttribute('data-lang')
+      if (lang && lang !== currentLang) {
+        setLanguage(lang)
+      }
+      // Close menu after selection
+      if (langWrapper) {
+        langWrapper.classList.remove('active')
+      }
+    })
+  })
 }

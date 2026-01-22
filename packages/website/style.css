@@ -1706,20 +1706,6 @@ a {
     display: flex;
   }
 
-  .lang-switch span {
-    display: none;
-  }
-
-  .lang-switch {
-    padding: 6px;
-    min-width: auto;
-    border-radius: 50%;
-    width: 32px;
-  }
-
-  .lang-switch svg {
-    margin-right: 0;
-  }
 
   .hero-command {
     flex-direction: column;
@@ -1795,25 +1781,81 @@ a {
 }
 
 /* Lang Switch */
+.lang-switch-wrapper {
+  position: relative;
+}
+
 .lang-switch {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  padding: 4px 12px;
-  border-radius: 100px;
+  padding: 6px;
+  border-radius: 50%;
   cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 32px;
   height: 32px;
-  font-family: var(--font-family);
 }
 
 .lang-switch:hover {
   border-color: var(--accent);
   color: var(--text-primary);
   background: var(--bg-secondary);
+}
+
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  min-width: 100px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.2s ease;
+  z-index: 1000;
+}
+
+.lang-switch-wrapper.active .lang-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.lang-option {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  font-family: var(--font-family);
+}
+
+.lang-option:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.lang-option.active {
+  color: var(--accent);
+}
+
+[data-theme="light"] .lang-menu {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
