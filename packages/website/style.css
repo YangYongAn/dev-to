@@ -1359,6 +1359,11 @@ a {
   overflow-x: auto;
 }
 
+[data-theme="light"] .code-block {
+  background: #f6f8fa;
+  border-color: rgba(31, 35, 40, 0.15);
+}
+
 .code-block code,
 .code-block pre {
   font-family: var(--font-mono);
@@ -1367,11 +1372,16 @@ a {
   color: var(--text-secondary);
 }
 
+[data-theme="light"] .code-block code,
+[data-theme="light"] .code-block pre {
+  color: #24292f;
+}
+
 .code-block pre {
   margin: 0;
 }
 
-/* Syntax Highlighting */
+/* Syntax Highlighting - Dark Mode */
 .code-keyword {
   color: #ff7b72;
 }
@@ -1399,6 +1409,35 @@ a {
 .code-comment {
   color: var(--text-tertiary);
   font-style: italic;
+}
+
+/* Syntax Highlighting - Light Mode */
+[data-theme="light"] .code-keyword {
+  color: #cf222e;
+}
+
+[data-theme="light"] .code-string {
+  color: #0a3069;
+}
+
+[data-theme="light"] .code-property {
+  color: #116329;
+}
+
+[data-theme="light"] .code-function {
+  color: #8250df;
+}
+
+[data-theme="light"] .code-tag {
+  color: #116329;
+}
+
+[data-theme="light"] .code-attr {
+  color: #0550ae;
+}
+
+[data-theme="light"] .code-comment {
+  color: #6e7781;
 }
 
 .step-tag {
