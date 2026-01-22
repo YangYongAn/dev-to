@@ -108,7 +108,7 @@ jobs:
 
           # === Package Release Decision ===
           changeset_count=$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' 2>/dev/null | wc -l | tr -d ' ')
-          changeset_changed=$(echo "$changed_files" | grep -c '^\.changeset/.*\.md$' || echo "0")
+          changeset_changed=$(echo "$changed_files" | grep -c '^\.changeset/.*\.md$' || true)
           publishable_changed="false"
           if echo "$changed_files" | grep -qE '^packages/(shared|react-plugin|react-loader|vue-plugin|vue-loader|create-dev-to)/'; then
             publishable_changed="true"
