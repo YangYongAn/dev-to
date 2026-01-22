@@ -17,36 +17,63 @@
     const effectiveTheme = theme === 'auto' ? getSystemTheme() : theme
     document.documentElement.setAttribute('data-theme', effectiveTheme)
     document.documentElement.setAttribute('data-theme-setting', theme)
+
+    // Update active state on menu options
+    updateActiveOption(theme)
   }
 
-  function toggleTheme() {
-    const current = getStoredTheme() || 'auto'
-    let next
-
-    // Cycle: dark → light → auto → dark
-    if (current === 'dark') {
-      next = 'light'
-    }
-    else if (current === 'light') {
-      next = 'auto'
-    }
-    else { // 'auto' or null
-      next = 'dark'
-    }
-
-    setTheme(next)
+  function updateActiveOption(theme) {
+    const options = document.querySelectorAll('.theme-option')
+    options.forEach((option) => {
+      if (option.getAttribute('data-theme') === theme) {
+        option.classList.add('active')
+      }
+      else {
+        option.classList.remove('active')
+      }
+    })
   }
 
   // Initialize theme on page load (before DOMContentLoaded to prevent flash)
   const initialTheme = getStoredTheme() || 'auto'
   setTheme(initialTheme)
 
-  // Bind theme switch button
+  // Bind theme menu interactions
   document.addEventListener('DOMContentLoaded', () => {
+    const themeWrapper = document.querySelector('.theme-switch-wrapper')
     const themeSwitchBtn = document.querySelector('.theme-switch')
-    if (themeSwitchBtn) {
-      themeSwitchBtn.addEventListener('click', toggleTheme)
+    const themeOptions = document.querySelectorAll('.theme-option')
+
+    // Toggle menu on button click
+    if (themeSwitchBtn && themeWrapper) {
+      themeSwitchBtn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        themeWrapper.classList.toggle('active')
+      })
+
+      // Close menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!themeWrapper.contains(e.target)) {
+          themeWrapper.classList.remove('active')
+        }
+      })
     }
+
+    // Handle theme option selection
+    themeOptions.forEach((option) => {
+      option.addEventListener('click', () => {
+        const theme = option.getAttribute('data-theme')
+        if (theme) {
+          setTheme(theme)
+        }
+        if (themeWrapper) {
+          themeWrapper.classList.remove('active')
+        }
+      })
+    })
+
+    // Update active option on initial load
+    updateActiveOption(getStoredTheme() || 'auto')
   })
 
   // Listen to system theme changes (only when theme is set to 'auto')

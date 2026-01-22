@@ -219,6 +219,15 @@
         "switch_theme": "Switch Theme",
         "copy": "Copy"
     },
+    "theme": {
+        "light": "Light",
+        "dark": "Dark",
+        "auto": "System"
+    },
+    "links": {
+        "github": "GitHub",
+        "npm": "npm"
+    },
     "playground": {
         "title": "Playground",
         "page_title": "Playground | dev-to",

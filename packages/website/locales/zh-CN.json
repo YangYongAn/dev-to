@@ -219,6 +219,15 @@
         "switch_theme": "切换主题",
         "copy": "复制"
     },
+    "theme": {
+        "light": "浅色",
+        "dark": "深色",
+        "auto": "跟随系统"
+    },
+    "links": {
+        "github": "GitHub",
+        "npm": "npm"
+    },
     "playground": {
         "title": "Playground",
         "page_title": "Playground | dev-to",

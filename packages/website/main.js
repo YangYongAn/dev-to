@@ -212,4 +212,22 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
   }
+
+  // Links menu toggle
+  const linksWrapper = document.querySelector('.links-wrapper')
+  const linksSwitch = document.querySelector('.links-switch')
+
+  if (linksSwitch && linksWrapper) {
+    linksSwitch.addEventListener('click', (e) => {
+      e.stopPropagation()
+      linksWrapper.classList.toggle('active')
+    })
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!linksWrapper.contains(e.target)) {
+        linksWrapper.classList.remove('active')
+      }
+    })
+  }
 })
