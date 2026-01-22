@@ -380,11 +380,12 @@ a {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
 .hero-command code {
   color: var(--accent);
+  min-width: 180px;
+  display: inline-block;
 }
 
 .copy-btn {
