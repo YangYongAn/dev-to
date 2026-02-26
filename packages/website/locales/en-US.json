@@ -296,37 +296,51 @@
     },
     "faq": {
         "title": "Frequently Asked <span class=\"gradient-text\">Questions</span>",
-        "subtitle": "Answers to common questions about CDN deployment, base configuration, and more",
-        "q1": {
-            "question": "How to deploy build artifacts to CDN?",
+        "subtitle": "Answers to common questions about development, deployment, and more",
+        "q_cors": {
+            "question": "Do I need CORS?",
+            "answer": "The host app and Vite Dev Server usually run on different ports, so you must enable server.cors: true in Vite."
+        },
+        "q_production": {
+            "question": "How do I use it in production?",
+            "answer_intro": "Two options:",
+            "option1": "Build UMD bundles with dev-to build (equivalent to vite build --mode lib) and distribute via CDN or static hosting",
+            "option2": "Run Vite Dev Server in production (not recommended, only for internal tools)"
+        },
+        "q_framework": {
+            "question": "Will Vue/Svelte be supported?",
+            "answer": "Vue dev HMR is supported today. The architecture is framework-agnostic, so other frameworks can be added later."
+        },
+        "q_style": {
+            "question": "How do I avoid style conflicts?",
+            "answer": "CSS Modules is recommended. The plugin generates stable scoped class names to reduce collisions."
+        },
+        "q_hmr": {
+            "question": "HMR is not working. What should I check?",
+            "answer_intro": "Checklist:",
+            "step1": "server.cors is enabled in Vite",
+            "step2": "The host app loads the runtime (ReactLoader handles this automatically)",
+            "step3": "Check browser console errors",
+            "step4": "Use the debug panel to inspect status"
+        },
+        "q_cdn": {
+            "question": "How do I deploy build artifacts to CDN?",
             "answer_intro": "If you need to deploy build artifacts to CDN (like OSS, CDN, etc.), here are three recommended approaches:",
             "method1_title": "Approach 1: Using experimental.renderBuiltUrl (Recommended)",
             "method1_desc": "This approach only affects static asset paths in build artifacts, not affecting development environment:",
             "method2_title": "Approach 2: Using build.rollupOptions",
             "method2_desc": "Customize asset paths through Rollup configuration:",
             "method3_title": "Approach 3: Conditional base setting",
-            "method3_desc": "Use conditional logic to set CDN base only during lib build:"
+            "method3_desc": "Use conditional logic to set CDN base only during lib build:",
+            "note": "All /__dev_to__/ bridge paths are NOT affected by base configuration. The plugin handles path normalization internally to ensure consistent behavior in both development and production environments."
         },
-        "q2": {
-            "question": "What if dev server errors after setting base?",
+        "q_base": {
+            "question": "Why is my dev server showing errors after setting base?",
             "answer": "Don't worry! All bridge paths starting with /__dev_to__/ (like /__dev_to__/react/contract.js) are NOT affected by base configuration.",
-            "reason": "The plugin ensures path stability through:",
+            "reason_intro": "The plugin ensures path stability through:",
             "reason1": "Virtual module paths: Normalized through resolveId hook, removing possible base prefix",
             "reason2": "HTTP endpoints: Intercepted directly via middleware, bypassing Vite's base handling",
             "conclusion": "So no matter what base value you set, the development environment will work normally!"
-        },
-        "q3": {
-            "question": "Why is experimental.renderBuiltUrl recommended?",
-            "answer_intro": "Compared to other approaches, experimental.renderBuiltUrl has these advantages:",
-            "advantage1": "✅ Development environment unaffected: base stays as /, all paths work normally",
-            "advantage2": "✅ Precise control: Only modifies static asset paths referenced in JS of build artifacts",
-            "advantage3": "✅ Aligns with Vite philosophy: Uses standard API provided by Vite",
-            "advantage4": "✅ High flexibility: Can customize URLs based on file type, environment, etc."
-        },
-        "q4": {
-            "question": "How to verify CDN paths after build?",
-            "answer_intro": "After build completes, you can check with these commands:",
-            "expected": "You should see complete URLs like https://cdn.example.com/your-app/vite.svg."
         }
     }
 }

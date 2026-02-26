@@ -296,8 +296,34 @@
     },
     "faq": {
         "title": "常见<span class=\"gradient-text\">问题</span>",
-        "subtitle": "关于 CDN 部署、base 配置等常见问题的解答",
-        "q1": {
+        "subtitle": "关于开发、部署和常见问题的解答",
+        "q_cors": {
+            "question": "为什么需要 CORS？",
+            "answer": "宿主应用和 Vite Dev Server 通常运行在不同端口，属于跨域请求。必须在 Vite 配置中启用 server.cors: true。"
+        },
+        "q_production": {
+            "question": "生产环境如何使用？",
+            "answer_intro": "生产环境有两种方式：",
+            "option1": "使用 dev-to build（等价于 vite build --mode lib）产出的 UMD 包，通过 CDN 或静态服务器分发",
+            "option2": "部署 Vite Dev Server 到生产环境（不推荐，仅适合内部工具）"
+        },
+        "q_framework": {
+            "question": "支持 Vue/Svelte 吗？",
+            "answer": "已支持 React 与 Vue（开发态 HMR）。架构设计是框架无关的，其他框架可逐步扩展。"
+        },
+        "q_style": {
+            "question": "如何处理样式冲突？",
+            "answer": "推荐使用 CSS Modules，插件会自动生成稳定的 scoped class name，避免样式冲突。"
+        },
+        "q_hmr": {
+            "question": "HMR 不工作怎么办？",
+            "answer_intro": "检查以下几点：",
+            "step1": "Vite 配置中是否启用了 server.cors",
+            "step2": "宿主应用是否正确导入了 init.js（ReactLoader 会自动处理）",
+            "step3": "浏览器控制台是否有错误信息",
+            "step4": "访问调试面板查看详细状态"
+        },
+        "q_cdn": {
             "question": "如何将构建产物部署到 CDN？",
             "answer_intro": "如果需要将构建产物部署到 CDN（如 OSS、CDN 等），推荐以下三种方案：",
             "method1_title": "方案 1：使用 experimental.renderBuiltUrl（推荐）",
@@ -305,28 +331,16 @@
             "method2_title": "方案 2：使用 build.rollupOptions",
             "method2_desc": "通过 Rollup 配置自定义资源路径：",
             "method3_title": "方案 3：条件设置 base",
-            "method3_desc": "通过条件判断，只在库构建时设置 CDN base："
+            "method3_desc": "通过条件判断，只在库构建时设置 CDN base：",
+            "note": "所有 /__dev_to__/ 桥接路径不受 base 配置影响。插件内部已处理路径规范化，无论设置什么 base 值，桥接路径在开发和生产环境都保持稳定。"
         },
-        "q2": {
+        "q_base": {
             "question": "设置 base 后开发环境报错怎么办？",
-            "answer": "不用担心！/__dev_to__/ 开头的所有桥接路径（如 /__dev_to__/react/contract.js）不受 base 配置影响。",
-            "reason": "插件内部通过以下方式确保路径稳定：",
+            "answer": "不用担心！所有 /__dev_to__/ 开头的桥接路径（如 /__dev_to__/react/contract.js）不受 base 配置影响。",
+            "reason_intro": "插件通过以下方式确保路径稳定：",
             "reason1": "虚拟模块路径：通过 resolveId 钩子规范化，移除可能的 base 前缀",
             "reason2": "HTTP 端点：通过中间件直接拦截原始 URL，不经过 Vite 的 base 处理",
             "conclusion": "所以无论你设置什么 base 值，开发环境都能正常工作！"
-        },
-        "q3": {
-            "question": "为什么推荐使用 experimental.renderBuiltUrl？",
-            "answer_intro": "相比其他方案，experimental.renderBuiltUrl 有以下优势：",
-            "advantage1": "✅ 开发环境不受影响：base 保持为 /，所有路径正常工作",
-            "advantage2": "✅ 精确控制：只修改构建产物中 JS 引用的静态资源路径",
-            "advantage3": "✅ 符合 Vite 理念：利用 Vite 提供的标准 API",
-            "advantage4": "✅ 灵活性高：可以根据文件类型、环境等条件灵活定制 URL"
-        },
-        "q4": {
-            "question": "构建后如何验证 CDN 路径是否正确？",
-            "answer_intro": "构建完成后，可以通过以下命令检查：",
-            "expected": "应该能看到类似 https://cdn.example.com/your-app/vite.svg 的完整 URL。"
         }
     }
 }
