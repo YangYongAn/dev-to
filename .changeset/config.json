@@ -8,10 +8,7 @@
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": [
-    "@dev-to/react-template",
-    "@dev-to/react-playground",
-    "@dev-to/vue-template",
-    "@dev-to/vue-playground",
-    "@dev-to/website"
+    "@dev-to/website",
+    "create-dev-to"
   ]
 }
