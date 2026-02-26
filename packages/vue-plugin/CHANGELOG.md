@@ -1,5 +1,34 @@
 # @dev-to/vue-plugin
 
+## 0.4.1
+
+### Patch Changes
+
+- 0c92c63: feat(react-plugin): ensure /**dev_to**/ paths work with any base config
+
+  - Enhanced resolveId hook to normalize paths and remove potential base prefix
+  - Added path validation for absolute URLs (http/https)
+  - Ensured virtual module paths (contract.js, init.js, runtime.js) are resolved correctly
+  - Added middleware comment explaining direct URL interception
+  - Plugin internal paths now stable regardless of user's base configuration
+
+  This allows users to freely configure base for CDN deployment without
+  affecting the /**dev_to**/ bridge paths. Both development and production
+  environments maintain consistent behavior.
+
+  docs(react-plugin): add CDN deployment configuration guide
+
+  Added comprehensive documentation for deploying build artifacts to CDN:
+
+  - Approach 1: experimental.renderBuiltUrl (Recommended)
+  - Approach 2: build.rollupOptions
+  - Approach 3: Conditional base setting
+
+  All /**dev_to**/ paths are NOT affected by base configuration.
+
+- Updated dependencies [0c92c63]
+  - @dev-to/shared@1.1.1
+
 ## 0.4.0
 
 ### Minor Changes
