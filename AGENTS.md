@@ -169,40 +169,117 @@ Affected packages:
 
 ---
 
-## 🔄 版本管理与发布 (Changesets)
+## 🔄 CI 驱动的发版流程
 
-本项目使用 [Changesets](https://github.com/changesets/changesets) 管理版本和自动生成 CHANGELOG。
+> ⚠️ **重要：本项目所有发版均通过 CI 自动化完成，严禁在本地手动运行 `pnpm changeset version` 或 `changeset publish`。**
 
-### 工作流程
+本项目使用 [Changesets](https://github.com/changesets/changesets) 管理 npm 包版本，使用 GitHub Actions 驱动发版。所有发版都必须经过 **PR 门禁**（bot 自动创建 PR → 人工 review → merge → CI 执行实际发布）。
 
-```bash
-# 1. 开发完成后，创建 changeset（记录变更）
-pnpm changeset
+---
 
-# 交互式选择:
-# - 哪些包受到影响
-# - 版本变更类型 (major/minor/patch)
-# - 变更描述 (会写入 CHANGELOG)
+### 流程一：npm 包发版
 
-# 2. 提交 changeset 文件
-git add .changeset/xxx.md
-git commit -m "chore(repo): add changeset for xxx"
-
-# 3. 发布时，更新版本号和 CHANGELOG
-pnpm changeset version
-
-# 4. 提交版本变更
-git add .
-git commit -m "chore(repo): release packages"
-
-# 5. 发布到 npm
-pnpm changeset publish
-
-# 6. 推送 tags
-git push --follow-tags
+```
+开发者提交代码 + changeset 文件
+    ↓  push to main
+CI 检测到 .changeset/*.md 有变更
+    ↓
+CI 触发 release-packages.yml
+    ↓  (changeset_count > 0)
+changesets/action@v1 自动创建 PR
+  分支: changeset-release/main
+  内容: 版本 bump + CHANGELOG 更新 + changeset 文件删除
+    ↓  人工 review PR，确认版本号和 changelog 正确
+merge PR
+    ↓  CI 检测到 changeset 文件被删除 + changeset_count == 0
+CI 触发 release-packages.yml
+    ↓  (changeset_count == 0)
+pnpm release → 构建 + changeset publish → npm 发布 + git tag
 ```
 
-### Changeset 文件示例
+**开发者操作步骤（仅两步）：**
+
+```bash
+# Step 1: 手动创建 changeset 文件（pnpm changeset 为交互式，无法在 CI 中运行）
+# 文件路径: .changeset/{描述性名称}.md
+cat > .changeset/fix-my-feature.md << 'EOF'
+---
+"@dev-to/react-plugin": patch
+---
+
+fix(react-plugin): describe what was fixed
+EOF
+
+# Step 2: 提交 changeset 文件
+git add .changeset/fix-my-feature.md
+git commit -m "chore(repo): add changeset for fix-my-feature"
+git push
+# ↑ 推送后 CI 自动创建 Release PR，等待 bot PR 出现后 review & merge
+```
+
+**⛔ 禁止操作：**
+- ❌ 本地运行 `pnpm changeset version`（这会跳过 PR 门禁，直接触发 CI 发布）
+- ❌ 本地运行 `changeset publish` 或 `pnpm release`
+- ❌ 手动修改 `packages/*/package.json` 中的版本号（除 website 外）
+- ❌ 将版本 bump commit 直接推送到 main（必须经过 PR）
+
+---
+
+### 流程二：website 发版
+
+```
+开发者提交 website 代码改动（packages/website/ 下的文件）
+    ↓  push to main（版本号不变）
+CI 检测到 packages/website/ 有变更 + 版本未变
+    ↓
+CI 触发 website-preview-deploy.yml
+    ↓
+1. 构建 website
+2. 部署到 Vercel Preview 环境
+3. bot 自动创建 PR:
+   分支: release/website
+   内容: 版本 bump (e.g. 1.5.1 → 1.5.2)
+   PR body: 包含 Preview URL + changelog（自动从 git log 生成）
+    ↓  开发者通过 PR 中的 Preview URL 验证效果
+merge PR（版本号变更合并到 main）
+    ↓  CI 检测到 packages/website/package.json 版本变更
+CI 触发 website-release-deploy.yml
+    ↓
+构建 + 部署到 Vercel Production + 创建 GitHub Release (website-vX.Y.Z)
+```
+
+**开发者操作步骤（仅一步）：**
+
+```bash
+# 直接提交 website 代码改动，版本号不要动
+git add packages/website/
+git commit -m "feat(website): add new FAQ section"
+git push
+# ↑ 推送后 CI 自动 preview 并创建版本 bump PR，通过 Preview URL 验证后 merge
+```
+
+**⛔ 禁止操作：**
+- ❌ 手动修改 `packages/website/package.json` 的版本号并直接推送（这会跳过 preview 验证步骤）
+- ❌ 将 website 版本 bump 和包发版 changeset 合并在同一个 commit 中
+
+---
+
+### CI 触发条件速查表
+
+| 触发条件 | CI 行为 |
+|---------|---------|
+| `.changeset/*.md` 有变更（新增/删除） | 触发 `release-packages.yml` |
+| `changeset_count > 0` + publishable 包有改动 | 触发 `release-packages.yml` |
+| `packages/website/` 有改动 + 版本未变 | 触发 **preview** deploy + 创建 website Release PR |
+| `packages/website/package.json` 版本号变化 | 触发 **production** deploy |
+
+**注意：** `release-packages.yml` 内部根据 `changeset_count` 区分两种行为：
+- `changeset_count > 0` → 创建/更新 Release PR（**不发布**）
+- `changeset_count == 0` → `pnpm release` 直接发布（**实际发布**，只会在 PR merge 后触发）
+
+---
+
+### Changeset 文件格式
 
 ```markdown
 ---
@@ -210,17 +287,18 @@ git push --follow-tags
 "@dev-to/react-loader": patch
 ---
 
-fix: add colored URL output in terminal
+fix(react-plugin): describe what was fixed
 
-- Use picocolors to highlight debug panel URLs
-- Remove dev server spinner to prevent output interference
+- Bullet point detail 1
+- Bullet point detail 2
 ```
 
-### 版本语义（Semantic Versioning）
+版本类型：
+- **`major`**: 破坏性变更（BREAKING CHANGE），慎用
+- **`minor`**: 新增功能（feat）
+- **`patch`**: Bug 修复（fix）、文档、性能优化等
 
-- **major (x.0.0)**: 破坏性变更（BREAKING CHANGE）
-- **minor (0.x.0)**: 新功能（feat）
-- **patch (0.0.x)**: Bug 修复（fix）、文档、chore 等
+**不需要 changeset 的场景：** `@dev-to/website`（在 `.changeset/config.json` ignore 列表中）、`create-dev-to`（同上）、纯文档/CI 改动。
 
 ---
 
@@ -275,59 +353,98 @@ pnpm -r --parallel dev
 4. react-template, react-playground, vue-template, vue-playground (依赖 plugin/loader)
 ```
 
-### 4. 发布清单
+### 4. 发布检查
 
-发布前检查：
+**npm 包发版前检查（开发者侧）：**
+- [ ] 代码改动已提交并推送到 main
+- [ ] 已创建 changeset 文件（`.changeset/*.md`）并提交
+- [ ] 等待 CI bot 创建 `changeset-release/main` PR
+- [ ] 在 PR 中确认版本号和 CHANGELOG 内容正确
+- [ ] merge PR → 等待 CI 完成 npm 发布
 
-- [ ] 所有包都已构建 (`pnpm build`)
-- [ ] 所有测试通过 (`pnpm test`)
-- [ ] 已创建 changeset
-- [ ] 版本号已更新 (`pnpm changeset version`)
-- [ ] CHANGELOG 已生成
-- [ ] 提交信息符合规范
+**website 发版前检查（开发者侧）：**
+- [ ] website 代码改动已提交并推送到 main（不改版本号）
+- [ ] 等待 CI 创建 `release/website` PR
+- [ ] 通过 PR 中的 Preview URL 验证功能正确
+- [ ] merge PR → 等待 CI 完成生产部署
 
 ---
 
 ## 🤖 AI Agent 专用提示
 
+### ⛔ 发版相关的绝对禁止事项
+
+```
+禁止在本地执行：
+  pnpm changeset version    ← 会绕过 PR 门禁，直接触发 CI publish
+  pnpm release              ← 同上
+  changeset publish         ← 同上
+  手动修改 package.json 版本号并 push（website 除外，由 CI bot 负责）
+```
+
 ### 推荐操作流程
 
-1. **修改代码前**: 先阅读相关包的源码和 README
+1. **修改代码前**: 先阅读相关包的源码
 2. **提交代码时**: 严格遵守 Conventional Commits 格式
-3. **创建 changeset**: 对于功能/修复，使用 `pnpm changeset` 创建变更记录
+3. **需要发版时**: 手动创建 changeset 文件（见下方示例），**不要**跑 `pnpm changeset`（交互式，不适合 agent）
 4. **测试构建**: 修改后运行 `pnpm build` 确保构建成功
+5. **push 后等待**: CI 自动创建 Release PR，**不要**自己做版本 bump
 
 ### 常见任务示例
 
-**添加新功能到 react-plugin**:
+**添加新功能到 react-plugin（需要发版）**:
 ```bash
 # 1. 修改代码
 # 2. 构建测试
 pnpm --filter @dev-to/react-plugin build
 
-# 3. 创建 changeset
-pnpm changeset
-# 选择: react-plugin, minor, 描述功能
+# 3. 手动创建 changeset 文件
+cat > .changeset/add-feature-x.md << 'EOF'
+---
+"@dev-to/react-plugin": minor
+---
 
-# 4. 提交
-git add .
+feat(react-plugin): add feature X
+
+- Detail about what was added
+EOF
+
+# 4. 提交（代码 + changeset 分开提交，或合并提交均可）
+git add packages/react-plugin/ .changeset/add-feature-x.md
 git commit -m "feat(react-plugin): add new feature X"
+git push
+# ↑ CI 会自动创建 Release PR，等待 PR 出现后告知用户 review & merge
 ```
 
-**修复 bug**:
+**修复 bug（需要发版）**:
 ```bash
 # 1. 修改代码
-# 2. 创建 changeset
-pnpm changeset
-# 选择: 受影响的包, patch, 描述修复
+# 2. 创建 changeset 文件
+cat > .changeset/fix-issue-y.md << 'EOF'
+---
+"@dev-to/react-loader": patch
+---
+
+fix(react-loader): resolve issue Y
+EOF
 
 # 3. 提交
-git commit -m "fix(react-loader): resolve issue Y"
+git add . && git commit -m "fix(react-loader): resolve issue Y"
+git push
 ```
 
-**更新文档**:
+**更新 website 内容（不涉及包发版）**:
 ```bash
-# 无需 changeset（文档变更通常不触发版本升级）
+# 无需 changeset，直接提交 website 文件
+git add packages/website/
+git commit -m "feat(website): add new docs section"
+git push
+# ↑ CI 自动 preview deploy + 创建 website release PR
+```
+
+**更新文档/CI（不需要发版）**:
+```bash
+# 无需 changeset
 git commit -m "docs(repo): update README"
 ```
 
@@ -348,7 +465,7 @@ git commit -m "docs(repo): update README"
 A: Changesets 通过 commit scope 将变更归属到对应的包，生成 per-package CHANGELOG。错误的 scope 会导致 changelog 混乱。
 
 **Q: 什么时候需要创建 changeset？**
-A: 所有会影响已发布包的变更（feat, fix, perf, refactor）都需要 changeset。文档、CI 等不影响包行为的变更可以不创建。
+A: 所有会影响已发布包的变更（feat, fix, perf, refactor）都需要 changeset。文档、CI、website 等不影响包行为的变更不需要。注意 `@dev-to/website` 和 `create-dev-to` 在 `.changeset/config.json` 的 ignore 列表中，永远不需要 changeset。
 
 **Q: 如何回滚错误的发布？**
 A: 使用 `npm deprecate` 标记错误版本，然后发布新的 patch 版本修复问题。不建议删除已发布的版本。
@@ -466,28 +583,29 @@ git commit -m "..."
 ### 4. Changeset 文件创建
 
 **问题描述**：
-使用 `pnpm changeset add` 命令时报错 "Too many arguments passed to changesets"。
-
-**原因**：
-`pnpm changeset` 是交互式命令，不支持命令行参数。
+`pnpm changeset` 是交互式命令，不能在非 TTY 环境（CI、Agent）中运行。
 
 **正确方案**：
-手动创建 changeset 文件：
+直接手动写文件，文件名用英文短横线描述即可，不需要随机 ID：
+
 ```bash
-# 1. 生成随机 ID
-python3 -c "import random, string; print(''.join(random.choices(string.ascii_lowercase + string.digits, k=6)))"
-
-# 2. 创建文件 .changeset/{ID}-description.md
+# 创建文件 .changeset/{描述性名称}.md
+cat > .changeset/fix-base-path.md << 'EOF'
 ---
-'@dev-to/react-plugin': patch
+"@dev-to/react-plugin": patch
 ---
 
-refactor: improve API signature
+fix(react-plugin): ensure paths work with any base config
+EOF
 
-# 3. 提交
-git add .changeset/{ID}-description.md
-git commit -m "chore(repo): add changeset"
+# 提交
+git add .changeset/fix-base-path.md
+git commit -m "chore(repo): add changeset for fix-base-path"
+git push
+# ↑ 推送后 CI 自动创建 Release PR
 ```
+
+**⚠️ 绝对不要在 changeset 提交后运行 `pnpm changeset version`**：这个命令是给 `changesets/action@v1` 在 CI 环境中用的，本地运行会直接消费 changeset 文件，导致 CI 跳过 PR 门禁直接 publish。
 
 ---
 
