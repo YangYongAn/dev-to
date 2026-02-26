@@ -970,25 +970,6 @@ npm run build:lib</code></pre>
           </div>
         </div>
 
-        <!-- FAQ Item 7: Base Config -->
-        <div class="faq-item">
-          <button class="faq-question" data-i18n="faq.q_base.question">
-            <span>设置 base 后开发环境报错怎么办？</span>
-            <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </button>
-          <div class="faq-answer">
-            <p data-i18n="faq.q_base.answer">不用担心！所有 <code>/__dev_to__/</code> 开头的桥接路径（如 <code>/__dev_to__/react/contract.js</code>）<strong>不受 base 配置影响</strong>。</p>
-            <p data-i18n="faq.q_base.reason_intro">插件通过以下方式确保路径稳定：</p>
-            <ul>
-              <li data-i18n="faq.q_base.reason1"><strong>虚拟模块路径</strong>：通过 resolveId 钩子规范化，移除可能的 base 前缀</li>
-              <li data-i18n="faq.q_base.reason2"><strong>HTTP 端点</strong>：通过中间件直接拦截原始 URL，不经过 Vite 的 base 处理</li>
-            </ul>
-            <p data-i18n="faq.q_base.conclusion">所以无论你设置什么 base 值，开发环境都能正常工作！</p>
-          </div>
-        </div>
-
       </div>
     </div>
   </section>

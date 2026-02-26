@@ -701,16 +701,3 @@ Use conditional logic to set CDN base only during lib build.
 All `/__dev_to__/` bridge paths are NOT affected by base configuration. The plugin handles path normalization internally to ensure consistent behavior in both development and production environments.
 
 </details>
-
-<details>
-<summary><b>Why is my dev server showing errors after setting base?</b></summary>
-
-Don't worry! All bridge paths starting with `/__dev_to__/` (like `/__dev_to__/react/contract.js`) are NOT affected by base configuration.
-
-The plugin ensures path stability through:
-- **Virtual module paths**: Normalized through resolveId hook, removing possible base prefix
-- **HTTP endpoints**: Intercepted directly via middleware, bypassing Vite's base handling
-
-So no matter what base value you set, the development environment will work normally!
-
-</details>

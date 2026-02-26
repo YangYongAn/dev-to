@@ -838,16 +838,3 @@ export default defineConfig(({ command, mode }) => {
 所有 `/__dev_to__/` 桥接路径不受 base 配置影响。插件内部已处理路径规范化，无论设置什么 base 值，桥接路径在开发和生产环境都保持稳定。
 
 </details>
-
-<details>
-<summary><b>Q: 设置 base 后开发环境报错怎么办？</b></summary>
-
-不用担心！所有 `/__dev_to__/` 开头的桥接路径（如 `/__dev_to__/react/contract.js`）不受 base 配置影响。
-
-插件通过以下方式确保路径稳定：
-- **虚拟模块路径**：通过 resolveId 钩子规范化，移除可能的 base 前缀
-- **HTTP 端点**：通过中间件直接拦截原始 URL，不经过 Vite 的 base 处理
-
-所以无论你设置什么 base 值，开发环境都能正常工作！
-
-</details>
