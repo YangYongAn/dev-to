@@ -274,6 +274,19 @@ export function devToReactPlugin(
     name: '@dev-to/react-plugin',
     enforce: 'pre',
 
+    /**
+     * 确保 /__dev_to__/ 路径不受用户 base 配置影响
+     *
+     * 当用户设置了 base (如 /app/ 或 https://cdn.com/)，Vite 会自动为所有路径添加前缀。
+     * 但 /__dev_to__/ 是插件的内部路径，应该保持稳定。
+     *
+     * 实现方式：
+     * 1. resolveId: 规范化路径，移除可能的 base 前缀，确保虚拟模块正确解析
+     * 2. configureServer: 中间件直接拦截原始 URL，不经过 Vite 的 base 处理
+     *
+     * 这样无论用户如何配置 base，/__dev_to__/ 路径在开发和生产环境都保持一致。
+     */
+
     configureServer(server) {
       // dev 模式下，将 contract 中的 @ 转换为 /@fs/... 路径
       contract = createContract(
@@ -501,10 +514,41 @@ export function devToReactPlugin(
     },
 
     resolveId(source) {
-      if (source.includes(STABLE_CONTRACT_PATH)) return `\0virtual:${PLUGIN_NAME}-contract`
-      if (source.includes(STABLE_INIT_PATH)) return `\0virtual:${PLUGIN_NAME}-init`
-      if (source.includes(STABLE_REACT_RUNTIME_PATH))
+      // 规范化路径：移除可能的 base 前缀，确保 /__dev_to__/ 路径始终可用
+      // 这样即使用户设置了 base (如 /app/ 或 https://cdn.com/)，
+      // /__dev_to__/ 路径也能正确解析为虚拟模块
+      let normalizedSource = source
+
+      // 如果是绝对 URL，提取路径部分
+      if (source.startsWith('http://') || source.startsWith('https://')) {
+        try {
+          normalizedSource = new URL(source).pathname
+        }
+        catch {
+          // 解析失败，保持原样
+        }
+      }
+
+      // 移除可能的 base 前缀（支持多层路径）
+      // 例如：/app/__dev_to__/react/contract.js -> /__dev_to__/react/contract.js
+      if (normalizedSource !== STABLE_CONTRACT_PATH && normalizedSource.includes(STABLE_CONTRACT_PATH)) {
+        normalizedSource = STABLE_CONTRACT_PATH
+      }
+      if (normalizedSource !== STABLE_INIT_PATH && normalizedSource.includes(STABLE_INIT_PATH)) {
+        normalizedSource = STABLE_INIT_PATH
+      }
+      if (normalizedSource !== STABLE_REACT_RUNTIME_PATH && normalizedSource.includes(STABLE_REACT_RUNTIME_PATH)) {
+        normalizedSource = STABLE_REACT_RUNTIME_PATH
+      }
+
+      // 检查虚拟模块路径
+      if (normalizedSource === STABLE_CONTRACT_PATH || normalizedSource.endsWith(STABLE_CONTRACT_PATH))
+        return `\0virtual:${PLUGIN_NAME}-contract`
+      if (normalizedSource === STABLE_INIT_PATH || normalizedSource.endsWith(STABLE_INIT_PATH))
+        return `\0virtual:${PLUGIN_NAME}-init`
+      if (normalizedSource === STABLE_REACT_RUNTIME_PATH || normalizedSource.endsWith(STABLE_REACT_RUNTIME_PATH))
         return `\0virtual:${PLUGIN_NAME}-react-runtime`
+
       // 处理 lib 构建的虚拟入口模块
       if (source.includes(`virtual:${PLUGIN_NAME}-lib-entry:`)) {
         const pos = source.indexOf(`virtual:${PLUGIN_NAME}-lib-entry:`)

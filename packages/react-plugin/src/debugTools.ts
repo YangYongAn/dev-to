@@ -221,6 +221,8 @@ export function installDebugTools(server: ViteDevServer, ctx: DebugToolsContext,
   }
 
   // 可视化说明页（给开发者看发生了什么、需要注意什么）
+  // 注意：中间件直接处理原始 URL (req.url)，不受 Vite base 配置影响
+  // 这确保了 /__dev_to__/ 路径的稳定性，无论用户如何配置 base
   server.middlewares.use((req, res, next) => {
     const url = req.url || ''
     const pathname = String(url).split('?')[0]
