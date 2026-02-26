@@ -66,6 +66,101 @@ export default defineConfig({
 
 > 提示：`'*': '/'` 的通配符模式仅适合开发；lib 构建请显式列出组件名。
 
+### CDN 部署配置
+
+如果你需要将构建产物部署到 CDN（如 OSS、CDN 等），可以配置静态资源的 base URL。以下是三种推荐方案：
+
+#### 方案 1：使用 `experimental.renderBuiltUrl`（推荐）
+
+这种方式**只影响构建产物**中的静态资源路径，不影响开发环境：
+
+```ts
+export default defineConfig(({ command, mode }) => {
+  const isLibBuild = command === 'build' && mode === 'lib';
+
+  return {
+    base: '/', // 保持默认，不影响开发环境
+
+    // 只在构建时修改静态资源的 URL
+    experimental: {
+      renderBuiltUrl(filename, { hostType }) {
+        // 只在库构建时，且是 JS 中引用的资源时，添加 CDN 前缀
+        if (isLibBuild && hostType === 'js') {
+          return `https://cdn.example.com/your-app/${filename}`;
+        }
+        return { relative: true };
+      }
+    },
+
+    plugins: [react(), devToReactPlugin('MyComponent')],
+  };
+});
+```
+
+#### 方案 2：使用 `build.rollupOptions`
+
+通过 Rollup 配置自定义资源路径：
+
+```ts
+export default defineConfig(({ command, mode }) => {
+  const cdnBase = 'https://cdn.example.com/your-app/';
+  const isLibBuild = command === 'build' && mode === 'lib';
+
+  return {
+    base: '/',
+    plugins: [
+      react(),
+      devToReactPlugin('MyComponent', {
+        build: {
+          rollupOptions: {
+            output: {
+              assetFileNames: (assetInfo) => {
+                if (isLibBuild && assetInfo?.name) {
+                  const name = assetInfo.name;
+                  if (name.endsWith('.css')) {
+                    return 'MyComponent.css';
+                  }
+                  // 为其他静态资源添加 CDN 前缀
+                  return cdnBase + 'assets/[name]-[hash][extname]';
+                }
+                return 'assets/[name]-[hash][extname]';
+              }
+            }
+          }
+        }
+      })
+    ],
+  };
+});
+```
+
+#### 方案 3：条件设置 `base`
+
+通过条件判断，只在库构建时设置 CDN base：
+
+```ts
+export default defineConfig(({ command, mode }) => {
+  const base = command === 'build' && mode === 'lib'
+    ? 'https://cdn.example.com/your-app/'
+    : '/';
+
+  return {
+    base,
+    plugins: [react(), devToReactPlugin('MyComponent')],
+  };
+});
+```
+
+**优点**：
+- ✅ 配置简单直接
+- ✅ 开发环境 base 为 `/`，不影响访问
+- ✅ 构建时所有资源自动使用 CDN 路径
+
+**说明**：
+- `/__dev_to__/` 开头的所有桥接路径（如 `/__dev_to__/react/contract.js`）**不受 `base` 配置影响**
+- 插件内部已处理路径规范化，无论设置什么 `base` 值，桥接路径在开发和生产环境都保持稳定
+- 这确保了开发体验的一致性
+
 ## 与 @dev-to/react-loader 配套
 
 宿主侧建议使用 `@dev-to/react-loader` 的 `ReactLoader`，它会自动：
