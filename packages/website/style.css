@@ -1760,26 +1760,26 @@ a {
   display: block;
 }
 
-/* When theme setting is 'dark', show sun icon (to switch to light) */
+/* When theme setting is 'dark', show moon icon (currently in dark mode) */
 [data-theme-setting="dark"] .theme-switch .icon-sun {
-  display: block;
+  display: none;
 }
 
 [data-theme-setting="dark"] .theme-switch .icon-moon {
-  display: none;
+  display: block;
 }
 
 [data-theme-setting="dark"] .theme-switch .icon-auto {
   display: none;
 }
 
-/* When theme setting is 'light', show moon icon (to switch to auto) */
+/* When theme setting is 'light', show sun icon (currently in light mode) */
 [data-theme-setting="light"] .theme-switch .icon-sun {
-  display: none;
+  display: block;
 }
 
 [data-theme-setting="light"] .theme-switch .icon-moon {
-  display: block;
+  display: none;
 }
 
 [data-theme-setting="light"] .theme-switch .icon-auto {
