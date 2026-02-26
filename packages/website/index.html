@@ -41,6 +41,7 @@
         <a href="#comparison" data-i18n="nav.comparison">对比</a>
         <a href="#scenarios" data-i18n="nav.scenarios">场景</a>
         <a href="#architecture" data-i18n="nav.architecture">架构</a>
+        <a href="#faq" data-i18n="nav.faq">FAQ</a>
         <a href="/playground.html" data-i18n="nav.playground">Playground</a>
       </div>
       <div class="nav-actions">
@@ -137,6 +138,7 @@
       <a href="#comparison" data-i18n="nav.comparison">对比</a>
       <a href="#scenarios" data-i18n="nav.scenarios">场景</a>
       <a href="#architecture" data-i18n="nav.architecture">架构</a>
+      <a href="#faq" data-i18n="nav.faq">FAQ</a>
       <a href="/playground.html" data-i18n="nav.playground">Playground</a>
     </div>
   </nav>
@@ -818,6 +820,134 @@ npm run build:lib</code></pre>
           </div>
           <p class="package-desc" data-i18n="packages.shared_desc">📡 共享协议 - Vite 侧与宿主侧的通信协议和类型定义</p>
         </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="section faq" id="faq">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="faq.title">常见<span class="gradient-text">问题</span></h2>
+        <p class="section-subtitle" data-i18n="faq.subtitle">关于 CDN 部署、base 配置等常见问题的解答</p>
+      </div>
+      <div class="faq-list">
+        <!-- FAQ Item 1 -->
+        <div class="faq-item">
+          <button class="faq-question" data-i18n="faq.q1.question">
+            <span>如何将构建产物部署到 CDN？</span>
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="faq-answer">
+            <p data-i18n="faq.q1.answer_intro">如果需要将构建产物部署到 CDN（如 OSS、CDN 等），推荐以下三种方案：</p>
+
+            <div class="faq-method">
+              <h4 data-i18n="faq.q1.method1_title">方案 1：使用 experimental.renderBuiltUrl（推荐）</h4>
+              <p data-i18n="faq.q1.method1_desc">这种方式只影响构建产物中的静态资源路径，不影响开发环境：</p>
+              <pre><code class="language-typescript">export default defineConfig(({ command, mode }) => {
+  const isLibBuild = command === 'build' && mode === 'lib';
+  return {
+    base: '/', // 保持默认
+    experimental: {
+      renderBuiltUrl(filename, { hostType }) {
+        if (isLibBuild && hostType === 'js') {
+          return `https://cdn.example.com/your-app/${filename}`;
+        }
+        return { relative: true };
+      }
+    },
+    plugins: [react(), devToReactPlugin('MyComponent')],
+  };
+});</code></pre>
+            </div>
+
+            <div class="faq-method">
+              <h4 data-i18n="faq.q1.method2_title">方案 2：使用 build.rollupOptions</h4>
+              <p data-i18n="faq.q1.method2_desc">通过 Rollup 配置自定义资源路径：</p>
+              <pre><code class="language-typescript">devToReactPlugin('MyComponent', {
+  build: {
+    rollupOptions: {
+      output: {
+        assetFileNames: (assetInfo) => {
+          if (isLibBuild && assetInfo?.name?.endsWith('.css')) {
+            return 'MyComponent.css';
+          }
+          return cdnBase + 'assets/[name]-[hash][extname]';
+        }
+      }
+    }
+  }
+})</code></pre>
+            </div>
+
+            <div class="faq-method">
+              <h4 data-i18n="faq.q1.method3_title">方案 3：条件设置 base</h4>
+              <p data-i18n="faq.q1.method3_desc">简单但会影响开发环境：</p>
+              <pre><code class="language-typescript">const base = command === 'build' && mode === 'lib'
+  ? 'https://cdn.example.com/your-app/'
+  : '/';</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ Item 2 -->
+        <div class="faq-item">
+          <button class="faq-question" data-i18n="faq.q2.question">
+            <span>设置 base 后开发环境报错怎么办？</span>
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="faq-answer">
+            <p data-i18n="faq.q2.answer">不用担心！<code>/__dev_to__/</code> 开头的所有桥接路径（如 <code>/__dev_to__/react/contract.js</code>）<strong>不受 base 配置影响</strong>。</p>
+            <p data-i18n="faq.q2.reason">插件内部通过以下方式确保路径稳定：</p>
+            <ul>
+              <li data-i18n="faq.q2.reason1"><strong>虚拟模块路径</strong>：通过 resolveId 钩子规范化，移除可能的 base 前缀</li>
+              <li data-i18n="faq.q2.reason2"><strong>HTTP 端点</strong>：通过中间件直接拦截原始 URL，不经过 Vite 的 base 处理</li>
+            </ul>
+            <p data-i18n="faq.q2.conclusion">所以无论你设置什么 base 值，开发环境都能正常工作！</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 3 -->
+        <div class="faq-item">
+          <button class="faq-question" data-i18n="faq.q3.question">
+            <span>为什么推荐使用 experimental.renderBuiltUrl？</span>
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="faq-answer">
+            <p data-i18n="faq.q3.answer_intro">相比其他方案，<code>experimental.renderBuiltUrl</code> 有以下优势：</p>
+            <ul>
+              <li data-i18n="faq.q3.advantage1">✅ <strong>开发环境不受影响</strong>：base 保持为 <code>/</code>，所有路径正常工作</li>
+              <li data-i18n="faq.q3.advantage2">✅ <strong>精确控制</strong>：只修改构建产物中 JS 引用的静态资源路径</li>
+              <li data-i18n="faq.q3.advantage3">✅ <strong>符合 Vite 理念</strong>：利用 Vite 提供的标准 API</li>
+              <li data-i18n="faq.q3.advantage4">✅ <strong>灵活性高</strong>：可以根据文件类型、环境等条件灵活定制 URL</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- FAQ Item 4 -->
+        <div class="faq-item">
+          <button class="faq-question" data-i18n="faq.q4.question">
+            <span>构建后如何验证 CDN 路径是否正确？</span>
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="faq-answer">
+            <p data-i18n="faq.q4.answer_intro">构建完成后，可以通过以下命令检查：</p>
+            <pre><code class="language-bash"># 检查 JS 文件中的资源路径
+cat dist/YourComponent/YourComponent.js | grep -E "\.svg|\.png|\.jpg"
+
+# 或者使用更精确的方式提取 CDN URL
+cat dist/YourComponent/YourComponent.js | grep -o 'https://[^"]*'</code></pre>
+            <p data-i18n="faq.q4.expected">应该能看到类似 <code>https://cdn.example.com/your-app/vite.svg</code> 的完整 URL。</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>

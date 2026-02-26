@@ -5,6 +5,7 @@
         "architecture": "架构",
         "scenarios": "场景",
         "quickstart": "快速开始",
+        "faq": "FAQ",
         "playground": "Playground"
     },
     "hero": {
@@ -291,6 +292,41 @@
                 "desc": "项目启动后，Playground 会自动检测并连接到 localhost:5173"
             },
             "learn_more": "了解更多 →"
+        }
+    },
+    "faq": {
+        "title": "常见<span class=\"gradient-text\">问题</span>",
+        "subtitle": "关于 CDN 部署、base 配置等常见问题的解答",
+        "q1": {
+            "question": "如何将构建产物部署到 CDN？",
+            "answer_intro": "如果需要将构建产物部署到 CDN（如 OSS、CDN 等），推荐以下三种方案：",
+            "method1_title": "方案 1：使用 experimental.renderBuiltUrl（推荐）",
+            "method1_desc": "这种方式只影响构建产物中的静态资源路径，不影响开发环境：",
+            "method2_title": "方案 2：使用 build.rollupOptions",
+            "method2_desc": "通过 Rollup 配置自定义资源路径：",
+            "method3_title": "方案 3：条件设置 base",
+            "method3_desc": "通过条件判断，只在库构建时设置 CDN base："
+        },
+        "q2": {
+            "question": "设置 base 后开发环境报错怎么办？",
+            "answer": "不用担心！/__dev_to__/ 开头的所有桥接路径（如 /__dev_to__/react/contract.js）不受 base 配置影响。",
+            "reason": "插件内部通过以下方式确保路径稳定：",
+            "reason1": "虚拟模块路径：通过 resolveId 钩子规范化，移除可能的 base 前缀",
+            "reason2": "HTTP 端点：通过中间件直接拦截原始 URL，不经过 Vite 的 base 处理",
+            "conclusion": "所以无论你设置什么 base 值，开发环境都能正常工作！"
+        },
+        "q3": {
+            "question": "为什么推荐使用 experimental.renderBuiltUrl？",
+            "answer_intro": "相比其他方案，experimental.renderBuiltUrl 有以下优势：",
+            "advantage1": "✅ 开发环境不受影响：base 保持为 /，所有路径正常工作",
+            "advantage2": "✅ 精确控制：只修改构建产物中 JS 引用的静态资源路径",
+            "advantage3": "✅ 符合 Vite 理念：利用 Vite 提供的标准 API",
+            "advantage4": "✅ 灵活性高：可以根据文件类型、环境等条件灵活定制 URL"
+        },
+        "q4": {
+            "question": "构建后如何验证 CDN 路径是否正确？",
+            "answer_intro": "构建完成后，可以通过以下命令检查：",
+            "expected": "应该能看到类似 https://cdn.example.com/your-app/vite.svg 的完整 URL。"
         }
     }
 }
