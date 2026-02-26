@@ -658,3 +658,59 @@ Checklist:
 4. Use the debug panel to inspect status.
 
 </details>
+
+<details>
+<summary><b>How do I deploy build artifacts to CDN?</b></summary>
+
+If you need to deploy build artifacts to CDN (like OSS, CDN, etc.), here are three recommended approaches:
+
+**Approach 1: Using `experimental.renderBuiltUrl` (Recommended)**
+
+This approach only affects static asset paths in build artifacts, not affecting development environment:
+
+```ts
+export default defineConfig(({ command, mode }) => {
+  const isLibBuild = command === 'build' && mode === 'lib';
+
+  return {
+    base: '/', // Keep default
+
+    // Only modify static asset URLs during build
+    experimental: {
+      renderBuiltUrl(filename, { hostType }) {
+        if (isLibBuild && hostType === 'js') {
+          return `https://cdn.example.com/your-app/${filename}`;
+        }
+        return { relative: true };
+      }
+    },
+
+    plugins: [react(), devToReactPlugin('MyComponent')],
+  };
+});
+```
+
+**Approach 2: Using `build.rollupOptions`**
+
+Customize asset paths through Rollup configuration.
+
+**Approach 3: Conditional base setting**
+
+Use conditional logic to set CDN base only during lib build.
+
+All `/__dev_to__/` bridge paths are NOT affected by base configuration. The plugin handles path normalization internally to ensure consistent behavior in both development and production environments.
+
+</details>
+
+<details>
+<summary><b>Why is my dev server showing errors after setting base?</b></summary>
+
+Don't worry! All bridge paths starting with `/__dev_to__/` (like `/__dev_to__/react/contract.js`) are NOT affected by base configuration.
+
+The plugin ensures path stability through:
+- **Virtual module paths**: Normalized through resolveId hook, removing possible base prefix
+- **HTTP endpoints**: Intercepted directly via middleware, bypassing Vite's base handling
+
+So no matter what base value you set, the development environment will work normally!
+
+</details>
