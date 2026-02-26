@@ -795,3 +795,59 @@ MIT © [YangYongAn](https://github.com/YangYongAn)
 4. 访问调试面板查看详细状态
 
 </details>
+
+<details>
+<summary><b>Q: 如何将构建产物部署到 CDN？</b></summary>
+
+如果需要将构建产物部署到 CDN（如 OSS、CDN 等），推荐以下三种方案：
+
+**方案 1：使用 `experimental.renderBuiltUrl`（推荐）**
+
+这种方式只影响构建产物中的静态资源路径，不影响开发环境：
+
+```ts
+export default defineConfig(({ command, mode }) => {
+  const isLibBuild = command === 'build' && mode === 'lib';
+
+  return {
+    base: '/', // 保持默认
+
+    // 只在构建时修改静态资源的 URL
+    experimental: {
+      renderBuiltUrl(filename, { hostType }) {
+        if (isLibBuild && hostType === 'js') {
+          return `https://cdn.example.com/your-app/${filename}`;
+        }
+        return { relative: true };
+      }
+    },
+
+    plugins: [react(), devToReactPlugin('MyComponent')],
+  };
+});
+```
+
+**方案 2：使用 `build.rollupOptions`**
+
+通过 Rollup 配置自定义资源路径。
+
+**方案 3：条件设置 `base`**
+
+通过条件判断，只在库构建时设置 CDN base。
+
+所有 `/__dev_to__/` 桥接路径不受 base 配置影响。插件内部已处理路径规范化，无论设置什么 base 值，桥接路径在开发和生产环境都保持稳定。
+
+</details>
+
+<details>
+<summary><b>Q: 设置 base 后开发环境报错怎么办？</b></summary>
+
+不用担心！所有 `/__dev_to__/` 开头的桥接路径（如 `/__dev_to__/react/contract.js`）不受 base 配置影响。
+
+插件通过以下方式确保路径稳定：
+- **虚拟模块路径**：通过 resolveId 钩子规范化，移除可能的 base 前缀
+- **HTTP 端点**：通过中间件直接拦截原始 URL，不经过 Vite 的 base 处理
+
+所以无论你设置什么 base 值，开发环境都能正常工作！
+
+</details>
