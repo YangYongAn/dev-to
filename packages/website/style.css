@@ -135,6 +135,7 @@ a {
 [data-theme="light"] .theme-switch,
 [data-theme="light"] .lang-switch,
 [data-theme="light"] .links-switch,
+[data-theme="light"] .nav-github,
 [data-theme="light"] .mobile-menu-toggle {
   background: rgba(246, 248, 250, 0.8);
   border-color: rgba(31, 35, 40, 0.15);
@@ -143,6 +144,7 @@ a {
 [data-theme="light"] .theme-switch:hover,
 [data-theme="light"] .lang-switch:hover,
 [data-theme="light"] .links-switch:hover,
+[data-theme="light"] .nav-github:hover,
 [data-theme="light"] .mobile-menu-toggle:hover {
   background: rgba(234, 238, 242, 0.9);
   border-color: var(--accent);
@@ -1874,6 +1876,29 @@ a {
 }
 
 .links-switch:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+/* GitHub Link (for playground page) */
+.nav-github {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 6px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  text-decoration: none;
+}
+
+.nav-github:hover {
   border-color: var(--accent);
   color: var(--text-primary);
   background: var(--bg-secondary);
